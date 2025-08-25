@@ -1,0 +1,56 @@
+server:
+  port: 8761
+
+spring:
+  application:
+    name: linghuzhiyan-discovery-server
+  
+  # Spring Security 基本配置
+  security:
+    user:
+      name: admin
+      password: admin123
+      roles: ADMIN
+
+eureka:
+  instance:
+    hostname: localhost
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 30
+    
+  client:
+    # 不向注册中心注册自己
+    register-with-eureka: false
+    # 不从注册中心获取注册信息
+    fetch-registry: false
+    service-url:
+      # 设置与Eureka Server交互的地址
+      defaultZone: http://${spring.security.user.name}:${spring.security.user.password}@${eureka.instance.hostname}:${server.port}/eureka/
+      
+  server:
+    # 关闭自我保护机制
+    enable-self-preservation: false
+    # 清理间隔时间，单位毫秒，默认60秒
+    eviction-interval-timer-in-ms: 5000
+    # 响应缓存更新间隔时间，单位毫秒，默认30秒
+    response-cache-update-interval-ms: 5000
+    # 响应缓存过期时间，单位毫秒，默认180秒
+    response-cache-auto-expiration-in-seconds: 90
+
+# Actuator 监控端点配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,env
+  endpoint:
+    health:
+      show-details: always
+
+# 日志配置
+logging:
+  level:
+    org.springframework.cloud.netflix.eureka: INFO
+    com.netflix.eureka: INFO
+    com.netflix.discovery: INFO

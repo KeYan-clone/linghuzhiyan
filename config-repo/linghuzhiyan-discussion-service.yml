@@ -1,0 +1,47 @@
+# 讨论服务配置
+server:
+  port: 8087
+
+spring:
+  application:
+    name: linghuzhiyan-discussion-service
+    
+  # MongoDB配置
+  data:
+    mongodb:
+      # uri: "mongodb://${MONGODB_USERNAME:root}:${MONGODB_PASSWORD:password}@${MONGODB_HOST:localhost}:${MONGODB_PORT:27017}/linghuzhiyan_discussion?authSource=admin"
+     host: ${MONGODB_HOST:localhost}
+     port: ${MONGODB_PORT:27017}
+     database: linghuzhiyan_discussion
+     authentication-database: admin
+     username: ${MONGODB_USERNAME:root}
+     password: ${MONGODB_PASSWORD:password}
+      
+  # Redis 配置
+  redis:
+    database: 7
+
+# Feign配置
+feign:
+  client:
+    config:
+      default:
+        connect-timeout: 5000
+        read-timeout: 10000
+
+# 监控配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# 日志配置
+logging:
+  level:
+    org.linghu.discussion: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.data.mongodb: DEBUG

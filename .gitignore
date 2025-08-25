@@ -1,0 +1,79 @@
+# 编译输出
+target/
+*.class
+*.log
+*.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# IDE相关
+.idea/
+*.iws
+*.iml
+*.ipr
+.vscode/
+.settings/
+.project
+.classpath
+
+# 操作系统相关
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# 环境变量文件（包含敏感信息）
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+application-local.yml
+application-dev.yml
+
+# 日志文件
+logs/
+*.log
+log/
+
+# 临时文件
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Maven相关
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Spring Boot相关
+.gradle
+build/
+
+# Node.js相关（如果有前端）
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Docker相关
+.dockerignore
+
+# 测试覆盖率报告
+coverage/
+*.lcov
+
+# 数据库备份文件
+*.sql
+*.backup

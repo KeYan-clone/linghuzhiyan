@@ -1,0 +1,50 @@
+server:
+  port: 8888
+
+spring:
+  application:
+    name: linghuzhiyan-config-server
+    
+  # 配置中心配置
+  cloud:
+    config:
+      server:
+        # 本地文件系统配置（开发环境使用）
+        native:
+          search-locations: file:./config-repo,classpath:/config-repo
+          
+  # 配置文件激活 native profile（本地文件系统）
+  profiles:
+    active: native
+    
+  # 安全配置
+  security:
+    user:
+      name: config
+      password: config123
+      roles: ADMIN
+
+# Eureka 客户端配置
+eureka:
+  client:
+    service-url:
+      defaultZone: http://admin:admin123@localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 30
+
+# Actuator 监控端点配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,refresh,env
+  endpoint:
+    health:
+      show-details: always
+
+# 日志配置
+logging:
+  level:
+    org.springframework.cloud.config: INFO
