@@ -19,7 +19,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Result<Void> handleUserException(UserException e) {
         log.error("用户业务异常: {}", e.getMessage());
-        return Result.failure(400, e.getMessage());
+        return Result.error(400, e.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -27,13 +27,13 @@ public class GlobalExceptionHandler {
     public Result<Void> handleValidationException(MethodArgumentNotValidException e) {
         String message = e.getBindingResult().getAllErrors().get(0).getDefaultMessage();
         log.error("参数校验异常: {}", message);
-        return Result.failure(400, message);
+        return Result.error(400, message);
     }
 
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public Result<Void> handleException(Exception e) {
         log.error("系统异常", e);
-        return Result.failure(500, "系统异常");
+        return Result.error(500, "系统异常");
     }
 }

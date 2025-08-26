@@ -3,7 +3,7 @@ package org.linghu.auth.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.Set;
 
 /**
@@ -12,13 +12,12 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserBasicDTO {
+public class UserInfo {
     
     private String id;
     private String username;
     private String email;
-    private String nickname;
     private Boolean isDeleted;
     private Set<String> roles;
-    private LocalDateTime createdAt;
+    private Date createdAt;
 }

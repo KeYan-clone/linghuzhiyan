@@ -9,7 +9,7 @@ import java.util.Set;
 /**
  * 认证服务客户端
  */
-@FeignClient(name = "linghuzhiyan-auth-service", path = "/api/auth")
+@FeignClient(name = "linghuzhiyan-auth-service", path = "/api/internal/auth")
 public interface AuthServiceClient {
 
     /**
