@@ -105,18 +105,12 @@
             <artifactId>minio</artifactId>
         </dependency>
 
-        <!-- Spring Boot Test -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
 
-        <!-- Common Module -->
-        <dependency>
-            <groupId>org.linghu</groupId>
-            <artifactId>linghuzhiyan-common</artifactId>
-        </dependency>
+<!--        &lt;!&ndash; Common Module &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>org.linghu</groupId>-->
+<!--            <artifactId>linghuzhiyan-common</artifactId>-->
+<!--        </dependency>-->
     </dependencies>
 
     <build>

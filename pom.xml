@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
-         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.linghu</groupId>
@@ -16,7 +15,7 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.2.0</version>
-        <relativePath/>
+        <relativePath />
     </parent>
 
     <properties>
@@ -29,7 +28,7 @@
         <jwt.version>0.11.5</jwt.version>
         <minio.version>8.5.8</minio.version>
         <springdoc.version>2.3.0</springdoc.version>
-   </properties>
+    </properties>
 
     <modules>
         <!-- 基础设施服务 -->
@@ -37,10 +36,10 @@
         <module>linghuzhiyan-config-server</module>
         <module>linghuzhiyan-gateway</module>
         <module>linghuzhiyan-monitor-service</module>
-        
+
         <!-- 公共模块 -->
-        <module>linghuzhiyan-common</module>
-        
+<!--        <module>linghuzhiyan-common</module>-->
+
         <!-- 业务服务 -->
         <module>linghuzhiyan-auth-service</module>
         <module>linghuzhiyan-user-service</module>
@@ -53,12 +52,12 @@
     <dependencyManagement>
         <dependencies>
 
-            <!-- 公共模块 -->
-            <dependency>
-                <groupId>org.linghu</groupId>
-                <artifactId>linghuzhiyan-common</artifactId>
-                <version>${project.version}</version>
-            </dependency>
+<!--            &lt;!&ndash; 公共模块 &ndash;&gt;-->
+<!--            <dependency>-->
+<!--                <groupId>org.linghu</groupId>-->
+<!--                <artifactId>linghuzhiyan-common</artifactId>-->
+<!--                <version>${project.version}</version>-->
+<!--            </dependency>-->
 
             <!-- Spring Cloud -->
             <dependency>
@@ -92,12 +91,12 @@
                 <version>${mybatis.version}</version>
             </dependency>
 
-<!--            &lt;!&ndash; Druid 连接池 &ndash;&gt;-->
-<!--            <dependency>-->
-<!--                <groupId>com.alibaba</groupId>-->
-<!--                <artifactId>druid-spring-boot-starter</artifactId>-->
-<!--                <version>${druid.version}</version>-->
-<!--            </dependency>-->
+            <!--            &lt;!&ndash; Druid 连接池 &ndash;&gt;-->
+            <!--            <dependency>-->
+            <!--                <groupId>com.alibaba</groupId>-->
+            <!--                <artifactId>druid-spring-boot-starter</artifactId>-->
+            <!--                <version>${druid.version}</version>-->
+            <!--            </dependency>-->
 
             <!-- JWT -->
             <dependency>
@@ -128,6 +127,19 @@
                 <groupId>org.springdoc</groupId>
                 <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
                 <version>${springdoc.version}</version>
+            </dependency>
+            
+            <!-- test deps-->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-test</artifactId>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>junit-jupiter</artifactId>
+                <scope>test</scope>
+
             </dependency>
 
         </dependencies>
