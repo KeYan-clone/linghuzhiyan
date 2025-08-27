@@ -10,7 +10,7 @@ import org.linghu.experiment.dto.QuestionRequestDTO;
 import org.linghu.experiment.dto.UserDTO;
 import org.linghu.experiment.repository.QuestionRepository;
 import org.linghu.experiment.service.QuestionService;
-import org.linghu.experiment.util.JsonUtils;
+import org.linghu.experiment.utils.JsonUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;

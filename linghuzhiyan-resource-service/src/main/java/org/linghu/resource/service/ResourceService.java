@@ -1,102 +1,117 @@
 package org.linghu.resource.service;
 
+import org.linghu.resource.dto.ExperimentDTO;
 import org.linghu.resource.dto.ResourceDTO;
-import org.linghu.resource.dto.ResourceQueryDTO;
 import org.linghu.resource.dto.ResourceRequestDTO;
-import org.springframework.data.domain.Page;
+import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 /**
- * 资源服务接口
+ * 资源管理服务接口
  */
 public interface ResourceService {
-
+    
     /**
      * 上传资源
+     * 
+     * @param file 文件
+     * @param requestDTO 资源请求DTO
+     * @return 上传的资源DTO
      */
-    ResourceDTO uploadResource(MultipartFile file, ResourceRequestDTO requestDTO, String uploader);
+    ResourceDTO uploadResource(MultipartFile file, ResourceRequestDTO requestDTO);
 
     /**
-     * 上传学生提交文件
+     * 删除资源
+     *
+     * @param id 资源ID
      */
-    ResourceDTO uploadStudentSubmission(MultipartFile file, String studentId, 
-                                       String experimentId, String taskId, 
-                                       ResourceRequestDTO requestDTO);
+    void deleteResource(String id);
 
     /**
-     * 根据ID获取资源
+     * 更新资源信息
+     *
+     * @param resourceId 资源ID
+     * @param requestDTO 资源DTO
+     * @return 更新后的资源DTO
      */
-    ResourceDTO getResourceById(String id);
+    ResourceDTO updateResource(String resourceId,ResourceRequestDTO requestDTO);
 
     /**
      * 根据实验ID获取资源列表
+     *
+     * @param experimentId 实验ID
+     * @return 资源DTO列表
      */
     List<ResourceDTO> getResourcesByExperimentId(String experimentId);
 
     /**
-     * 根据实验ID和资源类型获取资源列表
+     * 获取所有资源列表
+     *
+     * @return 资源DTO列表
      */
-    List<ResourceDTO> getResourcesByExperimentIdAndType(String experimentId, String resourceType);
+    List<ResourceDTO> getAllResources();
+    /**
+     * 根据ID获取资源详情
+     * 
+     * @param id 资源ID
+     * @return 资源DTO
+     */
+    ResourceDTO getResourceById(String id);
 
     /**
-     * 获取学生提交的文件列表
+     *  下载资源
+     *
+     * @param id 资源ID
+     * @return 资源文件
+     */
+    Resource downloadResource(String id);
+
+    /**
+     * 上传学生实验提交
+     *
+     * @param file 文件
+     * @param studentId 学生ID
+     * @param experimentId 实验ID
+     * @param taskId 任务ID
+     * @param requestDTO 资源请求DTO
+     * @return 上传的资源DTO
+     */
+    ResourceDTO uploadStudentSubmission(MultipartFile file, String studentId, 
+                                      String experimentId, String taskId, 
+                                      ResourceRequestDTO requestDTO);
+
+    /**
+     * 获取学生所有实验提交
+     *
+     * @param studentId 学生ID
+     * @return 资源DTO列表
      */
     List<ResourceDTO> getStudentSubmissions(String studentId);
 
     /**
-     * 获取学生在指定实验中的提交文件
+     * 获取学生特定实验的提交
+     *
+     * @param studentId 学生ID
+     * @param experimentId 实验ID
+     * @return 资源DTO列表
      */
     List<ResourceDTO> getStudentSubmissionsByExperiment(String studentId, String experimentId);
 
     /**
-     * 删除资源
+     * 验证实验是否存在
+     *
+     * @param experimentId 实验ID
+     * @return 是否存在
      */
-    void deleteResource(String id, String currentUser);
+    Boolean validateExperiment(String experimentId);
 
     /**
-     * 获取所有公开资源
+     * 获取实验信息
+     *
+     * @param experimentId 实验ID
+     * @return 实验DTO
      */
-    List<ResourceDTO> getPublicResources();
-
-    /**
-     * 分页查询资源
-     */
-    Page<ResourceDTO> queryResources(ResourceQueryDTO queryDTO);
-
-    /**
-     * 下载资源
-     */
-    org.springframework.core.io.Resource downloadResource(String id);
-
-    /**
-     * 获取资源下载URL
-     */
-    String getDownloadUrl(String id, String currentUser);
-
-    /**
-     * 增加下载次数
-     */
-    void incrementDownloadCount(String id);
-
-    /**
-     * 根据上传者获取资源列表
-     */
-    List<ResourceDTO> getResourcesByUploader(String uploader);
-
-    /**
-     * 获取最近上传的资源
-     */
-    List<ResourceDTO> getRecentlyUploadedResources(int limit);
-
-    /**
-     * 获取热门资源
-     */
-    List<ResourceDTO> getPopularResources(int limit);
-
-    /**
-     * 搜索资源
-     */
-    List<ResourceDTO> searchResources(String keyword);
+    ExperimentDTO getExperimentInfo(String experimentId);
 }

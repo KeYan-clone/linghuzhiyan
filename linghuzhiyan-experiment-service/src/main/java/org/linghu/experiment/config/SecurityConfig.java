@@ -47,11 +47,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // 健康检查和监控端点
                 .requestMatchers("/actuator/**").permitAll()
-                // Swagger文档
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**").permitAll()
-                // API端点需要认证
-                .requestMatchers("/api/**").authenticated()
-                .anyRequest().permitAll()
+                .requestMatchers("/api/internal/experiments/").permitAll()
+                .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 

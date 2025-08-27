@@ -1,7 +1,9 @@
 package org.linghu.resource.config;
 
+import io.minio.MinioClient;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 /**
@@ -30,15 +32,29 @@ public class MinioConfig {
     /**
      * 默认存储桶
      */
-    private String defaultBucket = "linghuzhiyan";
+    private String bucketName = "linghuzhiyan";
+
+//    /**
+//     * 资源存储桶
+//     */
+//    private String resourceBucket = "resource";
+//
+//    /**
+//     * 提交存储桶
+//     */
+//    private String submissionBucket = "submission";
 
     /**
-     * 资源存储桶
+     * 创建MinIO客户端
+     *
+     * @return MinioClient
      */
-    private String resourceBucket = "resource";
+    @Bean
+    public MinioClient minioClient() {
+        return MinioClient.builder()
+                .endpoint(endpoint)
+                .credentials(accessKey, secretKey)
+                .build();
+    }
 
-    /**
-     * 提交存储桶
-     */
-    private String submissionBucket = "submission";
 }

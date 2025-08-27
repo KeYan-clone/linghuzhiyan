@@ -29,9 +29,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // 健康检查端点允许匿名访问
                 .requestMatchers("/actuator/**").permitAll()
-                // 下载接口允许匿名访问（可能需要的公开资源）
-                .requestMatchers("/api/v1/resources/download/**").permitAll()
-                .requestMatchers("/api/v1/resources/public/**").permitAll()
+                .requestMatchers("/api/resources/download/**").permitAll()
                 // 其他接口需要认证
                 .anyRequest().authenticated()
             )
