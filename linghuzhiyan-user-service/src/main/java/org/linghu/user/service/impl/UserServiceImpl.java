@@ -121,7 +121,7 @@ public class UserServiceImpl implements UserService {
     public UserDTO getUserByUsername(String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(UserException::userNotFound);
-        checkUserNotDeleted(user.getId());
+        checkUserNotDeleted(username);
         return convertToDTO(user);
     }
 
@@ -361,9 +361,15 @@ public class UserServiceImpl implements UserService {
     /**
      * 检查用户是否未被删除
      */
-    private void checkUserNotDeleted(String userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(UserException::userNotFound);
+    private void checkUserNotDeleted(String userIdOrName) {
+        // 先尝试通过ID查找
+        Optional<User> userById = userRepository.findById(userIdOrName);
+        
+        // 如果通过ID找不到，再尝试通过用户名查找
+        Optional<User> userByName = userById.isPresent() ? userById : userRepository.findByUsername(userIdOrName);
+        
+        // 如果两种方式都找不到用户，抛出用户不存在异常
+        User user = userByName.orElseThrow(UserException::userNotFound);
 
         if (user.getIsDeleted()) {
             throw UserException.userDeleted();
