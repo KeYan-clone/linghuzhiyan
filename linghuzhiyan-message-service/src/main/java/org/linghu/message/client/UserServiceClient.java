@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 /**
  * 用户服务Feign客户端
  */
-@FeignClient(name = "user-service")
+@FeignClient(name = "linghuzhiyan-user-service",path="/api/internal/users")
 public interface UserServiceClient {
 
     /**

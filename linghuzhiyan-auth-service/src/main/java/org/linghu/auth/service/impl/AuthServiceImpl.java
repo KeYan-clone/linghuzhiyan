@@ -45,7 +45,7 @@ public class AuthServiceImpl implements AuthService {
     public Result<LoginResponseDTO> login(LoginRequestDTO loginRequest) {
         try {
             // 1. 调用用户服务验证用户名和密码
-            Result<UserBasicDTO> userResult = userServiceClient.validateUser(
+            Result<UserInfo> userResult = userServiceClient.validateUser(
                 loginRequest.getUsername(), loginRequest.getPassword());
             
             if (!userResult.isSuccess()) {
@@ -60,7 +60,7 @@ public class AuthServiceImpl implements AuthService {
                 return Result.error("用户名或密码错误");
             }
 
-            UserBasicDTO user = userResult.getData();
+            UserInfo user = userResult.getData();
             if (user.getIsDeleted()) {
                 loginLogService.logFailedLogin(
                     loginRequest.getUsername(),
