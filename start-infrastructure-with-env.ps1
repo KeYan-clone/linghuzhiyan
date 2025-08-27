@@ -1,56 +1,82 @@
 # 启动基础设施服务的PowerShell脚本（包含环境变量加载）
 
-Write-Host "========== 启动灵狐智验基础设施服务 ==========" -ForegroundColor Green
+param(
+    [string]$EnvFile = ".env.development"
+)
 
-# 加载环境变量
-Write-Host "步骤1: 加载环境变量" -ForegroundColor Cyan
-.\load-env.ps1
+Write-Host "========== Start LingHuZhiYan Infrastructure ==========" -ForegroundColor Green
 
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "环境变量加载失败，终止启动" -ForegroundColor Red
+# Load environment variables
+Write-Host "Step 1: Load environment variables ($EnvFile)" -ForegroundColor Cyan
+try {
+    & .\load-env.ps1 -EnvFile $EnvFile
+}
+catch {
+    Write-Host "Failed to load env vars: $($_.Exception.Message)" -ForegroundColor Red
     exit 1
 }
 
-# 启动顺序
+# Services to start (order matters)
 $services = @(
-    @{Name="linghuzhiyan-discovery-server"; Port=8761; Desc="服务发现中心"},
-    @{Name="linghuzhiyan-config-server"; Port=8888; Desc="配置中心"},
-    @{Name="linghuzhiyan-gateway"; Port=8080; Desc="API网关"},
-    @{Name="linghuzhiyan-monitor-service"; Port=8090; Desc="监控服务"}
+    @{Name="linghuzhiyan-discovery-server"; Port=8761; Desc="Eureka Server"},
+    @{Name="linghuzhiyan-config-server"; Port=8888; Desc="Config Server"},
+    @{Name="linghuzhiyan-gateway"; Port=8080; Desc="API Gateway"},
+    @{Name="linghuzhiyan-monitor-service"; Port=8090; Desc="Monitor"}
 )
 
 foreach ($service in $services) {
-    Write-Host "步骤: 启动 $($service.Desc) ($($service.Name))" -ForegroundColor Yellow
-    Write-Host "端口: $($service.Port)" -ForegroundColor Gray
+    Write-Host "Starting $($service.Desc) ($($service.Name))" -ForegroundColor Yellow
+    Write-Host "Port: $($service.Port)" -ForegroundColor Gray
     
     Set-Location $service.Name
     
-    # 在后台启动服务
+    # For Config Server, force native profile and correct search-locations
+    $origProfiles = $env:SPRING_PROFILES_ACTIVE
+    $origSearchLocations = $env:SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS
+    if ($service.Name -eq "linghuzhiyan-config-server") {
+        $repoRoot = $PSScriptRoot
+        if (-not $repoRoot -or $repoRoot -eq "") { $repoRoot = (Get-Location).Path }
+        # Build file URI with forward slashes
+        $nativePath = "file:" + ($repoRoot -replace '\\','/') + "/config-repo"
+        $env:SPRING_PROFILES_ACTIVE = "native,local"
+        $env:SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS = $nativePath
+        Write-Host "Config Server search-locations: $nativePath" -ForegroundColor Gray
+    }
+
+    # Start service in background
     Start-Process -NoNewWindow -FilePath "mvn" -ArgumentList "spring-boot:run" -WorkingDirectory (Get-Location)
     
     Set-Location ..
     
-    # 等待服务启动
-    Write-Host "等待服务启动..." -ForegroundColor Gray
+    # Restore env overrides (keep parent's env clean for next service)
+    $env:SPRING_PROFILES_ACTIVE = $origProfiles
+    if ($null -ne $origSearchLocations -and $origSearchLocations -ne "") {
+        $env:SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS = $origSearchLocations
+    } else {
+        Remove-Item Env:SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS -ErrorAction SilentlyContinue
+    }
+    
+    # Wait for service to boot
+    Write-Host "Waiting for service to start..." -ForegroundColor Gray
     Start-Sleep 30
     
-    # 检查服务是否启动成功
+    # Check health endpoint
     try {
         $response = Invoke-WebRequest -Uri "http://localhost:$($service.Port)/actuator/health" -UseBasicParsing -TimeoutSec 10
         if ($response.StatusCode -eq 200) {
-            Write-Host "✓ $($service.Desc) 启动成功" -ForegroundColor Green
+            Write-Host "✓ $($service.Desc) is up" -ForegroundColor Green
         }
     }
     catch {
-        Write-Host "⚠ $($service.Desc) 可能未完全启动，请检查日志" -ForegroundColor Yellow
+        Write-Host "⚠ $($service.Desc) may not be fully up, check logs." -ForegroundColor Yellow
     }
     
     Write-Host ""
 }
 
-Write-Host "========== 基础设施服务启动完成 ==========" -ForegroundColor Green
-Write-Host "访问地址:" -ForegroundColor Cyan
-Write-Host "  服务发现中心: http://localhost:8761" -ForegroundColor White
-Write-Host "  配置中心: http://localhost:8888" -ForegroundColor White  
-Write-Host "  API网关: http://localhost:8080" -ForegroundColor White
-Write-Host "  监控服务: http://localhost:8090" -ForegroundColor White
+Write-Host "========== Infrastructure started ==========" -ForegroundColor Green
+Write-Host "Endpoints:" -ForegroundColor Cyan
+Write-Host "  Eureka:  http://localhost:8761" -ForegroundColor White
+Write-Host "  Config:  http://localhost:8888" -ForegroundColor White  
+Write-Host "  Gateway: http://localhost:8080" -ForegroundColor White
+Write-Host "  Monitor: http://localhost:8090" -ForegroundColor White
