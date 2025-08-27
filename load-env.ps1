@@ -2,7 +2,7 @@
 # 使用方法：在启动应用前运行此脚本
 
 param(
-    [string]$EnvFile = ".env"
+    [string]$EnvFile = ".env.development"
 )
 
 Write-Host "正在加载环境变量..." -ForegroundColor Green
