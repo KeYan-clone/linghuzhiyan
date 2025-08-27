@@ -17,7 +17,7 @@ public class LoginResponseDTO {
     /**
      * 用户基本信息
      */
-    private UserBasicDTO user;
+    private UserInfo user;
     
     /**
      * 访问令牌

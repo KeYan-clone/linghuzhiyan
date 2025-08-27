@@ -77,13 +77,6 @@ spring:
           filters:
             - StripPrefix=1
 
-# JWT配置
-jwt:
-  secret: ${JWT_SECRET:linghuzhiyan-used-secret-key-must-be-at-least-32-characters-long-for-security}
-  expiration: 604800
-  tokenHead: Bearer
-  tokenHeader: Authorization
-
 # 监控配置
 management:
   endpoints:

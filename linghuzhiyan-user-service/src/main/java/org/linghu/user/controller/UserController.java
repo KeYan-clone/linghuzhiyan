@@ -104,7 +104,7 @@ public class UserController {
     public Result<Map<String, String>> uploadAvatar(@AuthenticationPrincipal UserDetails userDetails,
                                               @RequestParam("file") MultipartFile file) {
         if (file.isEmpty()) {
-            return Result.failure(400, "请选择要上传的文件");
+            return Result.error(400, "请选择要上传的文件");
         }
         
         Map<String, String> avatarInfo = userService.updateUserAvatar(userDetails.getUsername(), file);

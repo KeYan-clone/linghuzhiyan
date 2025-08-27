@@ -24,14 +24,14 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
-    
-    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;    
+
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtRequestFilter jwtRequestFilter;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
-    public SecurityConfig(JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint, 
-                        JwtRequestFilter jwtRequestFilter,
-                        JwtAccessDeniedHandler jwtAccessDeniedHandler) {
+    public SecurityConfig(JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint,
+                          JwtRequestFilter jwtRequestFilter,
+                          JwtAccessDeniedHandler jwtAccessDeniedHandler) {
         this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
         this.jwtRequestFilter = jwtRequestFilter;
         this.jwtAccessDeniedHandler = jwtAccessDeniedHandler;
@@ -41,18 +41,18 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         // 配置HTTP安全策略
         http.csrf(AbstractHttpConfigurer::disable)
-            .authorizeHttpRequests(auth -> auth
-                // 允许公开访问的URL
-                .requestMatchers("/api/auth/login", "/api/auth/refresh",
+                .authorizeHttpRequests(auth -> auth
+                        // 允许公开访问的URL
+                        .requestMatchers("/api/auth/login", "/api/auth/refresh",
                                 "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
                                 "/actuator/**").permitAll()
-                // 其他请求需要认证
-                .anyRequest().authenticated()
-            )
-            .exceptionHandling(ex -> ex
-                .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-                .accessDeniedHandler(jwtAccessDeniedHandler))
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+                        .requestMatchers("/api/internal/auth/**").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                        .accessDeniedHandler(jwtAccessDeniedHandler))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         // 添加JWT过滤器
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);

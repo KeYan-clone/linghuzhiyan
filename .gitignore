@@ -75,5 +75,5 @@ coverage/
 *.lcov
 
 # 数据库备份文件
-*.sql
+#*.sql
 *.backup
