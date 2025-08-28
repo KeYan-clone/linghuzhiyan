@@ -132,10 +132,6 @@ public class ExperimentAssignmentServiceImpl implements ExperimentAssignmentServ
     @Override
     @Transactional
     public void assignTaskToAllStudents(String taskId) {
-        // 验证实验任务是否存在
-        experimentTaskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("实验任务不存在"));
-
         // 获取所有学生用户
         List<UserDTO> students = getAllStudentUsers();
 
