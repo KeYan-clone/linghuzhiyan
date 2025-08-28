@@ -1,4 +1,4 @@
-package org.linghu.experiment.util;
+package org.linghu.resource.utils;
 
 import io.minio.*;
 import io.minio.http.Method;
@@ -8,9 +8,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
-import org.linghu.experiment.config.MinioConfig;
-import org.linghu.experiment.dto.SourceCodeFileDTO;
-import org.linghu.experiment.dto.SubmissionRequestDTO;
+import org.linghu.resource.config.MinioConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Component;
@@ -392,60 +390,6 @@ public class MinioUtil {
             long size, String contentType) throws Exception {
         String objectName = generateStudentSubmissionPath(studentId, experimentId, taskId, filename);
         return uploadToSubmissionBucket(objectName, inputStream, size, contentType);
-    }    /**
-     * 上传学生代码提交（JSON格式） - 将多个源代码文件上传到submission bucket
-     * 
-     * @param studentId    学生ID
-     * @param submissionRequest 提交请求DTO（包含experimentId、taskId和files）
-     * @return 上传的文件路径列表
-     * @throws Exception 如果上传失败
-     */
-    public List<String> uploadStudentCodeSubmission(String studentId, SubmissionRequestDTO submissionRequest) throws Exception {
-        if (submissionRequest == null || submissionRequest.getFiles() == null || submissionRequest.getFiles().isEmpty()) {
-            throw new IllegalArgumentException("代码提交内容不能为空");
-        }
-        
-        String experimentId = submissionRequest.getExperimentId();
-        String taskId = submissionRequest.getTaskId();
-        List<SourceCodeFileDTO> files = submissionRequest.getFiles();
-        
-        // 生成时间戳目录
-        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern(TIMESTAMP_FORMAT));
-        List<String> uploadedPaths = new ArrayList<>();
-        
-        for (SourceCodeFileDTO file : files) {
-            if (file.getFileName() == null || file.getContent() == null) {
-                System.err.println("跳过无效文件: fileName=" + file.getFileName());
-                continue;
-            }
-            
-            try {
-                // 生成对象路径: {studentId}/{experimentId}/{taskId}/{timestamp}/{fileName}
-                String objectName = String.format("%s%s%s%s%s%s%s%s%s", 
-                    studentId, PATH_SEPARATOR, 
-                    experimentId, PATH_SEPARATOR, 
-                    taskId, PATH_SEPARATOR, 
-                    timestamp, PATH_SEPARATOR, 
-                    file.getFileName());
-                
-                // 将文件内容转换为输入流
-                byte[] contentBytes = file.getContent().getBytes("UTF-8");
-                InputStream contentStream = new ByteArrayInputStream(contentBytes);
-                
-                // 上传文件到submission bucket
-                String uploadedPath = uploadToSubmissionBucket(objectName, contentStream, 
-                    contentBytes.length, "text/plain");
-                uploadedPaths.add(uploadedPath);
-                
-                System.out.println("成功上传文件: " + objectName);
-                
-            } catch (Exception e) {
-                System.err.println("上传文件失败: " + file.getFileName() + ", 错误: " + e.getMessage());
-                throw new Exception("上传文件失败: " + file.getFileName(), e);
-            }
-        }
-        
-        return uploadedPaths;
     }
 
     /**
