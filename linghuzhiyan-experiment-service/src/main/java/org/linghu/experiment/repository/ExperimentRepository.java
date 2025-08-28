@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -97,7 +97,7 @@ public interface ExperimentRepository extends JpaRepository<Experiment, String> 
      * @return 实验列表
      */
     @Query("SELECT e FROM Experiment e WHERE e.startTime <= :endDate AND e.endTime >= :startDate")
-    List<Experiment> findExperimentsInTimeRange(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
+    List<Experiment> findExperimentsInTimeRange(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
     
     /**
      * 查询当前有效的实验（已发布且在有效期内）
@@ -106,7 +106,7 @@ public interface ExperimentRepository extends JpaRepository<Experiment, String> 
      * @return 实验列表
      */
     @Query("SELECT e FROM Experiment e WHERE e.status = 'PUBLISHED' AND e.startTime <= :currentDate AND e.endTime >= :currentDate")
-    List<Experiment> findActiveExperiments(@Param("currentDate") Date currentDate);
+    List<Experiment> findActiveExperiments(@Param("currentDate") LocalDateTime currentDate);
     
     /**
      * 分页查询当前有效的实验（已发布且在有效期内）
@@ -116,7 +116,7 @@ public interface ExperimentRepository extends JpaRepository<Experiment, String> 
      * @return 实验分页结果
      */
     @Query("SELECT e FROM Experiment e WHERE e.status = 'PUBLISHED' AND e.startTime <= :currentDate AND e.endTime >= :currentDate")
-    Page<Experiment> findActiveExperiments(@Param("currentDate") Date currentDate, Pageable pageable);
+    Page<Experiment> findActiveExperiments(@Param("currentDate") LocalDateTime currentDate, Pageable pageable);
     
     /**
      * 根据ID和创建者ID查找实验
