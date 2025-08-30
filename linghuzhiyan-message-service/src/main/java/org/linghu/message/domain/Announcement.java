@@ -9,15 +9,15 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 /**
- * 消息通知领域模型，对应数据库中的 message 表
+ * 公告领域模型，对应数据库中的 announcement 表
  */
 @Entity
-@Table(name = "message")
+@Table(name = "announcement")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Message {
+public class Announcement {
     @Id
     @Column(length = 36)
     private String id;
@@ -28,34 +28,16 @@ public class Message {
     @Column(nullable = false)
     private String content;
 
-    @Column(nullable = false, length = 36)
-    private String sender;
-
-    @Column(nullable = false, length = 36)
-    private String receiver;
-
-    @Column(nullable = false, length = 10)
-    private String status; // 已读/未读
-
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Column(nullable = false, length = 36)
-    private String senderRole; // 发送者权限等级
-
     @PrePersist
     protected void onCreate() {
-        if (id == null || id.isEmpty()) {
-            id = java.util.UUID.randomUUID().toString();
-        }
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
-        if (status == null) {
-            status = "未读";
-        }
     }
 
     @PreUpdate

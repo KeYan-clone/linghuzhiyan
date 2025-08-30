@@ -6,14 +6,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * 发送者信息DTO
+ * 公告创建请求DTO
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SenderInfoDTO {
-    private String senderId;
-    private String senderUsername;
-    private String senderRole;
+public class AnnouncementRequestDTO {
+    private String title;
+    private String content;
 }

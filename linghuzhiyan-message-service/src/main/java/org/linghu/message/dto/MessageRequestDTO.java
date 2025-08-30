@@ -5,48 +5,20 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
-
 /**
- * 消息请求DTO
+ * 创建消息通知DTO，仅用于创建消息时的参数
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class MessageRequestDTO {
-
-    @NotBlank(message = "消息标题不能为空")
-    @Size(max = 200, message = "标题长度不能超过200个字符")
     private String title;
-
-    @NotBlank(message = "消息内容不能为空")
-    @Size(max = 2000, message = "内容长度不能超过2000个字符")
     private String content;
-
-    @NotBlank(message = "接收者ID不能为空")
-    private String receiverId;
-
+    private String receiver;
     /**
-     * 消息类型：NOTIFICATION, EXPERIMENT, GRADE, DISCUSSION, ANNOUNCEMENT, REMINDER
+     * 可选：由前端显式指定的发送者角色，例如：ROLE_ADMIN/ROLE_TEACHER/ROLE_ASSISTANT/ROLE_STUDENT。
+     * 后端会校验当前登录用户是否实际拥有该角色；若不合法则忽略并按当前用户最高角色记录。
      */
-    @Builder.Default
-    private String messageType = "NOTIFICATION";
-
-    /**
-     * 优先级：LOW, NORMAL, HIGH, URGENT
-     */
-    @Builder.Default
-    private String priority = "NORMAL";
-
-    /**
-     * 相关实验ID（可选）
-     */
-    private String experimentId;
-
-    /**
-     * 相关任务ID（可选）
-     */
-    private String taskId;
+    private String senderRole;
 }

@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.linghu.user.domain.User;
 import org.linghu.user.dto.Result;
 import org.linghu.user.dto.UserInfo;
+import org.linghu.user.repository.UserRepository;
 import org.linghu.user.service.UserService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +27,7 @@ import java.util.Set;
 public class InternalUserController {
 
     private final UserService userService;
+    private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
     /**
@@ -65,6 +67,42 @@ public class InternalUserController {
             return Result.success(UserInfo);
         } catch (Exception e) {
             log.error("内部API调用 - 获取用户信息失败: username={}", username, e);
+            return Result.error("获取用户信息失败: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "根据用户ID获取用户基本信息", description = "供服务间调用的获取用户信息接口")
+    public Result<UserInfo> getUserById(@PathVariable("id") String id) {
+        try {
+            Optional<User> userOpt = userRepository.findById(id);
+            if (userOpt.isEmpty()) {
+                log.warn("内部API调用 - 用户不存在: userId={}", id);
+                return Result.error("用户不存在: " + id);
+            }
+
+            User user = userOpt.get();
+            if (Boolean.TRUE.equals(user.getIsDeleted())) {
+                log.warn("内部API调用 - 用户已被删除: userId={}", id);
+                return Result.error("用户已被删除: " + id);
+            }
+
+            // 获取用户角色
+            Set<String> roles = userService.getUserRoleIds(user.getId());
+
+            UserInfo UserInfo = new UserInfo(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getIsDeleted(),
+                roles,
+                user.getCreatedAt()
+            );
+
+            log.info("内部API调用 - 获取用户信息成功: userId={}", id);
+            return Result.success(UserInfo);
+        } catch (Exception e) {
+            log.error("内部API调用 - 获取用户信息失败: userId={}", id, e);
             return Result.error("获取用户信息失败: " + e.getMessage());
         }
     }
