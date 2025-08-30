@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.linghu.experiment.client.UserServiceClient;
 import org.linghu.experiment.constants.TaskType;
 import org.linghu.experiment.domain.ExperimentTask;
 import org.linghu.experiment.dto.ExperimentTaskDTO;
@@ -12,6 +13,9 @@ import org.linghu.experiment.dto.SourceCodeFileDTO;
 import org.linghu.experiment.repository.ExperimentRepository;
 import org.linghu.experiment.repository.ExperimentTaskRepository;
 import org.linghu.experiment.service.ExperimentTaskService;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +34,7 @@ public class ExperimentTaskServiceImpl implements ExperimentTaskService {
     private final ExperimentTaskRepository experimentTaskRepository;
     private final ExperimentRepository experimentRepository;
     private final ObjectMapper objectMapper;
+    private final UserServiceClient userServiceClient;
 
     @Override
     @Transactional
@@ -38,6 +43,9 @@ public class ExperimentTaskServiceImpl implements ExperimentTaskService {
         if (!experimentRepository.existsById(experimentId)) {
             throw new RuntimeException("实验不存在");
         }
+        // 权限检查：仅实验创建者可更新任务
+        ensureOwnerOfExperiment(experimentId, "无权为该实验创建任务");
+
 
         // 获取当前实验的最大顺序号
         Integer maxOrder = experimentTaskRepository.findMaxOrderNumByExperimentId(experimentId);
@@ -86,6 +94,10 @@ public class ExperimentTaskServiceImpl implements ExperimentTaskService {
     public ExperimentTaskDTO updateTask(String id, ExperimentTaskRequestDTO requestDTO) {
         ExperimentTask task = experimentTaskRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("任务不存在"));
+        // 权限检查：仅实验创建者可更新任务
+        ensureOwnerOfExperiment(task.getExperimentId(), "无权更新该实验任务");
+
+
         task.setTitle(requestDTO.getTitle());
         task.setDescription(requestDTO.getDescription());
         task.setTaskType(requestDTO.getTaskType() != null ? requestDTO.getTaskType() : task.getTaskType());
@@ -115,6 +127,12 @@ public class ExperimentTaskServiceImpl implements ExperimentTaskService {
         if (!experimentTaskRepository.existsById(id)) {
             throw new RuntimeException("任务不存在");
         }
+        // 权限检查：仅实验创建者可删除任务
+        ExperimentTask task = experimentTaskRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("任务不存在"));
+
+        ensureOwnerOfExperiment(task.getExperimentId(), "无权删除该实验任务");
+
         experimentTaskRepository.deleteById(id);
     }
 
@@ -125,6 +143,8 @@ public class ExperimentTaskServiceImpl implements ExperimentTaskService {
         if (!experimentRepository.existsById(experimentId)) {
             throw new RuntimeException("实验不存在");
         }
+        // 权限检查：仅实验创建者可更新任务
+        ensureOwnerOfExperiment(experimentId, "无权更新该实验任务");
 
         // 更新每个任务的顺序
         for (Map<String, String> taskOrder : taskOrderList) {
@@ -170,5 +190,32 @@ public class ExperimentTaskServiceImpl implements ExperimentTaskService {
                 .createdAt(task.getCreatedAt())
                 .updatedAt(task.getUpdatedAt())
                 .build();
+    }
+    /**
+     * 校验当前登录用户是否为实验创建者
+     */
+    protected void ensureOwnerOfExperiment(String experimentId, String messageIfDenied) {
+
+        var experiment = experimentRepository.findById(experimentId)
+                .orElseThrow(() -> new RuntimeException("实验不存在"));
+        String username = getCurrentUsernameFromSecurityContext();
+        if (username == null || "anonymousUser".equals(username)) {
+            throw new AccessDeniedException("未认证或权限不足");
+        }
+        var user = userServiceClient.getUserByUsername(username);
+        if (!experiment.getCreatorId().equals(user.getId())) {
+            throw new AccessDeniedException(messageIfDenied != null ? messageIfDenied : "权限不足");
+        }
+    }
+
+
+    /**
+     * 获取当前认证用户的用户名
+     *
+     * @return 当前用户名，若未认证则返回null
+     */
+    protected String getCurrentUsernameFromSecurityContext() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return (auth != null) ? auth.getName() : null;
     }
 }
