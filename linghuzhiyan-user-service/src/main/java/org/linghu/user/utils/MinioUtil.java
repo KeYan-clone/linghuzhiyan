@@ -1,4 +1,4 @@
-package org.linghu.user.util;
+package org.linghu.user.utils;
 
 import io.minio.*;
 import io.minio.http.Method;

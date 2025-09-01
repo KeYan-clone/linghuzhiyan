@@ -98,6 +98,8 @@ public class ResourceController {
                 .body(fileResource);
     }
 
+    // 以下为学生提交相关接口
+
     @GetMapping("/submissions/student/{studentId}")
     @PreAuthorize("hasAnyRole('TEACHER','ADMIN','ASSISTANT') or #studentId == authentication.principal.id")
     public Result<List<ResourceDTO>> getStudentSubmissions(@PathVariable String studentId) {

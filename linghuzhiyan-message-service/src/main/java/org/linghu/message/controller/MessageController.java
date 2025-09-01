@@ -1,393 +1,202 @@
 package org.linghu.message.controller;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+//import io.swagger.v3.oas.annotations.tags.Tag;
+import org.linghu.message.client.UserServiceClient;
 import org.linghu.message.dto.MessageDTO;
-import org.linghu.message.dto.MessageQueryDTO;
 import org.linghu.message.dto.MessageRequestDTO;
+import org.linghu.message.dto.Result;
 import org.linghu.message.dto.SenderInfoDTO;
 import org.linghu.message.service.MessageService;
-import org.springframework.data.domain.Page;
-import org.springframework.http.ResponseEntity;
+import org.linghu.message.client.UserServiceClient;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.validation.annotation.Validated;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
- * 消息管理控制器
+ * 消息通知API控制器
  */
-@Slf4j
 @RestController
 @RequestMapping("/api/messages")
-@RequiredArgsConstructor
-@Validated
+//@Tag(name = "通知管理", description = "通知管理相关API")
 public class MessageController {
 
     private final MessageService messageService;
+    private final UserServiceClient userServiceClient;
 
-    /**
-     * 创建消息
-     */
+    @Autowired
+    public MessageController(MessageService messageService,  UserServiceClient userServiceClient) {
+        this.messageService = messageService;
+        this.userServiceClient = userServiceClient;
+    }
+
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER') or hasRole('STUDENT')")
-    public ResponseEntity<Map<String, Object>> createMessage(@Valid @RequestBody MessageRequestDTO requestDTO) {
-        try {
-            String currentUser = getCurrentUserId();
-            MessageDTO messageDTO = messageService.createMessage(requestDTO, currentUser);
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", "消息创建成功");
-            response.put("data", messageDTO);
-            
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            log.error("创建消息失败", e);
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("message", "创建消息失败: " + e.getMessage());
-            return ResponseEntity.badRequest().body(response);
+//    @io.swagger.v3.oas.annotations.Operation(summary = "创建通知", description = "创建一条新的消息通知")
+    public Result<MessageDTO> createMessage(@RequestBody MessageRequestDTO messageRequestDTO, @AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null || userDetails.getUsername() == null) {
+            throw new RuntimeException("未登录用户无法发送消息");
         }
+        var authorities = userDetails.getAuthorities();
+        boolean isAdmin = authorities.stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        boolean isTeacher = authorities.stream().anyMatch(a -> a.getAuthority().equals("ROLE_TEACHER"));
+        boolean isAssistant = authorities.stream().anyMatch(a -> a.getAuthority().equals("ROLE_ASSISTANT"));
+        boolean isStudent = authorities.stream().anyMatch(a -> a.getAuthority().equals("ROLE_STUDENT"));
+
+        // receiver为用户名，先查用户实体再查id
+        var receiverUserDTO = userServiceClient.getUserByUsername(messageRequestDTO.getReceiver()).getData();
+        if (receiverUserDTO == null || receiverUserDTO.getId() == null) {
+            throw new RuntimeException("接收者用户不存在");
+        }
+        String receiverId = receiverUserDTO.getId();
+        java.util.Set<String> receiverRoles = receiverUserDTO.getRoles();
+        // 身份优先级：学生<助教<教师<管理员
+        int minLevel = 4; // 1:学生 2:助教 3:教师 4:管理员
+        if (receiverRoles.contains("ROLE_STUDENT")) minLevel = Math.min(minLevel, 1);
+        if (receiverRoles.contains("ROLE_ASSISTANT")) minLevel = Math.min(minLevel, 2);
+        if (receiverRoles.contains("ROLE_TEACHER")) minLevel = Math.min(minLevel, 3);
+        if (receiverRoles.contains("ROLE_ADMIN")) minLevel = Math.min(minLevel, 4);
+
+        // 权限判断
+        if (isAdmin) {
+            // 管理员可以向任何人发消息
+        } else if (isTeacher) {
+            if (minLevel == 4) {
+                throw new RuntimeException("教师不能向管理员发送消息");
+            }
+        } else if (isAssistant) {
+            if (minLevel > 2) {
+                throw new RuntimeException("助教只能向助教或学生发送消息");
+            }
+        } else if (isStudent) {
+            if (minLevel > 2) {
+                throw new RuntimeException("学生只能向教师、助教或学生发送消息");
+            }
+        } else {
+            throw new RuntimeException("未知用户角色，无法发送消息");
+        }
+
+        // 发送者角色：优先使用请求体中的 senderRole（需确认为当前用户拥有该角色），否则回退为用户最高角色
+        String requestedSenderRole = messageRequestDTO.getSenderRole();
+        String senderRole = null;
+        if (requestedSenderRole != null && !requestedSenderRole.isBlank()) {
+            String tmp = requestedSenderRole.trim().toUpperCase();
+            // 兼容无前缀形式（如 ADMIN/TEACHER/ASSISTANT/STUDENT）
+            final String normalized = tmp.startsWith("ROLE_") ? tmp : ("ROLE_" + tmp);
+            // 允许的角色常量
+            List<String> allowed = List.of("ROLE_ADMIN", "ROLE_TEACHER", "ROLE_ASSISTANT", "ROLE_STUDENT");
+            if (allowed.contains(normalized)) {
+                boolean owns = authorities.stream().anyMatch(a -> a.getAuthority().equals(normalized));
+                if (owns) {
+                    senderRole = normalized;
+                }
+            }
+        }
+        if (senderRole == null) {
+            if (isAdmin) {
+                senderRole = "ROLE_ADMIN";
+            } else if (isTeacher) {
+                senderRole = "ROLE_TEACHER";
+            } else if (isAssistant) {
+                senderRole = "ROLE_ASSISTANT";
+            } else if (isStudent) {
+                senderRole = "ROLE_STUDENT";
+            } else {
+                senderRole = "UNKNOWN";
+            }
+        }
+
+        MessageDTO dto = MessageDTO.builder()
+                .title(messageRequestDTO.getTitle())
+                .content(messageRequestDTO.getContent())
+                .receiver(messageRequestDTO.getReceiver())
+                .sender(userDetails.getUsername())
+                .senderRole(senderRole)
+                .build();
+        return Result.success(messageService.createMessage(dto));
     }
 
-    /**
-     * 获取单个消息详情
-     */
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER') or hasRole('STUDENT')")
-    public ResponseEntity<Map<String, Object>> getMessageById(@PathVariable @NotNull String id) {
-        try {
-            MessageDTO messageDTO = messageService.getMessageById(id);
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("data", messageDTO);
-            
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            log.error("获取消息详情失败: id={}", id, e);
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("message", "获取消息详情失败: " + e.getMessage());
-            return ResponseEntity.badRequest().body(response);
-        }
+//    @io.swagger.v3.oas.annotations.Operation(summary = "获取消息", description = "根据ID获取消息详情")
+    public Result<MessageDTO> getMessageById(@PathVariable String id) {
+        return Result.success(messageService.getMessageById(id));
     }
 
-    /**
-     * 获取当前用户接收的消息
-     */
-    @GetMapping("/received")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER') or hasRole('STUDENT')")
-    public ResponseEntity<Map<String, Object>> getReceivedMessages() {
-        try {
-            String currentUser = getCurrentUserId();
-            List<MessageDTO> messages = messageService.getMessagesByReceiver(currentUser);
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("data", messages);
-            response.put("total", messages.size());
-            
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            log.error("获取接收消息失败", e);
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("message", "获取接收消息失败: " + e.getMessage());
-            return ResponseEntity.badRequest().body(response);
+    @GetMapping("/receiver")
+//    @io.swagger.v3.oas.annotations.Operation(summary = "获取当前用户接收的消息", description = "获取当前登录用户接收到的所有消息")
+    public Result<List<MessageDTO>> getMessagesByReceiver(@AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null || userDetails.getUsername() == null) {
+            throw new RuntimeException("未登录用户无法获取消息");
         }
+        List<MessageDTO> messages = messageService.getMessagesByReceiver(userDetails.getUsername());
+        return Result.success(messages);
     }
 
-    /**
-     * 获取当前用户发送的消息
-     */
-    @GetMapping("/sent")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER') or hasRole('STUDENT')")
-    public ResponseEntity<Map<String, Object>> getSentMessages() {
-        try {
-            String currentUser = getCurrentUserId();
-            List<MessageDTO> messages = messageService.getMessagesBySender(currentUser);
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("data", messages);
-            response.put("total", messages.size());
-            
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            log.error("获取发送消息失败", e);
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("message", "获取发送消息失败: " + e.getMessage());
-            return ResponseEntity.badRequest().body(response);
+    @GetMapping("/sender/{sender}")
+//    @io.swagger.v3.oas.annotations.Operation(summary = "获取指定发送者发给当前用户的消息", description = "获取指定发送者发给当前登录用户的消息列表")
+    public Result<List<MessageDTO>> getMessagesBySender(@PathVariable String sender, @AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null || userDetails.getUsername() == null) {
+            throw new RuntimeException("未登录用户无法获取消息");
         }
+        List<MessageDTO> messages = messageService.getMessagesBySenderAndReceiver(sender, userDetails.getUsername());
+        return Result.success(messages);
     }
 
-    /**
-     * 获取与特定用户的对话
-     */
-    @GetMapping("/conversation/{otherUserId}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER') or hasRole('STUDENT')")
-    public ResponseEntity<Map<String, Object>> getConversation(@PathVariable @NotNull String otherUserId) {
-        try {
-            String currentUser = getCurrentUserId();
-            List<MessageDTO> messages = messageService.getMessagesBySenderAndReceiver(currentUser, otherUserId);
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("data", messages);
-            response.put("total", messages.size());
-            
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            log.error("获取对话失败: otherUserId={}", otherUserId, e);
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("message", "获取对话失败: " + e.getMessage());
-            return ResponseEntity.badRequest().body(response);
+    @GetMapping("/senders")
+//    @io.swagger.v3.oas.annotations.Operation(summary = "获取所有给当前用户发送消息的发送者", description = "返回所有给当前登录用户发送消息的发送者信息，包括用户名、id和权限等级")
+    public Result<List<SenderInfoDTO>> getSendersByReceiver(@AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null || userDetails.getUsername() == null) {
+            throw new RuntimeException("未登录用户无法获取发送者列表");
         }
+        List<SenderInfoDTO> senders = messageService.getSendersByReceiver(userDetails.getUsername());
+        return Result.success(senders);
     }
 
-    /**
-     * 获取所有消息（仅管理员）
-     */
     @GetMapping("/all")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Map<String, Object>> getAllMessages() {
-        try {
-            List<MessageDTO> messages = messageService.getAllMessages();
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("data", messages);
-            response.put("total", messages.size());
-            
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            log.error("获取所有消息失败", e);
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("message", "获取所有消息失败: " + e.getMessage());
-            return ResponseEntity.badRequest().body(response);
-        }
+//    @io.swagger.v3.oas.annotations.Operation(summary = "获取所有消息", description = "仅管理员可获取所有消息")
+    public Result<List<MessageDTO>> getAllMessages() {
+        List<MessageDTO> messages = messageService.getAllMessages();
+        return Result.success(messages);
     }
 
-    /**
-     * 标记消息为已读
-     */
     @PutMapping("/{id}/read")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER') or hasRole('STUDENT')")
-    public ResponseEntity<Map<String, Object>> markAsRead(@PathVariable @NotNull String id) {
-        try {
-            MessageDTO messageDTO = messageService.markAsRead(id);
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", "消息已标记为已读");
-            response.put("data", messageDTO);
-            
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            log.error("标记消息为已读失败: id={}", id, e);
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("message", "标记消息为已读失败: " + e.getMessage());
-            return ResponseEntity.badRequest().body(response);
-        }
+//    @io.swagger.v3.oas.annotations.Operation(summary = "标记为已读", description = "将指定消息标记为已读")
+    public Result<MessageDTO> markAsRead(@PathVariable String id) {
+        return Result.success(messageService.markAsRead(id));
     }
 
-    /**
-     * 批量标记消息为已读
-     */
-    @PutMapping("/batch-read")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER') or hasRole('STUDENT')")
-    public ResponseEntity<Map<String, Object>> batchMarkAsRead(@RequestBody @NotEmpty List<String> ids) {
-        try {
-            String currentUser = getCurrentUserId();
-            messageService.batchMarkAsRead(ids, currentUser);
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", "批量标记消息为已读成功");
-            
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            log.error("批量标记消息为已读失败", e);
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("message", "批量标记消息为已读失败: " + e.getMessage());
-            return ResponseEntity.badRequest().body(response);
-        }
-    }
-
-    /**
-     * 删除消息
-     */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER') or hasRole('STUDENT')")
-    public ResponseEntity<Map<String, Object>> deleteMessage(@PathVariable @NotNull String id) {
-        try {
-            String currentUser = getCurrentUserId();
-            messageService.deleteMessage(id, currentUser);
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", "消息删除成功");
-            
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            log.error("删除消息失败: id={}", id, e);
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("message", "删除消息失败: " + e.getMessage());
-            return ResponseEntity.badRequest().body(response);
-        }
+//    @io.swagger.v3.oas.annotations.Operation(summary = "删除消息", description = "删除指定ID的消息")
+    public Result<Void> deleteMessage(@PathVariable String id) {
+        messageService.deleteMessage(id);
+        return Result.success();
     }
 
-    /**
-     * 获取发送者信息
-     */
-    @GetMapping("/senders")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER') or hasRole('STUDENT')")
-    public ResponseEntity<Map<String, Object>> getSenders() {
-        try {
-            String currentUser = getCurrentUserId();
-            List<SenderInfoDTO> senders = messageService.getSendersByReceiver(currentUser);
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("data", senders);
-            response.put("total", senders.size());
-            
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            log.error("获取发送者信息失败", e);
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("message", "获取发送者信息失败: " + e.getMessage());
-            return ResponseEntity.badRequest().body(response);
+    @GetMapping("/self/sent")
+//    @io.swagger.v3.oas.annotations.Operation(summary = "获取自己以当前权限等级发送的所有消息", description = "获取当前登录用户以当前登录权限等级发送的所有消息")
+    public Result<List<MessageDTO>> getSelfSentMessages(@AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null || userDetails.getUsername() == null) {
+            throw new RuntimeException("未登录用户无法获取消息");
         }
-    }
-
-    /**
-     * 分页查询消息
-     */
-    @PostMapping("/query")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER') or hasRole('STUDENT')")
-    public ResponseEntity<Map<String, Object>> queryMessages(@Valid @RequestBody MessageQueryDTO queryDTO) {
-        try {
-            Page<MessageDTO> page = messageService.queryMessages(queryDTO);
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("data", page.getContent());
-            response.put("total", page.getTotalElements());
-            response.put("page", page.getNumber());
-            response.put("size", page.getSize());
-            response.put("totalPages", page.getTotalPages());
-            
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            log.error("查询消息失败", e);
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("message", "查询消息失败: " + e.getMessage());
-            return ResponseEntity.badRequest().body(response);
+        String username = userDetails.getUsername();
+        // 获取当前登录用户的最高权限等级
+        var authorities = userDetails.getAuthorities();
+        String senderRole;
+        if (authorities.stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+            senderRole = "ROLE_ADMIN";
+        } else if (authorities.stream().anyMatch(a -> a.getAuthority().equals("ROLE_TEACHER"))) {
+            senderRole = "ROLE_TEACHER";
+        } else if (authorities.stream().anyMatch(a -> a.getAuthority().equals("ROLE_ASSISTANT"))) {
+            senderRole = "ROLE_ASSISTANT";
+        } else if (authorities.stream().anyMatch(a -> a.getAuthority().equals("ROLE_STUDENT"))) {
+            senderRole = "ROLE_STUDENT";
+        } else {
+            senderRole = "UNKNOWN";
         }
-    }
-
-    /**
-     * 搜索消息
-     */
-    @GetMapping("/search")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER') or hasRole('STUDENT')")
-    public ResponseEntity<Map<String, Object>> searchMessages(@RequestParam @NotEmpty String keyword) {
-        try {
-            String currentUser = getCurrentUserId();
-            List<MessageDTO> messages = messageService.searchMessages(keyword, currentUser);
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("data", messages);
-            response.put("total", messages.size());
-            response.put("keyword", keyword);
-            
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            log.error("搜索消息失败: keyword={}", keyword, e);
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("message", "搜索消息失败: " + e.getMessage());
-            return ResponseEntity.badRequest().body(response);
-        }
-    }
-
-    /**
-     * 获取未读消息数量
-     */
-    @GetMapping("/unread-count")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER') or hasRole('STUDENT')")
-    public ResponseEntity<Map<String, Object>> getUnreadCount() {
-        try {
-            String currentUser = getCurrentUserId();
-            long unreadCount = messageService.getUnreadCount(currentUser);
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("data", unreadCount);
-            
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            log.error("获取未读消息数量失败", e);
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("message", "获取未读消息数量失败: " + e.getMessage());
-            return ResponseEntity.badRequest().body(response);
-        }
-    }
-
-    /**
-     * 获取最近消息
-     */
-    @GetMapping("/recent")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER') or hasRole('STUDENT')")
-    public ResponseEntity<Map<String, Object>> getRecentMessages(@RequestParam(defaultValue = "10") int limit) {
-        try {
-            String currentUser = getCurrentUserId();
-            List<MessageDTO> messages = messageService.getRecentMessages(currentUser, limit);
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("data", messages);
-            response.put("total", messages.size());
-            
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            log.error("获取最近消息失败", e);
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("message", "获取最近消息失败: " + e.getMessage());
-            return ResponseEntity.badRequest().body(response);
-        }
-    }
-
-    /**
-     * 获取当前用户ID
-     */
-    private String getCurrentUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated()) {
-            return authentication.getName();
-        }
-        throw new RuntimeException("用户未认证");
+        List<MessageDTO> messages = messageService.getMessagesBySenderAndRole(username, senderRole);
+        return Result.success(messages);
     }
 }

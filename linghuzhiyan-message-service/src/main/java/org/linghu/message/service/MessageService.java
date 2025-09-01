@@ -1,87 +1,38 @@
 package org.linghu.message.service;
 
 import org.linghu.message.dto.MessageDTO;
-import org.linghu.message.dto.MessageQueryDTO;
-import org.linghu.message.dto.MessageRequestDTO;
 import org.linghu.message.dto.SenderInfoDTO;
-import org.springframework.data.domain.Page;
 
 import java.util.List;
 
 /**
- * 消息服务接口
+ * 消息通知服务接口
  */
 public interface MessageService {
-
-    /**
-     * 创建消息
-     */
-    MessageDTO createMessage(MessageRequestDTO requestDTO, String senderId);
-
-    /**
-     * 根据ID获取消息
-     */
+    MessageDTO createMessage(MessageDTO messageDTO);
     MessageDTO getMessageById(String id);
-
-    /**
-     * 获取接收者的消息列表
-     */
-    List<MessageDTO> getMessagesByReceiver(String receiverId);
-
-    /**
-     * 获取发送者的消息列表
-     */
-    List<MessageDTO> getMessagesBySender(String senderId);
-
+    List<MessageDTO> getMessagesByReceiver(String receiver);
     /**
      * 获取指定发送者发给指定接收者的消息
      */
-    List<MessageDTO> getMessagesBySenderAndReceiver(String senderId, String receiverId);
+    List<MessageDTO> getMessagesBySenderAndReceiver(String sender, String receiver);
 
     /**
-     * 获取所有消息（管理员功能）
+     * 获取指定发送者以指定权限等级发送的所有消息
+     */
+    List<MessageDTO> getMessagesBySenderAndRole(String sender, String senderRole);
+
+    /**
+     * 获取所有消息（仅管理员可用）
      */
     List<MessageDTO> getAllMessages();
-
-    /**
-     * 标记消息为已读
-     */
     MessageDTO markAsRead(String id);
+    void deleteMessage(String id);
 
     /**
-     * 批量标记消息为已读
+     * 获取给指定接收者发送消息的所有发送者信息（用户名、id、权限等级）
      */
-    void batchMarkAsRead(List<String> ids, String currentUser);
-
-    /**
-     * 删除消息
-     */
-    void deleteMessage(String id, String currentUser);
-
-    /**
-     * 获取发送者信息列表
-     */
-    List<SenderInfoDTO> getSendersByReceiver(String receiverId);
-
-    /**
-     * 分页查询消息
-     */
-    Page<MessageDTO> queryMessages(MessageQueryDTO queryDTO);
-
-    /**
-     * 搜索消息
-     */
-    List<MessageDTO> searchMessages(String keyword, String currentUser);
-
-    /**
-     * 获取未读消息数量
-     */
-    long getUnreadCount(String receiverId);
-
-    /**
-     * 获取最近消息
-     */
-    List<MessageDTO> getRecentMessages(String receiverId, int limit);
+    List<SenderInfoDTO> getSendersByReceiver(String receiverUsername);
 
     /**
      * 发送系统通知

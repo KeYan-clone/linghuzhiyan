@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.linghu.experiment.client.UserServiceClient;
 import org.linghu.experiment.constants.TaskType;
 import org.linghu.experiment.domain.ExperimentTask;
 import org.linghu.experiment.dto.ExperimentTaskDTO;
@@ -28,7 +29,7 @@ import static org.mockito.Mockito.*;
  * ExperimentTaskServiceImpl 单元测试
  */
 @ExtendWith(MockitoExtension.class)
-class ExperimentTaskServiceImplTest {
+class ExperimentTaskServiceImplTest extends ExperimentTaskServiceImpl{
 
     @Mock
     private ExperimentTaskRepository experimentTaskRepository;
@@ -39,11 +40,23 @@ class ExperimentTaskServiceImplTest {
     @Mock
     private ObjectMapper objectMapper;
 
+    @Mock
+    private UserServiceClient userServiceClient;
+
     @InjectMocks
     private ExperimentTaskServiceImpl experimentTaskService;
 
     private ExperimentTask testTask;
     private ExperimentTaskRequestDTO testTaskRequest;
+
+    public ExperimentTaskServiceImplTest(@Mock ExperimentTaskRepository experimentTaskRepository, @Mock ExperimentRepository experimentRepository, @Mock ObjectMapper objectMapper,@Mock UserServiceClient userServiceClient) {
+        super(experimentTaskRepository, experimentRepository,objectMapper,userServiceClient);
+    }
+
+    @Override
+    protected void ensureOwnerOfExperiment(String experimentId, String errorMessage) {
+        // no test
+    }
 
     @BeforeEach
     void setUp() {
@@ -69,6 +82,11 @@ class ExperimentTaskServiceImplTest {
                 .required(true)
                 .question(List.of("q1", "q2"))
                 .build();
+        experimentTaskService = new ExperimentTaskServiceImplTest(
+                experimentTaskRepository,
+                experimentRepository,
+                objectMapper,
+                userServiceClient);
     }
 
     @Test
@@ -245,6 +263,7 @@ class ExperimentTaskServiceImplTest {
     void deleteTask_WithExistingTask_ShouldDeleteSuccessfully() {
         // Given
         when(experimentTaskRepository.existsById("task1")).thenReturn(true);
+        when(experimentTaskRepository.findById("task1")).thenReturn(Optional.of(testTask));
 
         // When
         experimentTaskService.deleteTask("task1");

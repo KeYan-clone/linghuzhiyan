@@ -9,7 +9,7 @@ import org.linghu.user.domain.User;
 import org.linghu.user.dto.*;
 import org.linghu.user.exception.UserException;
 import org.linghu.user.repository.UserRepository;
-import org.linghu.user.util.MinioUtil;
+import org.linghu.user.utils.MinioUtil;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;

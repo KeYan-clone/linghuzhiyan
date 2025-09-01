@@ -1,4 +1,4 @@
-package org.linghu.user.util;
+package org.linghu.user.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

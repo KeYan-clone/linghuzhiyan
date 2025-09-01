@@ -24,6 +24,5 @@ public class ProfileUpdateDTO {
      */
     @Valid
     private ProfileRequestDTO profile;
-    
-    // 敏感字段如username、email、password和roles不应包含在此
+
 }

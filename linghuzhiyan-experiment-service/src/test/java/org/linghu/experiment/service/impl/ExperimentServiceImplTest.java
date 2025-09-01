@@ -74,6 +74,7 @@ class ExperimentServiceImplTest {
                 .startTime(now.plusDays(1))
                 .endTime(now.plusDays(7))
                 .build();
+        experimentService=spy(experimentService);
     }
 
     @Test
@@ -237,7 +238,7 @@ class ExperimentServiceImplTest {
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             experimentService.updateExperiment("experiment1", testExperimentRequest, "anotheruser");
         });
-        assertEquals("无权限更新此实验", exception.getMessage());
+        assertEquals("无权更新此实验", exception.getMessage());
         verify(experimentRepository, never()).save(any(Experiment.class));
     }
 
@@ -284,6 +285,8 @@ class ExperimentServiceImplTest {
                 .build();
                 
         when(experimentRepository.save(any(Experiment.class))).thenReturn(publishedExperiment);
+        when(experimentService.getCurrentUsernameFromSecurityContext()).thenReturn("testuser");
+        when(userServiceClient.getUserByUsername("testuser")).thenReturn(testUser);
 
         // When
         ExperimentDTO result = experimentService.publishExperiment("experiment1");
@@ -324,6 +327,7 @@ class ExperimentServiceImplTest {
                 .build();
 
         when(experimentRepository.findById("experiment1")).thenReturn(Optional.of(publishedExperiment));
+
         
         Experiment unpublishedExperiment = Experiment.builder()
                 .id("experiment1")
@@ -338,7 +342,8 @@ class ExperimentServiceImplTest {
                 .build();
                 
         when(experimentRepository.save(any(Experiment.class))).thenReturn(unpublishedExperiment);
-
+        when(experimentService.getCurrentUsernameFromSecurityContext()).thenReturn("testuser");
+        when(userServiceClient.getUserByUsername("testuser")).thenReturn(testUser);
         // When
         ExperimentDTO result = experimentService.unpublishExperiment("experiment1");
 

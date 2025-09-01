@@ -1,105 +1,57 @@
 package org.linghu.message.controller;
 
-import org.junit.jupiter.api.AfterEach;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.linghu.message.dto.MessageDTO;
-import org.linghu.message.dto.MessageRequestDTO;
-import org.linghu.message.dto.SenderInfoDTO;
+import org.linghu.message.client.UserServiceClient;
+import org.linghu.message.dto.*;
 import org.linghu.message.service.MessageService;
+import org.linghu.message.client.UserServiceClient;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * MessageController 单元测试 - 使用纯单元测试方式
- */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("消息控制器测试")
+@DisplayName("MessageController 单元测试")
 class MessageControllerTest {
 
     @Mock
     private MessageService messageService;
-    
+
     @Mock
-    private Authentication authentication;
-    
-    @Mock
-    private SecurityContext securityContext;
+    private UserServiceClient userService;
 
     @InjectMocks
     private MessageController messageController;
 
-    private MessageDTO sampleMessageDTO;
-    private MessageRequestDTO messageRequestDTO;
-    private List<MessageDTO> messageList;
-    private List<SenderInfoDTO> senderList;
+    private ObjectMapper objectMapper;
 
     @BeforeEach
     void setUp() {
-        // 创建测试消息DTO
-        sampleMessageDTO = MessageDTO.builder()
-                .id("msg123")
-                .title("测试消息标题")
-                .content("测试消息内容")
-                .senderId("sender123")
-                .receiverId("receiver456")
-                .senderUsername("testSender")
-                .receiverUsername("testReceiver")
-                .messageType("NOTIFICATION")
-                .status("UNREAD")
-                .priority("NORMAL")
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .build();
+        objectMapper = new ObjectMapper();
 
-        // 创建测试消息请求
-        messageRequestDTO = new MessageRequestDTO();
-        messageRequestDTO.setTitle("测试消息标题");
-        messageRequestDTO.setContent("测试消息内容");
-        messageRequestDTO.setReceiverId("receiver456");
-        messageRequestDTO.setMessageType("NOTIFICATION");
-        messageRequestDTO.setPriority("NORMAL");
-
-        // 创建消息列表
-        messageList = Arrays.asList(sampleMessageDTO);
-        
-        // 创建发送者列表
-        SenderInfoDTO senderInfo = SenderInfoDTO.builder()
-                .senderId("sender123")
-                .senderUsername("testSender")
-                .unreadCount(1L)
-                .build();
-        senderList = Arrays.asList(senderInfo);
-    }
-
-    private void setupSecurityContext() {
-        // 设置Security上下文
-        when(securityContext.getAuthentication()).thenReturn(authentication);
-        when(authentication.isAuthenticated()).thenReturn(true);
-        when(authentication.getName()).thenReturn("user123");
-        SecurityContextHolder.setContext(securityContext);
-    }
-
-    @AfterEach
-    void tearDown() {
-        SecurityContextHolder.clearContext();
+        // 设置请求上下文
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request, response));
     }
 
     @Nested
@@ -107,46 +59,166 @@ class MessageControllerTest {
     class CreateMessageTests {
 
         @Test
-        @DisplayName("成功创建消息")
-        void shouldCreateMessageSuccessfully() {
-            // given
-            setupSecurityContext();
-            when(messageService.createMessage(any(MessageRequestDTO.class), eq("user123")))
-                    .thenReturn(sampleMessageDTO);
+        @DisplayName("管理员成功创建消息")
+        void createMessage_AdminUser_Success() throws Exception {
+            // Arrange
+            UserDetails adminUser = User.builder()
+                    .username("admin")
+                    .password("password")
+                    .roles("ADMIN")
+                    .authorities(List.of(new SimpleGrantedAuthority("ROLE_ADMIN")))
+                    .build();
 
-            // when
-            ResponseEntity<Map<String, Object>> response = messageController.createMessage(messageRequestDTO);
+            MessageRequestDTO request = MessageRequestDTO.builder()
+                    .title("测试消息")
+                    .content("测试内容")
+                    .receiver("student1")
+                    .build();
 
-            // then
-            assertThat(response.getStatusCode().value()).isEqualTo(200);
-            assertThat(response.getBody()).isNotNull();
-            
-            Map<String, Object> responseBody = response.getBody();
-            assertThat(responseBody.get("success")).isEqualTo(true);
-            assertThat(responseBody.get("message")).isEqualTo("消息创建成功");
-            assertThat(responseBody.get("data")).isEqualTo(sampleMessageDTO);
+            UserInfo receiverUser = UserInfo.builder()
+                    .id("receiver-id")
+                    .username("student1")
+                    .roles(Set.of("ROLE_STUDENT"))
+                    .build();
 
-            verify(messageService).createMessage(any(MessageRequestDTO.class), eq("user123"));
+            MessageDTO expectedMessage = MessageDTO.builder()
+                    .id("msg-id")
+                    .title("测试消息")
+                    .content("测试内容")
+                    .sender("admin")
+                    .receiver("student1")
+                    .senderRole("ROLE_ADMIN")
+                    .status("UNREAD")
+                    .build();
+
+            when(userService.getUserByUsername("student1")).thenReturn(Result.success(receiverUser));
+//            when(userService.getUserRoleIds("student1")) .thenReturn(Result.success(Set.of("ROLE_STUDENT")));
+            when(messageService.createMessage(any(MessageDTO.class))).thenReturn(expectedMessage);
+
+            // Act
+            var result = messageController.createMessage(request, adminUser);
+
+            // Assert
+            assertNotNull(result);
+            assertEquals("测试消息", result.getData().getTitle());
+            assertEquals("测试内容", result.getData().getContent());
+            assertEquals("admin", result.getData().getSender());
+            assertEquals("student1", result.getData().getReceiver());
+            assertEquals("ROLE_ADMIN", result.getData().getSenderRole());
         }
 
         @Test
-        @DisplayName("创建消息时服务异常")
-        void shouldHandleServiceException() {
-            // given
-            setupSecurityContext();
-            when(messageService.createMessage(any(MessageRequestDTO.class), eq("user123")))
-                    .thenThrow(new RuntimeException("服务异常"));
+        @DisplayName("教师成功向学生创建消息")
+        void createMessage_TeacherToStudent_Success() throws Exception {
+            // Arrange
+            UserDetails teacherUser = User.builder()
+                    .username("teacher1")
+                    .password("password")
+                    .roles("TEACHER")
+                    .authorities(List.of(new SimpleGrantedAuthority("ROLE_TEACHER")))
+                    .build();
 
-            // when
-            ResponseEntity<Map<String, Object>> response = messageController.createMessage(messageRequestDTO);
+            MessageRequestDTO request = MessageRequestDTO.builder()
+                    .title("作业通知")
+                    .content("请及时完成作业")
+                    .receiver("student1")
+                    .build();
 
-            // then
-            assertThat(response.getStatusCode().value()).isEqualTo(400);
-            assertThat(response.getBody()).isNotNull();
-            
-            Map<String, Object> responseBody = response.getBody();
-            assertThat(responseBody.get("success")).isEqualTo(false);
-            assertThat(responseBody.get("message")).asString().contains("创建消息失败");
+            UserInfo receiverUser = UserInfo.builder()
+                    .id("receiver-id")
+                    .username("student1")
+                    .roles(Set.of("ROLE_STUDENT"))
+                    .build();
+
+            MessageDTO expectedMessage = MessageDTO.builder()
+                    .id("msg-id")
+                    .title("作业通知")
+                    .content("请及时完成作业")
+                    .sender("teacher1")
+                    .receiver("student1")
+                    .senderRole("ROLE_TEACHER")
+                    .status("UNREAD")
+                    .build();
+            when(userService.getUserByUsername("student1")).thenReturn(Result.success(receiverUser));
+//            when(userService.getUserRoleIds("receiver-id")).thenReturn(Result.success(Set.of("ROLE_STUDENT")));
+            when(messageService.createMessage(any(MessageDTO.class))).thenReturn(expectedMessage);
+
+            // Act
+            var result = messageController.createMessage(request, teacherUser);
+
+            // Assert
+            assertNotNull(result);
+            assertEquals("作业通知", result.getData().getTitle());
+            assertEquals("ROLE_TEACHER", result.getData().getSenderRole());
+        }
+
+        @Test
+        @DisplayName("学生尝试向管理员发送消息失败")
+        void createMessage_StudentToAdmin_Forbidden() throws Exception {
+            // Arrange
+            UserDetails studentUser = User.builder()
+                    .username("student1")
+                    .password("password")
+                    .authorities(List.of(new SimpleGrantedAuthority("ROLE_STUDENT")))
+                    .build();
+
+            MessageRequestDTO request = MessageRequestDTO.builder()
+                    .title("申请")
+                    .content("申请内容")
+                    .receiver("admin")
+                    .build();
+
+            UserInfo receiverUser = UserInfo.builder()
+                    .id("admin-id")
+                    .username("admin")
+                    .build();
+
+            when(userService.getUserByUsername("admin")).thenReturn(Result.success(receiverUser));
+
+            // Act & Assert
+            assertThrows(RuntimeException.class, () -> {
+                messageController.createMessage(request, studentUser);
+            });
+        }
+
+        @Test
+        @DisplayName("接收者不存在时创建消息失败")
+        void createMessage_ReceiverNotFound_Failure() throws Exception {
+            // Arrange
+            UserDetails adminUser = User.builder()
+                    .username("admin")
+                    .password("password")
+                    .authorities(List.of(new SimpleGrantedAuthority("ROLE_ADMIN")))
+                    .build();
+
+            MessageRequestDTO request = MessageRequestDTO.builder()
+                    .title("测试消息")
+                    .content("测试内容")
+                    .receiver("nonexistent")
+                    .build();
+
+            when(userService.getUserByUsername("nonexistent")).thenReturn(null);
+
+            // Act & Assert
+            assertThrows(RuntimeException.class, () -> {
+                messageController.createMessage(request, adminUser);
+            });
+        }
+
+        @Test
+        @DisplayName("未登录用户创建消息失败")
+        void createMessage_NoAuth_Failure() throws Exception {
+            // Arrange
+            MessageRequestDTO request = MessageRequestDTO.builder()
+                    .title("测试消息")
+                    .content("测试内容")
+                    .receiver("student1")
+                    .build();
+
+            // Act & Assert
+            assertThrows(RuntimeException.class, () -> {
+                messageController.createMessage(request, null);
+            });
         }
     }
 
@@ -156,65 +228,188 @@ class MessageControllerTest {
 
         @Test
         @DisplayName("根据ID获取消息成功")
-        void shouldGetMessageByIdSuccessfully() {
-            // given
-            when(messageService.getMessageById("msg123")).thenReturn(sampleMessageDTO);
+        void getMessageById_Success() throws Exception {
+            // Arrange
+            String messageId = "msg-123";
+            MessageDTO message = MessageDTO.builder()
+                    .id(messageId)
+                    .title("测试消息")
+                    .content("测试内容")
+                    .sender("teacher1")
+                    .receiver("student1")
+                    .status("UNREAD")
+                    .build();
 
-            // when
-            ResponseEntity<Map<String, Object>> response = messageController.getMessageById("msg123");
+            when(messageService.getMessageById(messageId)).thenReturn(message);
 
-            // then
-            assertThat(response.getStatusCode().value()).isEqualTo(200);
-            assertThat(response.getBody()).isNotNull();
-            
-            Map<String, Object> responseBody = response.getBody();
-            assertThat(responseBody.get("success")).isEqualTo(true);
-            assertThat(responseBody.get("data")).isEqualTo(sampleMessageDTO);
+            // Act
+            var result = messageController.getMessageById(messageId);
 
-            verify(messageService).getMessageById("msg123");
+            // Assert
+            assertNotNull(result);
+            assertEquals(messageId, result.getData().getId());
+            assertEquals("测试消息", result.getData().getTitle());
+            assertEquals("测试内容", result.getData().getContent());
         }
 
         @Test
-        @DisplayName("获取接收的消息")
-        void shouldGetReceivedMessages() {
-            // given
-            setupSecurityContext();
-            when(messageService.getMessagesByReceiver("user123")).thenReturn(messageList);
+        @DisplayName("获取当前用户接收的消息成功")
+        void getMessagesByReceiver_Success() throws Exception {
+            // Arrange
+            UserDetails user = User.builder()
+                    .username("student1")
+                    .password("password")
+                    .authorities(List.of(new SimpleGrantedAuthority("ROLE_STUDENT")))
+                    .build();
 
-            // when
-            ResponseEntity<Map<String, Object>> response = messageController.getReceivedMessages();
+            List<MessageDTO> messages = Arrays.asList(
+                    MessageDTO.builder()
+                            .id("msg-1")
+                            .title("消息1")
+                            .sender("teacher1")
+                            .receiver("student1")
+                            .build(),
+                    MessageDTO.builder()
+                            .id("msg-2")
+                            .title("消息2")
+                            .sender("admin")
+                            .receiver("student1")
+                            .build()
+            );
 
-            // then
-            assertThat(response.getStatusCode().value()).isEqualTo(200);
-            assertThat(response.getBody()).isNotNull();
-            
-            Map<String, Object> responseBody = response.getBody();
-            assertThat(responseBody.get("success")).isEqualTo(true);
-            assertThat(responseBody.get("data")).isEqualTo(messageList);
-            assertThat(responseBody.get("total")).isEqualTo(1);
+            when(messageService.getMessagesByReceiver("student1")).thenReturn(messages);
 
-            verify(messageService).getMessagesByReceiver("user123");
+            // Act
+            var result = messageController.getMessagesByReceiver(user);
+
+            // Assert
+            assertNotNull(result);
+            assertEquals(2, result.getData().size());
+            assertEquals("消息1", result.getData().get(0).getTitle());
+            assertEquals("消息2", result.getData().get(1).getTitle());
         }
 
         @Test
-        @DisplayName("获取发送的消息")
-        void shouldGetSentMessages() {
-            // given
-            setupSecurityContext();
-            when(messageService.getMessagesBySender("user123")).thenReturn(messageList);
+        @DisplayName("获取指定发送者的消息成功")
+        void getMessagesBySender_Success() throws Exception {
+            // Arrange
+            UserDetails user = User.builder()
+                    .username("student1")
+                    .password("password")
+                    .authorities(List.of(new SimpleGrantedAuthority("ROLE_STUDENT")))
+                    .build();
 
-            // when
-            ResponseEntity<Map<String, Object>> response = messageController.getSentMessages();
+            String sender = "teacher1";
+            List<MessageDTO> messages = Arrays.asList(
+                    MessageDTO.builder()
+                            .id("msg-1")
+                            .title("作业通知")
+                            .sender(sender)
+                            .receiver("student1")
+                            .build()
+            );
 
-            // then
-            assertThat(response.getStatusCode().value()).isEqualTo(200);
-            assertThat(response.getBody()).isNotNull();
-            
-            Map<String, Object> responseBody = response.getBody();
-            assertThat(responseBody.get("success")).isEqualTo(true);
-            assertThat(responseBody.get("data")).isEqualTo(messageList);
+            when(messageService.getMessagesBySenderAndReceiver(sender, "student1"))
+                    .thenReturn(messages);
 
-            verify(messageService).getMessagesBySender("user123");
+            // Act
+            var result = messageController.getMessagesBySender(sender, user);
+
+            // Assert
+            assertNotNull(result);
+            assertEquals(1, result.getData().size());
+            assertEquals("作业通知", result.getData().get(0).getTitle());
+        }
+
+        @Test
+        @DisplayName("获取发送者列表成功")
+        void getSendersByReceiver_Success() throws Exception {
+            // Arrange
+            UserDetails user = User.builder()
+                    .username("student1")
+                    .password("password")
+                    .authorities(List.of(new SimpleGrantedAuthority("ROLE_STUDENT")))
+                    .build();
+
+            List<SenderInfoDTO> senders = Arrays.asList(
+                    SenderInfoDTO.builder()
+                            .senderId("teacher-id")
+                            .senderUsername("teacher1")
+                            .senderRole("ROLE_TEACHER")
+                            .build(),
+                    SenderInfoDTO.builder()
+                            .senderId("admin-id")
+                            .senderUsername("admin")
+                            .senderRole("ROLE_ADMIN")
+                            .build()
+            );
+
+            when(messageService.getSendersByReceiver("student1")).thenReturn(senders);
+
+            // Act
+            var result = messageController.getSendersByReceiver(user);
+
+            // Assert
+            assertNotNull(result);
+            assertEquals(2, result.getData().size());
+            assertEquals("teacher1", result.getData().get(0).getSenderUsername());
+            assertEquals("admin", result.getData().get(1).getSenderUsername());
+        }
+
+        @Test
+        @DisplayName("获取所有消息成功")
+        void getAllMessages_Success() throws Exception {
+            // Arrange
+            List<MessageDTO> messages = Arrays.asList(
+                    MessageDTO.builder()
+                            .id("msg-1")
+                            .title("系统消息1")
+                            .build(),
+                    MessageDTO.builder()
+                            .id("msg-2")
+                            .title("系统消息2")
+                            .build()
+            );
+
+            when(messageService.getAllMessages()).thenReturn(messages);
+
+            // Act
+            var result = messageController.getAllMessages();
+
+            // Assert
+            assertNotNull(result);
+            assertEquals(2, result.getData().size());
+        }
+
+        @Test
+        @DisplayName("获取自己发送的消息成功")
+        void getSelfSentMessages_Success() throws Exception {
+            // Arrange
+            UserDetails teacherUser = User.builder()
+                    .username("teacher1")
+                    .password("password")
+                    .authorities(List.of(new SimpleGrantedAuthority("ROLE_TEACHER")))
+                    .build();
+
+            List<MessageDTO> sentMessages = Arrays.asList(
+                    MessageDTO.builder()
+                            .id("msg-1")
+                            .title("发送的消息1")
+                            .sender("teacher1")
+                            .senderRole("ROLE_TEACHER")
+                            .build()
+            );
+
+            when(messageService.getMessagesBySenderAndRole("teacher1", "ROLE_TEACHER"))
+                    .thenReturn(sentMessages);
+
+            // Act
+            var result = messageController.getSelfSentMessages(teacherUser);
+
+            // Assert
+            assertNotNull(result);
+            assertEquals(1, result.getData().size());
+            assertEquals("发送的消息1", result.getData().get(0).getTitle());
         }
     }
 
@@ -223,136 +418,107 @@ class MessageControllerTest {
     class MessageStatusTests {
 
         @Test
-        @DisplayName("标记消息为已读")
-        void shouldMarkMessageAsRead() {
-            // given
+        @DisplayName("标记消息为已读成功")
+        void markAsRead_Success() throws Exception {
+            // Arrange
+            String messageId = "msg-123";
             MessageDTO readMessage = MessageDTO.builder()
-                    .id("msg123")
+                    .id(messageId)
+                    .title("测试消息")
                     .status("READ")
                     .build();
-            when(messageService.markAsRead("msg123")).thenReturn(readMessage);
 
-            // when
-            ResponseEntity<Map<String, Object>> response = messageController.markAsRead("msg123");
+            when(messageService.markAsRead(messageId)).thenReturn(readMessage);
 
-            // then
-            assertThat(response.getStatusCode().value()).isEqualTo(200);
-            assertThat(response.getBody()).isNotNull();
-            
-            Map<String, Object> responseBody = response.getBody();
-            assertThat(responseBody.get("success")).isEqualTo(true);
-            assertThat(responseBody.get("message")).isEqualTo("消息已标记为已读");
+            // Act
+            var result = messageController.markAsRead(messageId);
 
-            verify(messageService).markAsRead("msg123");
+            // Assert
+            assertNotNull(result);
+            assertEquals(messageId, result.getData().getId());
+            assertEquals("READ", result.getData().getStatus());
         }
 
         @Test
-        @DisplayName("批量标记消息为已读")
-        void shouldBatchMarkAsRead() {
-            // given
-            setupSecurityContext();
-            List<String> ids = Arrays.asList("msg1", "msg2");
+        @DisplayName("删除消息成功")
+        void deleteMessage_Success() throws Exception {
+            // Arrange
+            String messageId = "msg-123";
 
-            // when
-            ResponseEntity<Map<String, Object>> response = messageController.batchMarkAsRead(ids);
+            // Act
+            var result = messageController.deleteMessage(messageId);
 
-            // then
-            assertThat(response.getStatusCode().value()).isEqualTo(200);
-            assertThat(response.getBody()).isNotNull();
-            
-            Map<String, Object> responseBody = response.getBody();
-            assertThat(responseBody.get("success")).isEqualTo(true);
-            assertThat(responseBody.get("message")).isEqualTo("批量标记消息为已读成功");
-
-            verify(messageService).batchMarkAsRead(ids, "user123");
-        }
-
-        @Test
-        @DisplayName("删除消息")
-        void shouldDeleteMessage() {
-            // given
-            setupSecurityContext();
-            
-            // when
-            ResponseEntity<Map<String, Object>> response = messageController.deleteMessage("msg123");
-
-            // then
-            assertThat(response.getStatusCode().value()).isEqualTo(200);
-            assertThat(response.getBody()).isNotNull();
-            
-            Map<String, Object> responseBody = response.getBody();
-            assertThat(responseBody.get("success")).isEqualTo(true);
-            assertThat(responseBody.get("message")).isEqualTo("消息删除成功");
-
-            verify(messageService).deleteMessage("msg123", "user123");
+            // Assert
+            assertNotNull(result);
         }
     }
 
     @Nested
-    @DisplayName("其他功能测试")
-    class OtherFunctionTests {
+    @DisplayName("权限验证测试")
+    class AuthorizationTests {
 
         @Test
-        @DisplayName("获取发送者信息")
-        void shouldGetSenders() {
-            // given
-            setupSecurityContext();
-            when(messageService.getSendersByReceiver("user123")).thenReturn(senderList);
+        @DisplayName("助教只能向助教或学生发送消息")
+        void createMessage_AssistantToTeacher_Forbidden() throws Exception {
+            // Arrange
+            UserDetails assistantUser = User.builder()
+                    .username("assistant1")
+                    .password("password")
+                    .roles("ASSISTANT")
+                    .authorities(List.of(new SimpleGrantedAuthority("ROLE_ASSISTANT")))
+                    .build();
 
-            // when
-            ResponseEntity<Map<String, Object>> response = messageController.getSenders();
+            MessageRequestDTO request = MessageRequestDTO.builder()
+                    .title("申请")
+                    .content("申请内容")
+                    .receiver("teacher1")
+                    .build();
 
-            // then
-            assertThat(response.getStatusCode().value()).isEqualTo(200);
-            assertThat(response.getBody()).isNotNull();
-            
-            Map<String, Object> responseBody = response.getBody();
-            assertThat(responseBody.get("success")).isEqualTo(true);
-            assertThat(responseBody.get("data")).isEqualTo(senderList);
+            UserInfo receiverUser = UserInfo.builder()
+                    .id("teacher-id")
+                    .username("teacher1")
+                    .roles(Set.of("ROLE_TEACHER"))
+                    .build();
 
-            verify(messageService).getSendersByReceiver("user123");
+            when(userService.getUserByUsername("teacher1")).thenReturn(Result.success(receiverUser));
+//            when(userService.getUserRoleIds("teacher-id").getData()).thenReturn(Set.of("ROLE_TEACHER"));
+
+            // Act & Assert
+            assertThrows(RuntimeException.class, () -> {
+                messageController.createMessage(request, assistantUser);
+            });
         }
 
         @Test
-        @DisplayName("搜索消息")
-        void shouldSearchMessages() {
-            // given
-            setupSecurityContext();
-            when(messageService.searchMessages("keyword", "user123")).thenReturn(messageList);
+        @DisplayName("教师不能向管理员发送消息")
+        void createMessage_TeacherToAdmin_Forbidden() throws Exception {
+            // Arrange
+            UserDetails teacherUser = User.builder()
+                    .username("teacher1")
+                    .password("password")
+                    .roles("TEACHER")
+                    .authorities(List.of(new SimpleGrantedAuthority("ROLE_TEACHER")))
+                    .build();
 
-            // when
-            ResponseEntity<Map<String, Object>> response = messageController.searchMessages("keyword");
+            MessageRequestDTO request = MessageRequestDTO.builder()
+                    .title("申请")
+                    .content("申请内容")
+                    .receiver("admin")
+                    .build();
 
-            // then
-            assertThat(response.getStatusCode().value()).isEqualTo(200);
-            assertThat(response.getBody()).isNotNull();
-            
-            Map<String, Object> responseBody = response.getBody();
-            assertThat(responseBody.get("success")).isEqualTo(true);
-            assertThat(responseBody.get("data")).isEqualTo(messageList);
+            UserInfo receiverUser = UserInfo.builder()
+                    .id("admin-id")
+                    .username("admin")
+                    .roles(Set.of("ROLE_ADMIN"))
+                    .build();
 
-            verify(messageService).searchMessages("keyword", "user123");
-        }
+            when(userService.getUserByUsername("admin")).thenReturn(Result.success(receiverUser));
+//            when(userService.getUserRoleIds("admin-id").getData()) .thenReturn(Set.of("ROLE_ADMIN"));
 
-        @Test
-        @DisplayName("获取未读消息数量")
-        void shouldGetUnreadCount() {
-            // given
-            setupSecurityContext();
-            when(messageService.getUnreadCount("user123")).thenReturn(5L);
-
-            // when
-            ResponseEntity<Map<String, Object>> response = messageController.getUnreadCount();
-
-            // then
-            assertThat(response.getStatusCode().value()).isEqualTo(200);
-            assertThat(response.getBody()).isNotNull();
-            
-            Map<String, Object> responseBody = response.getBody();
-            assertThat(responseBody.get("success")).isEqualTo(true);
-            assertThat(responseBody.get("data")).isEqualTo(5L);
-
-            verify(messageService).getUnreadCount("user123");
+            // Act & Assert
+            assertThrows(RuntimeException.class, () -> {
+                messageController.createMessage(request, teacherUser);
+            });
         }
     }
 }

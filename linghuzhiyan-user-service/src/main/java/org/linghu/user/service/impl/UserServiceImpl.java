@@ -9,8 +9,8 @@ import org.linghu.user.dto.*;
 import org.linghu.user.exception.UserException;
 import org.linghu.user.repository.UserRepository;
 import org.linghu.user.service.UserService;
-import org.linghu.user.util.JsonUtils;
-import org.linghu.user.util.MinioUtil;
+import org.linghu.user.utils.JsonUtils;
+import org.linghu.user.utils.MinioUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -36,6 +36,10 @@ public class UserServiceImpl implements UserService {
     private final AuthServiceClient authServiceClient;
     private final MinioUtil minioUtil;
 
+    // 默认头像
+    public static final String DEFAULT_AVATAR_URL = "/default-avatar.png";
+
+
     // 头像URL过期时间(秒)，默认1小时
     @Value("${minio.avatar.url.expiry:3600}")
     private int avatarUrlExpiry;
@@ -57,6 +61,7 @@ public class UserServiceImpl implements UserService {
         user.setEmail(registrationDTO.getEmail());
         user.setPassword(passwordEncoder.encode(registrationDTO.getPassword()));
         user.setProfile("{}"); // 设置空的用户资料
+        user.setAvatar(DEFAULT_AVATAR_URL);
         user.setIsDeleted(false);
 
         // 保存用户
@@ -97,9 +102,9 @@ public class UserServiceImpl implements UserService {
         // 获取目标用户角色
         Set<String> targetUserRoles = getUserRoleIds(targetUser.getId());
 
-        // 验证权限：管理员可以删除自己以及其他低于管理员权限的账户
+        // 验证权限：管理员可以删除自己以及其他低于管理员权限的账户,抛出权限不足的异常
         if (targetUserRoles.contains(SystemConstants.ROLE_ADMIN) && !userId.equals(currentUser.getId())) {
-            throw new UserException("不能删除其他管理员账户");
+            throw UserException.insufficientPermissions();
         }
 
         // 执行软删除
@@ -134,7 +139,7 @@ public class UserServiceImpl implements UserService {
         checkUserNotDeleted(user.getId());
 
         if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
-            throw new UserException("原密码错误");
+            throw  UserException.invalidCredentials();
         }
 
         user.setPassword(passwordEncoder.encode(newPassword));
@@ -209,14 +214,13 @@ public class UserServiceImpl implements UserService {
             return result;
         } catch (Exception e) {
             log.error("上传头像失败", e);
-            throw new UserException("上传头像失败: " + e.getMessage());
+            throw new UserException(400,"上传头像失败: " + e.getMessage());
         }
     }
 
     @Override
     public String getUserAvatarUrl(String userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(UserException::userNotFound);
+        User user = userRepository.findById(userId).orElseThrow(UserException::userNotFound);
         
         checkUserNotDeleted(user.getId());
         
@@ -289,7 +293,7 @@ public class UserServiceImpl implements UserService {
             log.info("用户 {} 为用户 {} 设置角色 {}", currentUsername, targetUserId, roleId);
         } catch (Exception e) {
             log.error("设置用户角色失败: {}", e.getMessage());
-            throw new UserException("设置用户角色失败");
+            throw new UserException(400,"设置用户角色失败");
         }
     }
 
