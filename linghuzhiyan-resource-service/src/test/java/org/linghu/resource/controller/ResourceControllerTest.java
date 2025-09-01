@@ -101,6 +101,7 @@ class ResourceControllerTest {
                         .param("taskId", "task-123")
                         .param("description", "Test resource")
                         .param("uploadType", "resource")
+                        .param("resourceType", "DOCUMENT")
                         .param("autoExtract", "true")
                         .with(csrf()))
                 .andDo(print())
@@ -127,6 +128,7 @@ class ResourceControllerTest {
                         .param("experimentId", "exp-123")
                         .param("taskId", "task-123")
                         .param("uploadType", "resource")
+                        .param("resourceType", "DOCUMENT")
                         .with(csrf()))
                 .andExpect(status().isForbidden());
 
@@ -164,6 +166,7 @@ class ResourceControllerTest {
                         .file(file)
                         .param("experimentId", "exp-123")
                         .param("taskId", "task-123")
+                        .param("resourceType", "DOCUMENT")
                         .param("uploadType", "resource")
                         .with(csrf()))
                 .andExpect(status().isInternalServerError());
@@ -185,6 +188,7 @@ class ResourceControllerTest {
                         .param("experimentId", "exp-123")
                         .param("taskId", "task-123")
                         .param("uploadType", "resource")
+                        .param("resourceType", "OTHER")
                         .with(csrf()))
                 .andExpect(status().isInternalServerError());
     }
@@ -206,6 +210,7 @@ class ResourceControllerTest {
                         .param("experimentId", "exp-123")
                         .param("taskId", "task-123")
                         .param("uploadType", "resource")
+                        .param("resourceType", "DOCUMENT")
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.id").value("resource-123"));
@@ -257,6 +262,7 @@ class ResourceControllerTest {
                         .param("experimentId", "exp-123")
                         .param("taskId", "task-123")
                         .param("uploadType", "INVALID_TYPE")
+                        .param("resourceType", "DOCUMENT")
                         .with(csrf()))
                 .andExpect(status().isOk());
     }

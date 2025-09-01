@@ -1,6 +1,7 @@
 package org.linghu.resource.client;
 
 import org.linghu.resource.dto.ExperimentDTO;
+import org.linghu.resource.dto.Result;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,7 +19,7 @@ public interface ExperimentServiceClient {
      * @return 实验信息
      */
     @GetMapping("/{experimentId}")
-    ExperimentDTO getExperimentById(@PathVariable("experimentId") String experimentId);
+    Result<ExperimentDTO> getExperimentById(@PathVariable("experimentId") String experimentId);
 
     /**
      * 验证实验是否存在 - 内部接口
@@ -27,5 +28,5 @@ public interface ExperimentServiceClient {
      * @return 是否存在
      */
     @GetMapping("/{experimentId}/exists")
-    Boolean experimentExists(@PathVariable("experimentId") String experimentId);
+    Result<Boolean> experimentExists(@PathVariable("experimentId") String experimentId);
 }

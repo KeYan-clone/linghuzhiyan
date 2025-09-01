@@ -1,5 +1,6 @@
 package org.linghu.resource.controller;
 
+import jakarta.validation.Valid;
 import org.linghu.resource.dto.ResourceDTO;
 import org.linghu.resource.dto.ResourceRequestDTO;
 import org.linghu.resource.dto.Result;
@@ -32,22 +33,10 @@ public class ResourceController {
     }
 
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasAnyRole('ROLE_TEACHER','ROLE_ADMIN','ROLE_ASSISTANT')")
+    @PreAuthorize("hasAnyRole('TEACHER','ADMIN','ASSISTANT')")
     public Result<ResourceDTO> uploadResource(
             @RequestParam("file") MultipartFile file,
-            @RequestParam String experimentId,
-            @RequestParam String taskId,
-            @RequestParam(required = false) String description,
-            @RequestParam String uploadType,
-            @RequestParam(required = false, defaultValue = "true") Boolean autoExtract) {
-
-        ResourceRequestDTO requestDTO = ResourceRequestDTO.builder()
-                .experimentId(experimentId)
-                .taskId(taskId)
-                .description(description)
-                .uploadType(uploadType)
-                .autoExtract(autoExtract)
-                .build();
+            @Valid @ModelAttribute ResourceRequestDTO requestDTO)  {
 
         ResourceDTO resource = resourceService.uploadResource(file, requestDTO);
         return Result.success(resource);
@@ -72,7 +61,7 @@ public class ResourceController {
     }
 
     @PutMapping("/{resourceId}")
-    @PreAuthorize("hasAnyRole('ROLE_TEACHER','ROLE_ADMIN','ROLE_ASSISTANT')")
+    @PreAuthorize("hasAnyRole('TEACHER','ADMIN','ASSISTANT')")
     public Result<ResourceDTO> updateResource(
             @PathVariable String resourceId,
             @RequestBody ResourceRequestDTO requestDTO) {

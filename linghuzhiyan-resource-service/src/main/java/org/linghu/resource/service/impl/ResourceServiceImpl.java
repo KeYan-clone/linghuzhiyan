@@ -4,8 +4,10 @@ import io.minio.Result;
 import io.minio.messages.Item;
 import org.linghu.resource.client.ExperimentServiceClient;
 import org.linghu.resource.domain.Resource;
+import org.linghu.resource.dto.ExperimentDTO;
 import org.linghu.resource.dto.ResourceDTO;
 import org.linghu.resource.dto.ResourceRequestDTO;
+import org.linghu.resource.exception.ResourceException;
 import org.linghu.resource.repository.ResourceRepository;
 import org.linghu.resource.service.ResourceService;
 import org.linghu.resource.utils.MinioUtil;
@@ -44,21 +46,13 @@ public class ResourceServiceImpl implements ResourceService {
     @Transactional
     public ResourceDTO uploadResource(MultipartFile file, ResourceRequestDTO requestDTO) {
         if (file.isEmpty()) {
-            throw new RuntimeException("文件为空，无法上传");
+            throw ResourceException.fileEmpty();
         }
 
         // 验证实验是否存在
         if (requestDTO.getExperimentId() != null) {
-            try {
-                Boolean exists = experimentServiceClient.experimentExists(requestDTO.getExperimentId());
-                if (!Boolean.TRUE.equals(exists)) {
-                    throw new RuntimeException("实验不存在: " + requestDTO.getExperimentId());
-                }
-            } catch (Exception e) {
-                throw new RuntimeException("验证实验信息失败: " + e.getMessage());
-            }
+            validateExperimentExists(requestDTO.getExperimentId());
         }
-
         try {
             // 确保存储桶存在
             minioUtil.ensureBucketExists();
@@ -95,7 +89,7 @@ public class ResourceServiceImpl implements ResourceService {
                         objectName = uploadedPaths.get(0); // 使用第一个解压出的文件作为主要路径
                     } else {
                         // 如果没有解压出文件，则抛出异常
-                        throw new RuntimeException("解压文件失败，未找到有效内容");
+                        throw ResourceException.decompressionFailed();
                     }
                     // 不保存原始压缩包
                 } else {
@@ -156,7 +150,7 @@ public class ResourceServiceImpl implements ResourceService {
             return convertToDTO(savedResource);
 
         } catch (Exception ex) {
-            throw new RuntimeException("无法上传文件到MinIO: " + ex.getMessage(), ex);
+            throw ResourceException.uploadFailed(ex.getMessage());
         }
     }
 
@@ -210,15 +204,7 @@ public class ResourceServiceImpl implements ResourceService {
 
         // 更新资源信息
         if (requestDTO.getExperimentId() != null) {
-            try {
-                Boolean exists = experimentServiceClient.experimentExists(requestDTO.getExperimentId());
-                if (!Boolean.TRUE.equals(exists)) {
-                    throw new RuntimeException("实验不存在: " + requestDTO.getExperimentId());
-                }
-                resource.setExperimentId(requestDTO.getExperimentId());
-            } catch (Exception e) {
-                throw new RuntimeException("验证实验信息失败: " + e.getMessage());
-            }
+            validateExperimentExists(requestDTO.getExperimentId());
         }
 
         if (requestDTO.getResourceType() != null) {
@@ -235,31 +221,13 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     public org.springframework.core.io.Resource downloadResource(String id) {
         Resource resource = resourceRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("资源不存在"));
+                .orElseThrow(() -> ResourceException.resourceNotFound());
 
         try {
             // 从MinIO下载文件
             return minioUtil.downloadFile(resource.getResourcePath());
         } catch (Exception ex) {
-            throw new RuntimeException("从MinIO下载文件失败: " + ex.getMessage(), ex);
-        }
-    }
-
-    /**
-     * 生成文件的临时预览URL
-     * 
-     * @param id         资源ID
-     * @param expiryTime URL过期时间(秒)
-     * @return 临时访问URL
-     */
-    public String generatePreviewUrl(String id, int expiryTime) {
-        Resource resource = resourceRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("资源不存在"));
-
-        try {
-            return minioUtil.generatePreviewUrl(resource.getResourcePath(), expiryTime);
-        } catch (Exception ex) {
-            throw new RuntimeException("生成预览链接失败: " + ex.getMessage(), ex);
+            throw ResourceException.downloadFailed(ex.getMessage());
         }
     }
 
@@ -294,14 +262,7 @@ public class ResourceServiceImpl implements ResourceService {
 
         // 验证实验是否存在
         if (experimentId != null) {
-            try {
-                Boolean exists = experimentServiceClient.experimentExists(experimentId);
-                if (!Boolean.TRUE.equals(exists)) {
-                    throw new RuntimeException("实验不存在: " + experimentId);
-                }
-            } catch (Exception e) {
-                throw new RuntimeException("验证实验信息失败: " + e.getMessage());
-            }
+            validateExperimentExists(experimentId);
         }
 
         try {
@@ -371,7 +332,7 @@ public class ResourceServiceImpl implements ResourceService {
 
             return submissions;
         } catch (Exception ex) {
-            throw new RuntimeException("获取学生提交列表失败: " + ex.getMessage(), ex);
+            throw new ResourceException(500,"获取学生提交列表失败: " + ex.getMessage(), ex);
         }
     }
 
@@ -405,7 +366,7 @@ public class ResourceServiceImpl implements ResourceService {
 
             return submissions;
         } catch (Exception ex) {
-            throw new RuntimeException("获取学生特定实验提交列表失败: " + ex.getMessage(), ex);
+            throw new ResourceException(500,"获取学生特定实验提交列表失败: " + ex.getMessage(), ex);
         }
     }
 
@@ -568,7 +529,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     /**
      * 根据文件路径检测MIME类型
-     * 
+     *
      * @param filePath 文件路径
      * @return MIME类型
      */
@@ -577,21 +538,36 @@ public class ResourceServiceImpl implements ResourceService {
         return getMimeTypeFromFileName(fileName);
     }
 
-    @Override
-    public Boolean validateExperiment(String experimentId) {
+    /**
+     * 验证实验是否存在
+     *
+     * @param experimentId 实验ID
+     * @return 如果实验存在返回true，否则抛出异常
+     */
+    public Boolean validateExperimentExists(String experimentId) {
         try {
-            return experimentServiceClient.experimentExists(experimentId);
+            Boolean exists = experimentServiceClient.experimentExists(experimentId).getData();
+            if (!Boolean.TRUE.equals(exists)) {
+                throw new ResourceException(400,"实验不存在: " + experimentId);
+            }
+            return exists;
         } catch (Exception e) {
-            throw new RuntimeException("验证实验信息失败: " + e.getMessage());
+            throw new ResourceException(500,"验证实验信息失败: " + e.getMessage());
         }
     }
 
-    @Override
-    public org.linghu.resource.dto.ExperimentDTO getExperimentInfo(String experimentId) {
+    /**
+     * 获取实验信息
+     *
+     * @param experimentId 实验ID
+     * @return 实验信息DTO
+     */
+    public ExperimentDTO getExperimentInfo(String experimentId) {
         try {
-            return experimentServiceClient.getExperimentById(experimentId);
+            return experimentServiceClient.getExperimentById(experimentId).getData();
         } catch (Exception e) {
-            throw new RuntimeException("获取实验信息失败: " + e.getMessage());
+            throw new ResourceException(500,"验证实验信息失败: " + e.getMessage());
+
         }
     }
 }

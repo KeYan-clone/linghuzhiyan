@@ -35,7 +35,7 @@ public class MinioUtil {
     // 用户头像前缀（存储在默认bucket中）
     private static final String PREFIX_AVATARS = "avatars/";
 
-    // 资源类型常量
+    // 资源类型常量,resource里的两个文件夹
     private static final String RESOURCE_TYPE_EXPERIMENT = "experiment";
     private static final String RESOURCE_TYPE_LEARNING = "resource";
 

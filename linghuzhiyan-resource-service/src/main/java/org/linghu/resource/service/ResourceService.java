@@ -99,19 +99,4 @@ public interface ResourceService {
      */
     List<ResourceDTO> getStudentSubmissionsByExperiment(String studentId, String experimentId);
 
-    /**
-     * 验证实验是否存在
-     *
-     * @param experimentId 实验ID
-     * @return 是否存在
-     */
-    Boolean validateExperiment(String experimentId);
-
-    /**
-     * 获取实验信息
-     *
-     * @param experimentId 实验ID
-     * @return 实验DTO
-     */
-    ExperimentDTO getExperimentInfo(String experimentId);
 }

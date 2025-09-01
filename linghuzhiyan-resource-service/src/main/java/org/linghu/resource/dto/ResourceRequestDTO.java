@@ -20,13 +20,13 @@ public class ResourceRequestDTO {
     
     private String taskId;  // 任务ID，可选
     
-    @NotBlank(message = "资源类型不能为空")
+    @NotBlank(message = "资源类型不能为空，填写DOCUMENT, IMAGE, VIDEO, CODE或OTHER")
     private String resourceType;    // "DOCUMENT", "IMAGE", "VIDEO", "CODE", "OTHER"
     
     private String description;
     
     // 资源上传类型：学习资料("resource")和源代码/评测脚本("experiment")
-    @NotBlank(message = "上传类型不能为空")
+    @NotBlank(message = "上传类型不能为空,填写resource或experiment")
     private String uploadType;  // "resource" 或 "experiment"
     
     // 是否自动解压压缩包（仅对experiment类型的压缩文件有效）

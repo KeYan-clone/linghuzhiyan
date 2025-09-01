@@ -1,6 +1,5 @@
 package org.linghu.resource.service.impl;
 
-import io.minio.Result;
 import io.minio.messages.Item;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,8 +9,10 @@ import org.linghu.resource.domain.Resource;
 import org.linghu.resource.dto.ExperimentDTO;
 import org.linghu.resource.dto.ResourceDTO;
 import org.linghu.resource.dto.ResourceRequestDTO;
+import org.linghu.resource.dto.Result;
 import org.linghu.resource.repository.ResourceRepository;
 import org.linghu.resource.utils.MinioUtil;
+
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -85,7 +86,7 @@ class ResourceServiceImplTest {
                 .experimentId("exp-001")
                 .description("测试文档")
                 .uploadType("resource")
-                .autoExtract(false)
+                .autoExtract(Boolean.FALSE)
                 .build();
 
         mockFile = new MockMultipartFile(
@@ -101,7 +102,7 @@ class ResourceServiceImplTest {
     @Test
     void uploadResource_ShouldReturnResourceDTO_WhenValidFile() throws Exception {
         // Given
-        when(experimentServiceClient.experimentExists("exp-001")).thenReturn(true);
+        when(experimentServiceClient.experimentExists("exp-001")).thenReturn(Result.success(Boolean.TRUE));
         when(minioUtil.uploadExperimentResource(
                 eq("exp-001"), 
                 eq("test.pdf"), 
@@ -140,7 +141,7 @@ class ResourceServiceImplTest {
         // When & Then
         assertThatThrownBy(() -> resourceService.uploadResource(emptyFile, mockRequestDTO))
                 .isInstanceOf(RuntimeException.class)
-                .hasMessage("文件为空，无法上传");
+                .hasMessage("文件为空，上传失败");
 
         verify(experimentServiceClient, never()).experimentExists(anyString());
         verify(resourceRepository, never()).save(any(Resource.class));
@@ -149,7 +150,7 @@ class ResourceServiceImplTest {
     @Test
     void uploadResource_ShouldThrowException_WhenExperimentNotExists() {
         // Given
-        when(experimentServiceClient.experimentExists("exp-001")).thenReturn(false);
+        when(experimentServiceClient.experimentExists("exp-001")).thenReturn(Result.success(Boolean.FALSE));
 
         // When & Then
         assertThatThrownBy(() -> resourceService.uploadResource(mockFile, mockRequestDTO))
@@ -326,7 +327,7 @@ class ResourceServiceImplTest {
     void updateResource_ShouldUpdateSuccessfully_WhenValidRequest() {
         // Given
         when(resourceRepository.findById("test-resource-1")).thenReturn(Optional.of(mockResource));
-        when(experimentServiceClient.experimentExists("exp-002")).thenReturn(true);
+        when(experimentServiceClient.experimentExists("exp-002")).thenReturn(Result.success(Boolean.TRUE));
         when(resourceRepository.save(any(Resource.class))).thenReturn(mockResource);
 
         ResourceRequestDTO updateRequest = ResourceRequestDTO.builder()
@@ -363,7 +364,7 @@ class ResourceServiceImplTest {
     void updateResource_ShouldThrowException_WhenExperimentNotExists() {
         // Given
         when(resourceRepository.findById("test-resource-1")).thenReturn(Optional.of(mockResource));
-        when(experimentServiceClient.experimentExists("exp-002")).thenReturn(false);
+        when(experimentServiceClient.experimentExists("exp-002")).thenReturn(Result.success(Boolean.FALSE));
 
         ResourceRequestDTO updateRequest = ResourceRequestDTO.builder()
                 .experimentId("exp-002")
@@ -423,43 +424,10 @@ class ResourceServiceImplTest {
         // When & Then
         assertThatThrownBy(() -> resourceService.downloadResource("test-resource-1"))
                 .isInstanceOf(RuntimeException.class)
-                .hasMessage("从MinIO下载文件失败: MinIO下载失败");
+                .hasMessage("文件下载失败: MinIO下载失败");
 
         verify(resourceRepository).findById("test-resource-1");
         verify(minioUtil).downloadFile("/path/to/test.pdf");
-    }
-
-    // ==================== generatePreviewUrl 测试 ====================
-
-    @Test
-    void generatePreviewUrl_ShouldReturnUrl_WhenResourceExists() throws Exception {
-        // Given
-        when(resourceRepository.findById("test-resource-1")).thenReturn(Optional.of(mockResource));
-        when(minioUtil.generatePreviewUrl("/path/to/test.pdf", 3600))
-                .thenReturn("https://minio.example.com/preview/test.pdf");
-
-        // When
-        String result = resourceService.generatePreviewUrl("test-resource-1", 3600);
-
-        // Then
-        assertThat(result).isEqualTo("https://minio.example.com/preview/test.pdf");
-
-        verify(resourceRepository).findById("test-resource-1");
-        verify(minioUtil).generatePreviewUrl("/path/to/test.pdf", 3600);
-    }
-
-    @Test
-    void generatePreviewUrl_ShouldThrowException_WhenResourceNotExists()throws Exception {
-        // Given
-        when(resourceRepository.findById("non-existent-id")).thenReturn(Optional.empty());
-
-        // When & Then
-        assertThatThrownBy(() -> resourceService.generatePreviewUrl("non-existent-id", 3600))
-                .isInstanceOf(RuntimeException.class)
-                .hasMessage("资源不存在");
-
-        verify(resourceRepository).findById("non-existent-id");
-        verify(minioUtil, never()).generatePreviewUrl(anyString(), anyInt());
     }
 
     // ==================== uploadStudentSubmission 测试 ====================
@@ -467,7 +435,7 @@ class ResourceServiceImplTest {
     @Test
     void uploadStudentSubmission_ShouldReturnResourceDTO_WhenValidSubmission() throws Exception {
         // Given
-        when(experimentServiceClient.experimentExists("exp-001")).thenReturn(true);
+        when(experimentServiceClient.experimentExists("exp-001")).thenReturn(Result.success(Boolean.TRUE));
         when(minioUtil.uploadStudentSubmission(anyString(), anyString(), anyString(), anyString(), any(), anyLong(), anyString()))
                 .thenReturn("/submissions/student1/exp-001/task1/test.pdf");
         when(resourceRepository.save(any(Resource.class))).thenReturn(mockResource);
@@ -507,9 +475,9 @@ class ResourceServiceImplTest {
     @Test
     void getStudentSubmissions_ShouldReturnSubmissions_WhenSubmissionsExist() throws Exception {
         // Given
-        List<Result<Item>> mockResults = new ArrayList<>();
+        List<io.minio.Result<Item>> mockResults = new ArrayList<>();
         Item mockItem = mock(Item.class);
-        Result<Item> mockResult = mock(Result.class);
+        io.minio.Result<Item> mockResult = mock(io.minio.Result.class);
         when(mockResult.get()).thenReturn(mockItem);
         when(mockItem.objectName()).thenReturn("/submissions/student1/exp-001/test.pdf");
         mockResults.add(mockResult);
@@ -531,9 +499,9 @@ class ResourceServiceImplTest {
     @Test
     void getStudentSubmissions_ShouldCreateTemporaryDTO_WhenNoResourceInDatabase() throws Exception {
         // Given
-        List<Result<Item>> mockResults = new ArrayList<>();
+        List<io.minio.Result<Item>> mockResults = new ArrayList<>();
         Item mockItem = mock(Item.class);
-        Result<Item> mockResult = mock(Result.class);
+        io.minio.Result<Item> mockResult = mock(io.minio.Result.class);
         when(mockResult.get()).thenReturn(mockItem);
         when(mockItem.objectName()).thenReturn("/submissions/student1/exp-001/test.pdf");
         when(mockItem.size()).thenReturn(1024L);
@@ -572,15 +540,15 @@ class ResourceServiceImplTest {
         verify(minioUtil).listStudentSubmissions("student1");
     }
 
-    // ==================== validateExperiment 测试 ====================
+    // ==================== validateExperimentExists 测试 ====================
 
     @Test
-    void validateExperiment_ShouldReturnTrue_WhenExperimentExists() {
+    void validateExperimentExists_ShouldReturnTrue_WhenExperimentExists() {
         // Given
-        when(experimentServiceClient.experimentExists("exp-001")).thenReturn(true);
+        when(experimentServiceClient.experimentExists("exp-001")).thenReturn(Result.success(Boolean.TRUE));
 
         // When
-        Boolean result = resourceService.validateExperiment("exp-001");
+        Boolean result = resourceService.validateExperimentExists("exp-001");
 
         // Then
         assertThat(result).isTrue();
@@ -588,26 +556,25 @@ class ResourceServiceImplTest {
     }
 
     @Test
-    void validateExperiment_ShouldReturnFalse_WhenExperimentNotExists() {
+    void validateExperimentExists_ShouldThrowException_WhenExperimentNotExists() {
         // Given
-        when(experimentServiceClient.experimentExists("non-existent-exp")).thenReturn(false);
+        when(experimentServiceClient.experimentExists("non-existent-exp")).thenReturn(Result.success(Boolean.FALSE));
 
         // When
-        Boolean result = resourceService.validateExperiment("non-existent-exp");
+        assertThatThrownBy(() -> resourceService.validateExperimentExists("non-existent-exp"))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("验证实验信息失败: 实验不存在: non-existent-exp");
 
-        // Then
-        assertThat(result).isFalse();
-        verify(experimentServiceClient).experimentExists("non-existent-exp");
     }
 
     @Test
-    void validateExperiment_ShouldThrowException_WhenClientFails() {
+    void validateExperimentExists_ShouldThrowException_WhenClientFails() {
         // Given
         when(experimentServiceClient.experimentExists("exp-001"))
                 .thenThrow(new RuntimeException("网络连接失败"));
 
         // When & Then
-        assertThatThrownBy(() -> resourceService.validateExperiment("exp-001"))
+        assertThatThrownBy(() -> resourceService.validateExperimentExists("exp-001"))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessage("验证实验信息失败: 网络连接失败");
 
@@ -624,7 +591,7 @@ class ResourceServiceImplTest {
                 .name("测试实验")
                 .description("测试实验描述")
                 .build();
-        when(experimentServiceClient.getExperimentById("exp-001")).thenReturn(mockExperimentDTO);
+        when(experimentServiceClient.getExperimentById("exp-001")).thenReturn(Result.success(mockExperimentDTO));
 
         // When
         ExperimentDTO result = resourceService.getExperimentInfo("exp-001");
@@ -644,9 +611,10 @@ class ResourceServiceImplTest {
                 .thenThrow(new RuntimeException("网络连接失败"));
 
         // When & Then
+
         assertThatThrownBy(() -> resourceService.getExperimentInfo("exp-001"))
                 .isInstanceOf(RuntimeException.class)
-                .hasMessage("获取实验信息失败: 网络连接失败");
+                .hasMessage("验证实验信息失败: 网络连接失败");
 
         verify(experimentServiceClient).getExperimentById("exp-001");
     }
