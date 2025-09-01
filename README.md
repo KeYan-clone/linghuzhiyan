@@ -88,6 +88,35 @@ cd linghuzhiyan-monitor-service
 mvn spring-boot:run
 ```
 
+## API文档 (Swagger)
+
+项目集成了SpringDoc OpenAPI 3.0，提供完整的API文档和在线测试功能。
+
+### 全局访问
+- **Swagger UI**: http://localhost:8080/swagger-ui.html
+- **API配置**: http://localhost:8080/v3/api-docs/swagger-config
+
+### 服务独立访问
+| 服务 | 端口 | Swagger UI |
+|------|------|------------|
+| 用户服务 | 8082 | http://localhost:8082/swagger-ui.html |
+| 认证服务 | 8084 | http://localhost:8084/swagger-ui.html |
+| 实验服务 | 8083 | http://localhost:8083/swagger-ui.html |
+| 资源服务 | 8085 | http://localhost:8085/swagger-ui.html |
+| 消息服务 | 8086 | http://localhost:8086/swagger-ui.html |
+| 讨论服务 | 8087 | http://localhost:8087/swagger-ui.html |
+
+### Swagger启动和测试
+```powershell
+# 启动所有服务并测试Swagger
+.\start-swagger-demo.ps1
+
+# 测试Swagger文档可访问性
+.\test-swagger.ps1
+```
+
+详细说明请参考: [SWAGGER_README.md](./SWAGGER_README.md)
+
 ## 验证启动
 
 所有服务启动后，可以通过以下方式验证：

@@ -101,6 +101,71 @@ spring:
             - Path=/api/messages/**
           filters:
             - StripPrefix=1
+            
+        # Swagger文档路由
+        - id: user-service-swagger
+          uri: lb://linghuzhiyan-user-service
+          predicates:
+            - Path=/user-service/v3/api-docs
+          filters:
+            - StripPrefix=1
+            
+        - id: auth-service-swagger
+          uri: lb://linghuzhiyan-auth-service
+          predicates:
+            - Path=/auth-service/v3/api-docs
+          filters:
+            - StripPrefix=1
+            
+        - id: experiment-service-swagger
+          uri: lb://linghuzhiyan-experiment-service
+          predicates:
+            - Path=/experiment-service/v3/api-docs
+          filters:
+            - StripPrefix=1
+            
+        - id: resource-service-swagger
+          uri: lb://linghuzhiyan-resource-service
+          predicates:
+            - Path=/resource-service/v3/api-docs
+          filters:
+            - StripPrefix=1
+            
+        - id: discussion-service-swagger
+          uri: lb://linghuzhiyan-discussion-service
+          predicates:
+            - Path=/discussion-service/v3/api-docs
+          filters:
+            - StripPrefix=1
+            
+        - id: message-service-swagger
+          uri: lb://linghuzhiyan-message-service
+          predicates:
+            - Path=/message-service/v3/api-docs
+          filters:
+            - StripPrefix=1
+
+# SpringDoc配置
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    config-url: /v3/api-docs/swagger-config
+    urls:
+      - url: /user-service/v3/api-docs
+        name: "用户服务"
+      - url: /auth-service/v3/api-docs
+        name: "认证服务"
+      - url: /experiment-service/v3/api-docs
+        name: "实验服务"
+      - url: /resource-service/v3/api-docs
+        name: "资源服务"
+      - url: /message-service/v3/api-docs
+        name: "消息服务"
+      - url: /discussion-service/v3/api-docs
+        name: "讨论服务"
 
 # 监控配置
 management:

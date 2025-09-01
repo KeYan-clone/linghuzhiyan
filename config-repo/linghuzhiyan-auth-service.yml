@@ -56,3 +56,14 @@ info:
     description: 灵狐智验系统认证服务
     version: 1.0.0
     developer: 开发团队
+
+# SpringDoc配置
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+  show-actuator: true
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json

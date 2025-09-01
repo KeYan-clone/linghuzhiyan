@@ -1,6 +1,6 @@
 package org.linghu.message.controller;
 
-//import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.linghu.message.dto.AnnouncementDTO;
 import org.linghu.message.dto.AnnouncementRequestDTO;
 import org.linghu.message.dto.Result;
@@ -15,7 +15,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/announcements")
-//@Tag(name = "公告管理", description = "公告管理相关API")
+@Tag(name = "公告管理", description = "公告管理相关API")
 public class AnnouncementController {
 
     private final AnnouncementService announcementService;
