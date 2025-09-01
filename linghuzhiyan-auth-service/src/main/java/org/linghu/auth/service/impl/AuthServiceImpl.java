@@ -57,7 +57,7 @@ public class AuthServiceImpl implements AuthService {
                     "用户名或密码错误",
                     loginRequest.getLoginInfo()
                 );
-                return Result.error("用户名或密码错误");
+                return Result.error(401,"用户名或密码错误");
             }
 
             UserInfo user = userResult.getData();
@@ -69,7 +69,7 @@ public class AuthServiceImpl implements AuthService {
                     "用户已被删除",
                     loginRequest.getLoginInfo()
                 );
-                return Result.error("用户已被删除");
+                return Result.error(410,"用户已被删除");
             }
 
             // 2. 获取用户角色
@@ -171,7 +171,7 @@ public class AuthServiceImpl implements AuthService {
      * 生成刷新令牌
      */
     private String generateRefreshToken(String username) {
-        // 简单实现，实际应该使用更安全的方式
+        // 简单实现
         return "refresh_" + username + "_" + System.currentTimeMillis();
     }
 }
