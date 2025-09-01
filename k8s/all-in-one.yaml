@@ -384,6 +384,7 @@ spec:
                     },
                     "jpa": {"hibernate": {"ddl-auto": "update"}}},
               for i in $(seq 1 60); do if timeout 2 bash -c "</dev/tcp/$DB_HOST/$DB_PORT" 2>/dev/null; then echo "DB reachable"; exit 0; fi; echo "waiting for $DB_HOST:$DB_PORT"; sleep 2; done; echo "DB not reachable: $DB_HOST:$DB_PORT"; exit 1;
+
       containers:
           envFrom:
             - configMapRef:
