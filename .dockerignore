@@ -1,0 +1,23 @@
+# Exclude VCS
+.git
+.github
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Maven build outputs
+**/target/
+
+# Docker runtime data (sockets, large files)
+docker/**/data/
+docker/mysql/data/
+docker/minio/data/
+
+# Node/npm (if present)
+node_modules/
