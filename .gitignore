@@ -1,3 +1,14 @@
+# Maven build outputs
+**/target/
+
+# Docker runtime data (keep init scripts tracked)
+docker/**/data/
+docker/mysql/data/
+docker/minio/data/
+
+# OS junk
+.DS_Store
+Thumbs.db
 # 编译输出
 target/
 *.class
