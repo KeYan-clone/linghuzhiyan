@@ -39,11 +39,6 @@ services:
     build:
       context: .
       dockerfile: ./linghuzhiyan-discovery-server/Dockerfile
-      args:
-        - BUILD_DATE=${BUILD_DATE:-}
-        - VERSION=${VERSION:-latest}
-      target: runtime
-    image: linghuzhiyan/discovery-server:${VERSION:-latest}
     container_name: discovery
     ports:
       - "8761:8761"
@@ -54,11 +49,6 @@ services:
     build:
       context: .
       dockerfile: ./linghuzhiyan-config-server/Dockerfile
-      args:
-        - BUILD_DATE=${BUILD_DATE:-}
-        - VERSION=${VERSION:-latest}
-      target: runtime
-    image: linghuzhiyan/config-server:${VERSION:-latest}
     container_name: config
     depends_on:
       - discovery
@@ -79,11 +69,6 @@ services:
     build:
       context: .
       dockerfile: ./linghuzhiyan-gateway/Dockerfile
-      args:
-        - BUILD_DATE=${BUILD_DATE:-}
-        - VERSION=${VERSION:-latest}
-      target: runtime
-    image: linghuzhiyan/gateway:${VERSION:-latest}
     container_name: gateway
     depends_on:
       config:
@@ -103,11 +88,6 @@ services:
     build:
       context: .
       dockerfile: ./linghuzhiyan-auth-service/Dockerfile
-      args:
-        - BUILD_DATE=${BUILD_DATE:-}
-        - VERSION=${VERSION:-latest}
-      target: runtime
-    image: linghuzhiyan/auth-service:${VERSION:-latest}
     container_name: auth
     depends_on:
       mysql:
@@ -140,11 +120,6 @@ services:
     build:
       context: .
       dockerfile: ./linghuzhiyan-user-service/Dockerfile
-      args:
-        - BUILD_DATE=${BUILD_DATE:-}
-        - VERSION=${VERSION:-latest}
-      target: runtime
-    image: linghuzhiyan/user-service:${VERSION:-latest}
     container_name: user
     depends_on:
       mysql:
@@ -159,154 +134,6 @@ services:
         condition: service_started
     ports:
       - "8082:8082"
-    environment:
-      JAVA_OPTS: "-Xms256m -Xmx512m"
-      DB_HOST: "mysql"
-      DB_PORT: "3306"
-      DB_USERNAME: "root"
-      DB_PASSWORD: "${DB_PASSWORD:-password}"
-      MINIO_ENDPOINT: "http://minio:9000"
-      MINIO_ACCESS_KEY: "${MINIO_ACCESS_KEY:-minioadmin}"
-      MINIO_SECRET_KEY: "${MINIO_SECRET_KEY:-minioadmin}"
-      SPRING_CONFIG_IMPORT: "optional:configserver:http://config:config123@config:8888"
-      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://admin:admin123@discovery:8761/eureka/"
-      SPRING_REDIS_HOST: "redis"
-      SPRING_REDIS_PORT: "6379"
-
-  experiment:
-    build:
-      context: .
-      dockerfile: ./linghuzhiyan-experiment-service/Dockerfile
-      args:
-        - BUILD_DATE=${BUILD_DATE:-}
-        - VERSION=${VERSION:-latest}
-      target: runtime
-    image: linghuzhiyan/experiment-service:${VERSION:-latest}
-    container_name: experiment
-    depends_on:
-      mysql:
-        condition: service_healthy
-      redis:
-        condition: service_started
-      minio:
-        condition: service_started
-      config:
-        condition: service_started
-      discovery:
-        condition: service_started
-    ports:
-      - "8083:8083"
-    environment:
-      JAVA_OPTS: "-Xms256m -Xmx512m"
-      DB_HOST: "mysql"
-      DB_PORT: "3306"
-      DB_USERNAME: "root"
-      DB_PASSWORD: "${DB_PASSWORD:-password}"
-      MINIO_ENDPOINT: "http://minio:9000"
-      MINIO_ACCESS_KEY: "${MINIO_ACCESS_KEY:-minioadmin}"
-      MINIO_SECRET_KEY: "${MINIO_SECRET_KEY:-minioadmin}"
-      SPRING_CONFIG_IMPORT: "optional:configserver:http://config:config123@config:8888"
-      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://admin:admin123@discovery:8761/eureka/"
-      SPRING_REDIS_HOST: "redis"
-      SPRING_REDIS_PORT: "6379"
-
-  resource:
-    build:
-      context: .
-      dockerfile: ./linghuzhiyan-resource-service/Dockerfile
-      args:
-        - BUILD_DATE=${BUILD_DATE:-}
-        - VERSION=${VERSION:-latest}
-      target: runtime
-    image: linghuzhiyan/resource-service:${VERSION:-latest}
-    container_name: resource
-    depends_on:
-      mysql:
-        condition: service_healthy
-      redis:
-        condition: service_started
-      minio:
-        condition: service_started
-      config:
-        condition: service_started
-      discovery:
-        condition: service_started
-    ports:
-      - "8086:8086"
-    environment:
-      JAVA_OPTS: "-Xms256m -Xmx512m"
-      DB_HOST: "mysql"
-      DB_PORT: "3306"
-      DB_USERNAME: "root"
-      DB_PASSWORD: "${DB_PASSWORD:-password}"
-      MINIO_ENDPOINT: "http://minio:9000"
-      MINIO_ACCESS_KEY: "${MINIO_ACCESS_KEY:-minioadmin}"
-      MINIO_SECRET_KEY: "${MINIO_SECRET_KEY:-minioadmin}"
-      SPRING_CONFIG_IMPORT: "optional:configserver:http://config:config123@config:8888"
-      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://admin:admin123@discovery:8761/eureka/"
-      SPRING_REDIS_HOST: "redis"
-      SPRING_REDIS_PORT: "6379"
-
-  message:
-    build:
-      context: .
-      dockerfile: ./linghuzhiyan-message-service/Dockerfile
-      args:
-        - BUILD_DATE=${BUILD_DATE:-}
-        - VERSION=${VERSION:-latest}
-      target: runtime
-    image: linghuzhiyan/message-service:${VERSION:-latest}
-    container_name: message
-    depends_on:
-      mysql:
-        condition: service_healthy
-      redis:
-        condition: service_started
-      minio:
-        condition: service_started
-      config:
-        condition: service_started
-      discovery:
-        condition: service_started
-    ports:
-      - "8085:8085"
-    environment:
-      JAVA_OPTS: "-Xms256m -Xmx512m"
-      DB_HOST: "mysql"
-      DB_PORT: "3306"
-      DB_USERNAME: "root"
-      DB_PASSWORD: "${DB_PASSWORD:-password}"
-      MINIO_ENDPOINT: "http://minio:9000"
-      MINIO_ACCESS_KEY: "${MINIO_ACCESS_KEY:-minioadmin}"
-      MINIO_SECRET_KEY: "${MINIO_SECRET_KEY:-minioadmin}"
-      SPRING_CONFIG_IMPORT: "optional:configserver:http://config:config123@config:8888"
-      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://admin:admin123@discovery:8761/eureka/"
-      SPRING_REDIS_HOST: "redis"
-      SPRING_REDIS_PORT: "6379"
-
-  discussion:
-    build:
-      context: .
-      dockerfile: ./linghuzhiyan-discussion-service/Dockerfile
-      args:
-        - BUILD_DATE=${BUILD_DATE:-}
-        - VERSION=${VERSION:-latest}
-      target: runtime
-    image: linghuzhiyan/discussion-service:${VERSION:-latest}
-    container_name: discussion
-    depends_on:
-      mysql:
-        condition: service_healthy
-      redis:
-        condition: service_started
-      minio:
-        condition: service_started
-      config:
-        condition: service_started
-      discovery:
-        condition: service_started
-    ports:
-      - "8087:8087"
     environment:
       JAVA_OPTS: "-Xms256m -Xmx512m"
       DB_HOST: "mysql"
