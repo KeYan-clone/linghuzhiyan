@@ -7,7 +7,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -16,41 +15,42 @@ import java.io.IOException;
  * JWT认证过滤器
  */
 @Slf4j
-@Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
-    private static final String HEADER_STRING = "Authorization";
-    private static final String TOKEN_PREFIX = "Bearer ";
+    private final String tokenHeader;
+    private final String tokenHead;
 
-    public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
+    public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider, String tokenHeader, String tokenHead) {
         this.jwtTokenProvider = jwtTokenProvider;
+        this.tokenHeader = tokenHeader;
+        this.tokenHead = tokenHead;
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, 
-                                    FilterChain filterChain) throws ServletException, IOException {
+                                  FilterChain filterChain) throws ServletException, IOException {
         
-        String header = request.getHeader(HEADER_STRING);
+        String authHeader = request.getHeader(tokenHeader);
         
-        if (header != null && header.startsWith(TOKEN_PREFIX)) {
-            String token = header.replace(TOKEN_PREFIX, "");
+        if (authHeader != null && authHeader.startsWith(tokenHead)) {
+            String authToken = authHeader.substring(tokenHead.length());
             
             try {
                 // 使用JwtTokenProvider验证和解析token
-                if (jwtTokenProvider.validateToken(token)) {
-                    Authentication authentication = jwtTokenProvider.getAuthentication(token);
+                if (jwtTokenProvider.validateToken(authToken)) {
+                    Authentication authentication = jwtTokenProvider.getAuthentication(authToken);
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                     
-                    String username = jwtTokenProvider.getUsernameFromToken(token);
+                    String username = jwtTokenProvider.getUsernameFromToken(authToken);
                     log.debug("JWT认证成功: 用户={}", username);
                 }
             } catch (Exception e) {
-                log.warn("JWT认证失败: {}", e.getMessage());
+                log.warn("JWT令牌解析失败: {}", e.getMessage());
                 SecurityContextHolder.clearContext();
             }
         }
-        
+
         filterChain.doFilter(request, response);
     }
 }

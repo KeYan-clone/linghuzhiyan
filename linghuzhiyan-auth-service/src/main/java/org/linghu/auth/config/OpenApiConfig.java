@@ -37,7 +37,7 @@ public class OpenApiConfig {
                                 .url("https://opensource.org/licenses/MIT")))
                 .servers(List.of(
                         new Server()
-                                .url("http://localhost:8080/api/auth")
+                                .url("http://localhost:8080")
                                 .description("网关访问地址"),
                         new Server()
                                 .url("http://localhost:8002")

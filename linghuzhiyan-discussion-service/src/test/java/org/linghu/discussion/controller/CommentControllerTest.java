@@ -6,13 +6,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.linghu.discussion.client.UserServiceClient;
-import org.linghu.discussion.config.SecurityConfig;
-import org.linghu.discussion.domain.Discussion;
+import org.linghu.discussion.config.JwtAuthenticationFilter;
 import org.linghu.discussion.dto.CommentRequestDTO;
 import org.linghu.discussion.dto.CommentResponseDTO;
 import org.linghu.discussion.dto.ReportRequestDTO;
-import org.linghu.discussion.repository.DiscussionRepository;
 import org.linghu.discussion.service.CommentService;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -55,6 +52,9 @@ class CommentControllerTest {
 
     @MockBean
     private CommentService commentService;
+
+    @Mock
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Autowired
     private ObjectMapper objectMapper;
