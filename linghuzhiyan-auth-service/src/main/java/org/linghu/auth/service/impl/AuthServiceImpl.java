@@ -3,6 +3,7 @@ package org.linghu.auth.service.impl;
 import lombok.extern.slf4j.Slf4j;
 import org.linghu.auth.client.UserServiceClient;
 import org.linghu.auth.dto.*;
+import org.linghu.auth.repository.UserRoleRelationRepository;
 import org.linghu.auth.security.JwtTokenUtil;
 import org.linghu.auth.service.AuthService;
 import org.linghu.auth.service.LoginLogService;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -29,16 +31,19 @@ public class AuthServiceImpl implements AuthService {
     private final JwtTokenUtil jwtTokenUtil;
     private final PasswordEncoder passwordEncoder;
     private final LoginLogService loginLogService;
+    private final UserRoleRelationRepository userRoleRelationRepository;
 
     @Autowired
     public AuthServiceImpl(UserServiceClient userServiceClient,
                           JwtTokenUtil jwtTokenUtil,
                           PasswordEncoder passwordEncoder,
-                          LoginLogService loginLogService) {
+                          LoginLogService loginLogService,
+                          UserRoleRelationRepository userRoleRelationRepository) {
         this.userServiceClient = userServiceClient;
         this.jwtTokenUtil = jwtTokenUtil;
         this.passwordEncoder = passwordEncoder;
         this.loginLogService = loginLogService;
+        this.userRoleRelationRepository = userRoleRelationRepository;
     }
 
     @Override
@@ -61,7 +66,29 @@ public class AuthServiceImpl implements AuthService {
             }
 
             UserInfo user = userResult.getData();
-            if (user.getIsDeleted()) {
+            if (user == null) {
+                loginLogService.logFailedLogin(
+                    loginRequest.getUsername(),
+                    loginRequest.getIpAddress(),
+                    loginRequest.getDeviceType(),
+                    "用户信息为空",
+                    loginRequest.getLoginInfo()
+                );
+                return Result.error(401, "用户信息获取失败");
+            }
+            
+            if (user.getUsername() == null || user.getUsername().trim().isEmpty()) {
+                loginLogService.logFailedLogin(
+                    loginRequest.getUsername(),
+                    loginRequest.getIpAddress(),
+                    loginRequest.getDeviceType(),
+                    "用户名为空",
+                    loginRequest.getLoginInfo()
+                );
+                return Result.error(401, "用户名信息无效");
+            }
+            
+            if (user.getIsDeleted() != null && user.getIsDeleted()) {
                 loginLogService.logFailedLogin(
                     loginRequest.getUsername(),
                     loginRequest.getIpAddress(),
@@ -73,13 +100,19 @@ public class AuthServiceImpl implements AuthService {
             }
 
             // 2. 获取用户角色
-            Result<Set<String>> rolesResult = userServiceClient.getUserRoleIds(user.getId());
-            Set<String> roleIds = rolesResult.isSuccess() ? rolesResult.getData() : Set.of();
+            Set<String> roleIds = userRoleRelationRepository.findRoleIdsByUserId(user.getId());
+            // 如果用户没有角色，给一个默认的学生角色
+            if (roleIds.isEmpty()) {
+                roleIds = new HashSet<>();
+                roleIds.add("ROLE_STUDENT");
+            }
 
             // 3. 创建UserDetails对象
             Collection<GrantedAuthority> authorities = new ArrayList<>();
             for (String roleId : roleIds) {
-                authorities.add(new SimpleGrantedAuthority(roleId));
+                if (roleId != null && !roleId.trim().isEmpty()) {
+                    authorities.add(new SimpleGrantedAuthority(roleId));
+                }
             }
 
             UserDetails userDetails = User.builder()
@@ -87,6 +120,18 @@ public class AuthServiceImpl implements AuthService {
                     .password("") // 密码不需要在令牌中
                     .authorities(authorities)
                     .build();
+            
+            // 确保 userDetails 不为空
+            if (userDetails == null || userDetails.getUsername() == null) {
+                loginLogService.logFailedLogin(
+                    loginRequest.getUsername(),
+                    loginRequest.getIpAddress(),
+                    loginRequest.getDeviceType(),
+                    "UserDetails 创建失败",
+                    loginRequest.getLoginInfo()
+                );
+                return Result.error(500, "用户认证信息创建失败");
+            }
 
             // 4. 生成JWT令牌
             String accessToken = jwtTokenUtil.generateToken(userDetails);

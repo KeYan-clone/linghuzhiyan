@@ -84,6 +84,13 @@ public class JwtTokenUtil {
      */
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
+        
+        // 将角色信息添加到 JWT Claims 中
+        String roles = userDetails.getAuthorities().stream()
+                .map(authority -> authority.getAuthority())
+                .collect(java.util.stream.Collectors.joining(","));
+        claims.put("roles", roles);
+        
         return doGenerateToken(claims, userDetails.getUsername());
     }
 
