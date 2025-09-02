@@ -65,7 +65,7 @@ spring:
         - id: experiment-service
           uri: lb://linghuzhiyan-experiment-service
           predicates:
-            - Path=/api/experiments/**
+            - Path=/api/experiments/**,/api/questions/**,/api/student/experiments/**
 #          filters:
 #            - StripPrefix=2
 
@@ -89,7 +89,7 @@ spring:
         - id: discussion-service
           uri: lb://linghuzhiyan-discussion-service
           predicates:
-            - Path=/api/discussions/**
+            - Path=/api/discussions/**,/api/comments/**
 #          filters:
 #            - StripPrefix=2
             
@@ -97,7 +97,7 @@ spring:
         - id: message-service
           uri: lb://linghuzhiyan-message-service
           predicates:
-            - Path=/api/messages/**
+            - Path=/api/messages/**,/api/announcements/**
 #          filters:
 #            - StripPrefix=2
             
