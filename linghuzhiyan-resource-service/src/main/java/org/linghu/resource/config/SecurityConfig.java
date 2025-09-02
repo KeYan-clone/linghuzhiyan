@@ -29,6 +29,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // 健康检查端点允许匿名访问
                 .requestMatchers("/actuator/**").permitAll()
+                // Swagger/OpenAPI 端点
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .requestMatchers("/api/resources/download/**").permitAll()
                 // 其他接口需要认证
                 .anyRequest().authenticated()
