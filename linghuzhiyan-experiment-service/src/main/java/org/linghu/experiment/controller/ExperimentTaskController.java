@@ -18,7 +18,7 @@ import java.util.List;
  */
 @RequestMapping("/api/experiments/tasks")
 @RestController
-@PreAuthorize("hasAnyRole('ROLE_TEACHER','ROLE_ADMIN','ROLE_ASSISTANT')")
+@PreAuthorize("hasAnyRole('TEACHER','ADMIN','ASSISTANT')")
 @Tag(name = "实验任务管理", description = "实验任务管理相关API")
 public class ExperimentTaskController {
 

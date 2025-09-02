@@ -45,7 +45,7 @@ public class UserController {
 
     @DeleteMapping("/delete/{userId}")
     @Operation(summary = "删除用户", description = "只有管理员可以删除用户")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public Result<Void> deleteUser(@PathVariable String userId,
                                    @AuthenticationPrincipal UserDetails userDetails) {
         userService.deleteUser(userId, userDetails.getUsername());
@@ -77,7 +77,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     @Operation(summary = "获取指定用户", description = "根据ID获取用户信息")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_TEACHER','ROLE_ASSISTANT')")
+    @PreAuthorize("hasAnyRole('ADMIN','TEACHER','ASSISTANT')")
     public Result<UserDTO> getUser(@PathVariable String id) {
         UserDTO userDTO = userService.getUserById(id);
         return Result.success(userDTO);
@@ -85,7 +85,7 @@ public class UserController {
 
     @GetMapping
     @Operation(summary = "分页查询用户", description = "分页查询用户列表")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_TEACHER','ROLE_ASSISTANT')")
+    @PreAuthorize("hasAnyRole('ADMIN','TEACHER','ASSISTANT')")
     public Result<PageResult<UserDTO>> listUsers(@RequestParam(defaultValue = "1") int pageNum,
             @RequestParam(defaultValue = "10") int pageSize) {
         Page<UserDTO> page = userService.listUsers(pageNum, pageSize);
@@ -120,7 +120,7 @@ public class UserController {
     
     @PostMapping("/setrole")
     @Operation(summary = "设置用户角色", description = "具有更高权限的用户可以为其他用户分配同级或更低级权限")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_TEACHER','ROLE_ASSISTANT')")
+    @PreAuthorize("hasAnyRole('ADMIN','TEACHER','ASSISTANT')")
     public Result<Void> setRole(@Valid @RequestBody SetRoleRequestDTO request,
                                @AuthenticationPrincipal UserDetails userDetails) {
         userService.setUserRole(request.getUserId(), request.getRoleId(), userDetails.getUsername());
@@ -129,7 +129,7 @@ public class UserController {
 
     @GetMapping("/{userId}/roles")
     @Operation(summary = "获取用户角色", description = "获取指定用户的角色列表")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_TEACHER','ROLE_ASSISTANT')")
+    @PreAuthorize("hasAnyRole('ADMIN','TEACHER','ASSISTANT')")
     public Result<Set<String>> getUserRoles(@PathVariable String userId) {
         Set<String> roleIds = userService.getUserRoleIds(userId);
         return Result.success(roleIds);

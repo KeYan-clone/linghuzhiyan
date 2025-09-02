@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/experiments")
 @Tag(name = "实验管理", description = "实验管理相关API")
-@PreAuthorize("hasAnyRole('ROLE_TEACHER','ROLE_ADMIN','ROLE_ASSISTANT')")
+@PreAuthorize("hasAnyRole('TEACHER','ADMIN','ASSISTANT')")
 public class ExperimentController {
 
     private final ExperimentService experimentService;

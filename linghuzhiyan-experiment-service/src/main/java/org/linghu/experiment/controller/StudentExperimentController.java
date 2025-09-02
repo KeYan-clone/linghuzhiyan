@@ -18,7 +18,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/student/experiments")
-@PreAuthorize("hasRole('ROLE_STUDENT')")
+@PreAuthorize("hasRole('STUDENT')")
 @Tag(name = "学生实验参与", description = "学生参与实验相关API")
 public class StudentExperimentController {
 
