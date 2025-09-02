@@ -29,7 +29,7 @@ spring:
 # Logging Configuration
 logging:
   level:
-    org.springframework.test: DEBUG
-    org.linghu.user: DEBUG
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    '[org.springframework.test]': DEBUG
+    '[org.linghu.user]': DEBUG
+    '[org.hibernate.SQL]': DEBUG
+    '[org.hibernate.type.descriptor.sql.BasicBinder]': TRACE
