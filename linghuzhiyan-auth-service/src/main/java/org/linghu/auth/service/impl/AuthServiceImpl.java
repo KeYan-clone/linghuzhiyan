@@ -107,7 +107,33 @@ public class AuthServiceImpl implements AuthService {
                 roleIds.add("ROLE_STUDENT");
             }
 
-            // 3. 创建UserDetails对象
+            // 3. 验证请求的角色是否有效
+            String requestedRole = loginRequest.getRole();
+            if (requestedRole != null && !requestedRole.trim().isEmpty()) {
+                // 标准化角色名称（确保以ROLE_开头）
+                String normalizedRequestedRole = requestedRole.startsWith("ROLE_") ? 
+                    requestedRole : "ROLE_" + requestedRole;
+                
+                // 检查用户是否拥有请求的角色
+                if (!roleIds.contains(normalizedRequestedRole)) {
+                    loginLogService.logFailedLogin(
+                        loginRequest.getUsername(),
+                        loginRequest.getIpAddress(),
+                        loginRequest.getDeviceType(),
+                        "用户没有请求的角色权限: " + requestedRole,
+                        loginRequest.getLoginInfo()
+                    );
+                    return Result.error(403, "您没有请求的角色权限: " + requestedRole);
+                }
+                
+                // 如果指定了角色，只使用该角色进行登录
+                roleIds = Set.of(normalizedRequestedRole);
+                log.info("用户 {} 使用指定角色 {} 登录", user.getUsername(), normalizedRequestedRole);
+            } else {
+                log.info("用户 {} 使用所有角色登录: {}", user.getUsername(), roleIds);
+            }
+
+            // 4. 创建UserDetails对象
             Collection<GrantedAuthority> authorities = new ArrayList<>();
             for (String roleId : roleIds) {
                 if (roleId != null && !roleId.trim().isEmpty()) {
@@ -133,11 +159,11 @@ public class AuthServiceImpl implements AuthService {
                 return Result.error(500, "用户认证信息创建失败");
             }
 
-            // 4. 生成JWT令牌
+            // 5. 生成JWT令牌
             String accessToken = jwtTokenUtil.generateToken(userDetails);
             String refreshToken = generateRefreshToken(user.getUsername());
 
-            // 5. 记录成功登录日志
+            // 6. 记录成功登录日志
             loginLogService.logSuccessfulLogin(
                 user.getId(),
                 loginRequest.getIpAddress(),
@@ -145,7 +171,7 @@ public class AuthServiceImpl implements AuthService {
                 loginRequest.getLoginInfo()
             );
 
-            // 6. 构建响应
+            // 7. 构建响应
             LoginResponseDTO response = new LoginResponseDTO();
             response.setAccessToken(accessToken);
             response.setRefreshToken(refreshToken);
