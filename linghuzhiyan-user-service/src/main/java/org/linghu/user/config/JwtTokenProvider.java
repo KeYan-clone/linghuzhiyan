@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -86,16 +88,20 @@ public class JwtTokenProvider {
             String username = claims.getSubject();
             String rolesString = claims.get("roles", String.class);
             
-            Collection<SimpleGrantedAuthority> authorities;
-            if (rolesString != null && !rolesString.isEmpty()) {
-                authorities = Arrays.stream(rolesString.split(","))
-                        .map(role -> new SimpleGrantedAuthority("ROLE_" + role.trim()))
-                        .collect(Collectors.toList());
-            } else {
-                authorities = Arrays.asList(new SimpleGrantedAuthority("ROLE_USER"));
-            }
+            Collection<SimpleGrantedAuthority>  authorities = Arrays.stream(rolesString.split(","))
+                    .map(String::trim)
+                    .filter(role -> !role.isEmpty()) // 避免空字符串
+                    .map(SimpleGrantedAuthority::new)
+                    .collect(Collectors.toList());
 
-            return new UsernamePasswordAuthenticationToken(username, null, authorities);
+            // 创建 UserDetails 对象作为 principal
+            UserDetails userDetails = User.builder()
+                    .username(username)
+                    .password("") // JWT认证不需要密码
+                    .authorities(authorities)
+                    .build();
+
+            return new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
         } catch (Exception e) {
             log.error("从Token获取认证信息失败: {}", e.getMessage());
             return null;
