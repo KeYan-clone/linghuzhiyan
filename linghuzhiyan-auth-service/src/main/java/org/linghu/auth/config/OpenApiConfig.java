@@ -6,11 +6,17 @@ import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.List;
+
 /**
  * OpenAPI配置类
+ * 
+ * @author linghu
+ * @version 1.0.0
  */
 @Configuration
 public class OpenApiConfig {
@@ -23,11 +29,20 @@ public class OpenApiConfig {
                         .description("灵狐智验系统的认证服务，提供用户登录、登出、令牌验证等功能")
                         .version("1.0.0")
                         .contact(new Contact()
-                                .name("开发团队")
-                                .email("dev@linghuzhiyan.com"))
+                                .name("灵狐智验团队")
+                                .email("support@linghuzhiyan.com")
+                                .url("https://www.linghuzhiyan.com"))
                         .license(new License()
                                 .name("MIT License")
                                 .url("https://opensource.org/licenses/MIT")))
+                .servers(List.of(
+                        new Server()
+                                .url("http://localhost:8080/api/auth")
+                                .description("网关访问地址"),
+                        new Server()
+                                .url("http://localhost:8002")
+                                .description("直接访问地址")
+                ))
                 .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
                 .components(new io.swagger.v3.oas.models.Components()
                         .addSecuritySchemes("bearerAuth",
