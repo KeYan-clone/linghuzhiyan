@@ -24,7 +24,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/questions")
-@PreAuthorize("hasAnyRole('ROLE_TEACHER', 'ROLE_ADMIN', 'ROLE_ASSISTANT')")
+@PreAuthorize("hasAnyRole('TEACHER', 'ADMIN', 'ASSISTANT')")
 @Tag(name = "题库管理", description = "题目管理相关API")
 public class QuestionController {
 

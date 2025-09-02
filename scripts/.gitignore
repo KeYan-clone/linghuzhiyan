@@ -1,0 +1,5 @@
+# Ignore runtime artifacts
+.pids/
+.logs/
+*.log
+*.pid
