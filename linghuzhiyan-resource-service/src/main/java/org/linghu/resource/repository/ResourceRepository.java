@@ -4,6 +4,7 @@ import org.linghu.resource.domain.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -48,6 +49,7 @@ public interface ResourceRepository extends JpaRepository<Resource, String> {
      * @param pageable 分页信息
      * @return 资源分页
      */
+    @Query("SELECT r FROM Resource r WHERE r.fileName LIKE %:fileName%")
     Page<Resource> findByFileNameContaining(String fileName, Pageable pageable);
 
     /**

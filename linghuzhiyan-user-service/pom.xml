@@ -84,12 +84,6 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- SpringDoc OpenAPI -->
-        <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-        </dependency>
-
         <!-- JWT -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
@@ -126,11 +120,11 @@
             <scope>test</scope>
         </dependency>
 
-<!--        &lt;!&ndash; Common Module &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>org.linghu</groupId>-->
-<!--            <artifactId>linghuzhiyan-common</artifactId>-->
-<!--        </dependency>-->
+        <!-- SpringDoc OpenAPI -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

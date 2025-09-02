@@ -43,12 +43,18 @@ services:
         - BUILD_DATE=${BUILD_DATE:-}
         - VERSION=${VERSION:-latest}
       target: runtime
+      pull: false
     image: linghuzhiyan/discovery-server:${VERSION:-latest}
     container_name: discovery
     ports:
       - "8761:8761"
     environment:
       JAVA_OPTS: "-Xms256m -Xmx512m"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8761/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   config:
     build:
@@ -58,10 +64,12 @@ services:
         - BUILD_DATE=${BUILD_DATE:-}
         - VERSION=${VERSION:-latest}
       target: runtime
+      pull: false
     image: linghuzhiyan/config-server:${VERSION:-latest}
     container_name: config
     depends_on:
-      - discovery
+      discovery:
+        condition: service_healthy
     ports:
       - "8888:8888"
     environment:
@@ -83,6 +91,7 @@ services:
         - BUILD_DATE=${BUILD_DATE:-}
         - VERSION=${VERSION:-latest}
       target: runtime
+      pull: false
     image: linghuzhiyan/gateway:${VERSION:-latest}
     container_name: gateway
     depends_on:
@@ -107,6 +116,7 @@ services:
         - BUILD_DATE=${BUILD_DATE:-}
         - VERSION=${VERSION:-latest}
       target: runtime
+      pull: false
     image: linghuzhiyan/auth-service:${VERSION:-latest}
     container_name: auth
     depends_on:
@@ -144,6 +154,7 @@ services:
         - BUILD_DATE=${BUILD_DATE:-}
         - VERSION=${VERSION:-latest}
       target: runtime
+      pull: false
     image: linghuzhiyan/user-service:${VERSION:-latest}
     container_name: user
     depends_on:
@@ -181,6 +192,7 @@ services:
         - BUILD_DATE=${BUILD_DATE:-}
         - VERSION=${VERSION:-latest}
       target: runtime
+      pull: false
     image: linghuzhiyan/experiment-service:${VERSION:-latest}
     container_name: experiment
     depends_on:
@@ -191,6 +203,8 @@ services:
       minio:
         condition: service_started
       config:
+        condition: service_healthy
+      discovery:
         condition: service_started
       discovery:
         condition: service_started
@@ -218,6 +232,7 @@ services:
         - BUILD_DATE=${BUILD_DATE:-}
         - VERSION=${VERSION:-latest}
       target: runtime
+      pull: false
     image: linghuzhiyan/resource-service:${VERSION:-latest}
     container_name: resource
     depends_on:
@@ -255,6 +270,7 @@ services:
         - BUILD_DATE=${BUILD_DATE:-}
         - VERSION=${VERSION:-latest}
       target: runtime
+      pull: false
     image: linghuzhiyan/message-service:${VERSION:-latest}
     container_name: message
     depends_on:
@@ -292,6 +308,7 @@ services:
         - BUILD_DATE=${BUILD_DATE:-}
         - VERSION=${VERSION:-latest}
       target: runtime
+      pull: false
     image: linghuzhiyan/discussion-service:${VERSION:-latest}
     container_name: discussion
     depends_on:
