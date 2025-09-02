@@ -1,26 +1,30 @@
+# 监控服务 Dockerfile
+# 注意：此 Dockerfile 假设 jar 包已经通过 mvn 命令构建完成
+# 构建命令: mvn clean package -DskipTests
 ARG BASE_IMAGE=eclipse-temurin:21-jre-jammy
 
-# Build stage
-FROM maven:3.9.6-eclipse-temurin-21 AS build
-WORKDIR /workspace
-
-# 1. 先只复制 pom 文件，下载依赖
-COPY pom.xml .
-COPY linghuzhiyan-monitor-service/pom.xml ./linghuzhiyan-monitor-service/
-RUN mvn dependency:go-offline -B
-
-# 2. 再复制源码并编译指定模块
-COPY . .
-RUN mvn -q -DskipTests -pl linghuzhiyan-monitor-service -am package
-
-# Runtime stage
 FROM ${BASE_IMAGE} AS runtime
 LABEL org.opencontainers.image.title="linghuzhiyan-monitor-service" \
       org.opencontainers.image.description="Spring Boot Admin Server" \
       org.opencontainers.image.source="https://example.local/linghuzhiyan"
 
 WORKDIR /app
-COPY --from=build /workspace/linghuzhiyan-monitor-service/target/linghuzhiyan-monitor-service-1.0.0.jar /app/app.jar
-ENV JAVA_OPTS=""
+
+# 复制已构建的 jar 包
+COPY linghuzhiyan-monitor-service/target/linghuzhiyan-monitor-service-1.0.0.jar /app/app.jar
+
+# 创建非 root 用户
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+RUN chown -R appuser:appuser /app
+USER appuser
+
+# 环境变量
+ENV JAVA_OPTS="-Xms256m -Xmx512m -Djava.security.egd=file:/dev/./urandom"
+
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
+  CMD curl -f http://localhost:8090/actuator/health || exit 1
+
 EXPOSE 8090
+
 ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar /app/app.jar"]
