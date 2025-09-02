@@ -141,7 +141,10 @@ spec:
                 {
                   "server": {"port": 8080},
                   "eureka": {"client": {"serviceUrl": {"defaultZone": "http://admin:admin123@discovery-server:8761/eureka/"}}},
-                  "spring": {"cloud": {"config": {"enabled": false}}},
+                  "spring": {"cloud": {"config": {"enabled": false}, "gateway": {"routes": [
+                    {"id": "auth-service", "uri": "lb://linghuzhiyan-auth-service", "predicates": ["Path=/api/auth/**"]},
+                    {"id": "user-service", "uri": "lb://linghuzhiyan-user-service", "predicates": ["Path=/api/users/**"]}
+                  ]}}},
                   "jwt": {"secret": "${JWT_SECRET}", "tokenHeader": "Authorization", "tokenHead": "Bearer"}
                 }
           readinessProbe:

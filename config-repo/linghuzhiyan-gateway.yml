@@ -34,9 +34,7 @@ spring:
           uri: lb://linghuzhiyan-auth-service
           predicates:
             - Path=/api/auth/**
-
-          filters:
-            - StripPrefix=1
+          
 
         # 认证服务内部路由
         - id: auth-service-internal
@@ -51,8 +49,7 @@ spring:
           uri: lb://linghuzhiyan-user-service
           predicates:
             - Path=/api/users/**
-          filters:
-            - StripPrefix=1
+          
 
         # 用户服务内部路由
         - id: user-service-internal

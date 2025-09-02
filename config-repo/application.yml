@@ -57,7 +57,7 @@ jwt:
   secret: ${JWT_SECRET:linghuzhiyan-universal-jwt-secret-key-2025-shared-across-all-microservices}
   expiration: 86400000  
   tokenHeader: Authorization
-  tokenHead: "Bearer "
+  tokenHead: "Bearer"
 
 # 通用日志配置
 logging:

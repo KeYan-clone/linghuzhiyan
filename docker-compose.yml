@@ -59,6 +59,11 @@ services:
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://admin:admin123@discovery:8761/eureka/"
     volumes:
       - ./config-repo:/app/config-repo:ro
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8888/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
 
   gateway:
     build:
@@ -66,8 +71,10 @@ services:
       dockerfile: ./linghuzhiyan-gateway/Dockerfile
     container_name: gateway
     depends_on:
-      - config
-      - discovery
+      config:
+        condition: service_healthy
+      discovery:
+        condition: service_started
     ports:
       - "8080:8080"
     environment:
@@ -90,7 +97,7 @@ services:
       minio:
         condition: service_started
       config:
-        condition: service_started
+        condition: service_healthy
       discovery:
         condition: service_started
     ports:
@@ -122,7 +129,7 @@ services:
       minio:
         condition: service_started
       config:
-        condition: service_started
+        condition: service_healthy
       discovery:
         condition: service_started
     ports:
