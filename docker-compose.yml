@@ -39,6 +39,11 @@ services:
     build:
       context: .
       dockerfile: ./linghuzhiyan-discovery-server/Dockerfile
+      args:
+        - BUILD_DATE=${BUILD_DATE:-}
+        - VERSION=${VERSION:-latest}
+      target: runtime
+    image: linghuzhiyan/discovery-server:${VERSION:-latest}
     container_name: discovery
     ports:
       - "8761:8761"
@@ -49,6 +54,11 @@ services:
     build:
       context: .
       dockerfile: ./linghuzhiyan-config-server/Dockerfile
+      args:
+        - BUILD_DATE=${BUILD_DATE:-}
+        - VERSION=${VERSION:-latest}
+      target: runtime
+    image: linghuzhiyan/config-server:${VERSION:-latest}
     container_name: config
     depends_on:
       - discovery
@@ -69,6 +79,11 @@ services:
     build:
       context: .
       dockerfile: ./linghuzhiyan-gateway/Dockerfile
+      args:
+        - BUILD_DATE=${BUILD_DATE:-}
+        - VERSION=${VERSION:-latest}
+      target: runtime
+    image: linghuzhiyan/gateway:${VERSION:-latest}
     container_name: gateway
     depends_on:
       config:
@@ -88,6 +103,11 @@ services:
     build:
       context: .
       dockerfile: ./linghuzhiyan-auth-service/Dockerfile
+      args:
+        - BUILD_DATE=${BUILD_DATE:-}
+        - VERSION=${VERSION:-latest}
+      target: runtime
+    image: linghuzhiyan/auth-service:${VERSION:-latest}
     container_name: auth
     depends_on:
       mysql:
@@ -120,6 +140,11 @@ services:
     build:
       context: .
       dockerfile: ./linghuzhiyan-user-service/Dockerfile
+      args:
+        - BUILD_DATE=${BUILD_DATE:-}
+        - VERSION=${VERSION:-latest}
+      target: runtime
+    image: linghuzhiyan/user-service:${VERSION:-latest}
     container_name: user
     depends_on:
       mysql:
@@ -152,6 +177,11 @@ services:
     build:
       context: .
       dockerfile: ./linghuzhiyan-experiment-service/Dockerfile
+      args:
+        - BUILD_DATE=${BUILD_DATE:-}
+        - VERSION=${VERSION:-latest}
+      target: runtime
+    image: linghuzhiyan/experiment-service:${VERSION:-latest}
     container_name: experiment
     depends_on:
       mysql:
@@ -184,6 +214,11 @@ services:
     build:
       context: .
       dockerfile: ./linghuzhiyan-resource-service/Dockerfile
+      args:
+        - BUILD_DATE=${BUILD_DATE:-}
+        - VERSION=${VERSION:-latest}
+      target: runtime
+    image: linghuzhiyan/resource-service:${VERSION:-latest}
     container_name: resource
     depends_on:
       mysql:
@@ -216,6 +251,11 @@ services:
     build:
       context: .
       dockerfile: ./linghuzhiyan-message-service/Dockerfile
+      args:
+        - BUILD_DATE=${BUILD_DATE:-}
+        - VERSION=${VERSION:-latest}
+      target: runtime
+    image: linghuzhiyan/message-service:${VERSION:-latest}
     container_name: message
     depends_on:
       mysql:
@@ -248,6 +288,11 @@ services:
     build:
       context: .
       dockerfile: ./linghuzhiyan-discussion-service/Dockerfile
+      args:
+        - BUILD_DATE=${BUILD_DATE:-}
+        - VERSION=${VERSION:-latest}
+      target: runtime
+    image: linghuzhiyan/discussion-service:${VERSION:-latest}
     container_name: discussion
     depends_on:
       mysql:

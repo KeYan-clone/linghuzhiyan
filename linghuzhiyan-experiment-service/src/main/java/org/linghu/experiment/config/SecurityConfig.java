@@ -25,18 +25,17 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    @Value("${jwt.secret}")
-    private String jwtSecret;
+    private final JwtTokenProvider jwtTokenProvider;
 
-    @Value("${jwt.tokenHeader}")
+    @Value("${jwt.tokenHeader:Authorization}")
     private String tokenHeader;
 
-    @Value("${jwt.tokenHead}")
+    @Value("${jwt.tokenHead:Bearer }")
     private String tokenHead;
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(jwtSecret, tokenHeader, tokenHead);
+        return new JwtAuthenticationFilter(jwtTokenProvider, tokenHeader, tokenHead);
     }
 
     @Bean

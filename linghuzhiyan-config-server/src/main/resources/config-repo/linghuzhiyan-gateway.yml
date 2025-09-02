@@ -34,72 +34,72 @@ spring:
           uri: lb://linghuzhiyan-auth-service
           predicates:
             - Path=/api/auth/**
-#          filters:
-#            - StripPrefix=1
+          filters:
+            - StripPrefix=2
 
         # 认证服务内部路由
         - id: auth-service-internal
           uri: lb://linghuzhiyan-auth-service
           predicates:
             - Path=/api/internal/auth/**
-#          filters:
-#            - StripPrefix=3
+          filters:
+            - StripPrefix=3
 
         # 用户服务路由
         - id: user-service
           uri: lb://linghuzhiyan-user-service
           predicates:
             - Path=/api/users/**
-#          filters:
-#            - StripPrefix=1
+          filters:
+            - StripPrefix=2
 
         # 用户服务内部路由
         - id: user-service-internal
           uri: lb://linghuzhiyan-user-service
           predicates:
             - Path=/api/internal/users/**
-#          filters:
-#            - StripPrefix=3
+          filters:
+            - StripPrefix=3
             
         # 实验服务路由
         - id: experiment-service
           uri: lb://linghuzhiyan-experiment-service
           predicates:
             - Path=/api/experiments/**
-#          filters:
-#            - StripPrefix=1
+          filters:
+            - StripPrefix=2
 
         # 实验服务内部路由
         - id: experiment-service-internal
           uri: lb://linghuzhiyan-experiment-service
           predicates:
             - Path=/api/internal/experiments/**
-#          filters:
-#            - StripPrefix=3
+          filters:
+            - StripPrefix=3
             
         # 资源服务路由
         - id: resource-service
           uri: lb://linghuzhiyan-resource-service
           predicates:
             - Path=/api/resources/**
-#          filters:
-#            - StripPrefix=1
+          filters:
+            - StripPrefix=2
             
         # 讨论服务路由
         - id: discussion-service
           uri: lb://linghuzhiyan-discussion-service
           predicates:
             - Path=/api/discussions/**
-#          filters:
-#            - StripPrefix=1
+          filters:
+            - StripPrefix=2
             
         # 消息服务路由
         - id: message-service
           uri: lb://linghuzhiyan-message-service
           predicates:
             - Path=/api/messages/**
-#          filters:
-#            - StripPrefix=1
+          filters:
+            - StripPrefix=2
             
         # Swagger文档路由
         - id: user-service-swagger
