@@ -106,43 +106,43 @@ spring:
           uri: lb://linghuzhiyan-user-service
           predicates:
             - Path=/user-service/v3/api-docs
-#          filters:
-#            - StripPrefix=1
+          filters:
+            - StripPrefix=1
             
         - id: auth-service-swagger
           uri: lb://linghuzhiyan-auth-service
           predicates:
             - Path=/auth-service/v3/api-docs
-#          filters:
-#            - StripPrefix=1
+          filters:
+            - StripPrefix=1
             
         - id: experiment-service-swagger
           uri: lb://linghuzhiyan-experiment-service
           predicates:
             - Path=/experiment-service/v3/api-docs
-#          filters:
-#            - StripPrefix=1
+          filters:
+            - StripPrefix=1
             
         - id: resource-service-swagger
           uri: lb://linghuzhiyan-resource-service
           predicates:
             - Path=/resource-service/v3/api-docs
-#          filters:
-#            - StripPrefix=1
+          filters:
+            - StripPrefix=1
             
         - id: discussion-service-swagger
           uri: lb://linghuzhiyan-discussion-service
           predicates:
             - Path=/discussion-service/v3/api-docs
-#          filters:
-#            - StripPrefix=1
+          filters:
+            - StripPrefix=1
             
         - id: message-service-swagger
           uri: lb://linghuzhiyan-message-service
           predicates:
             - Path=/message-service/v3/api-docs
-#          filters:
-#            - StripPrefix=1
+          filters:
+            - StripPrefix=1
 
 # SpringDoc配置
 springdoc:
