@@ -141,6 +141,134 @@ services:
       SPRING_REDIS_HOST: "redis"
       SPRING_REDIS_PORT: "6379"
 
+  experiment:
+    build:
+      context: .
+      dockerfile: ./linghuzhiyan-experiment-service/Dockerfile
+    container_name: experiment
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      minio:
+        condition: service_started
+      config:
+        condition: service_started
+      discovery:
+        condition: service_started
+    ports:
+      - "8083:8083"
+    environment:
+      JAVA_OPTS: "-Xms256m -Xmx512m"
+      DB_HOST: "mysql"
+      DB_PORT: "3306"
+      DB_USERNAME: "root"
+      DB_PASSWORD: "${DB_PASSWORD:-password}"
+      MINIO_ENDPOINT: "http://minio:9000"
+      MINIO_ACCESS_KEY: "${MINIO_ACCESS_KEY:-minioadmin}"
+      MINIO_SECRET_KEY: "${MINIO_SECRET_KEY:-minioadmin}"
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://config:config123@config:8888"
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://admin:admin123@discovery:8761/eureka/"
+      SPRING_REDIS_HOST: "redis"
+      SPRING_REDIS_PORT: "6379"
+
+  resource:
+    build:
+      context: .
+      dockerfile: ./linghuzhiyan-resource-service/Dockerfile
+    container_name: resource
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      minio:
+        condition: service_started
+      config:
+        condition: service_started
+      discovery:
+        condition: service_started
+    ports:
+      - "8086:8086"
+    environment:
+      JAVA_OPTS: "-Xms256m -Xmx512m"
+      DB_HOST: "mysql"
+      DB_PORT: "3306"
+      DB_USERNAME: "root"
+      DB_PASSWORD: "${DB_PASSWORD:-password}"
+      MINIO_ENDPOINT: "http://minio:9000"
+      MINIO_ACCESS_KEY: "${MINIO_ACCESS_KEY:-minioadmin}"
+      MINIO_SECRET_KEY: "${MINIO_SECRET_KEY:-minioadmin}"
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://config:config123@config:8888"
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://admin:admin123@discovery:8761/eureka/"
+      SPRING_REDIS_HOST: "redis"
+      SPRING_REDIS_PORT: "6379"
+
+  message:
+    build:
+      context: .
+      dockerfile: ./linghuzhiyan-message-service/Dockerfile
+    container_name: message
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      minio:
+        condition: service_started
+      config:
+        condition: service_started
+      discovery:
+        condition: service_started
+    ports:
+      - "8085:8085"
+    environment:
+      JAVA_OPTS: "-Xms256m -Xmx512m"
+      DB_HOST: "mysql"
+      DB_PORT: "3306"
+      DB_USERNAME: "root"
+      DB_PASSWORD: "${DB_PASSWORD:-password}"
+      MINIO_ENDPOINT: "http://minio:9000"
+      MINIO_ACCESS_KEY: "${MINIO_ACCESS_KEY:-minioadmin}"
+      MINIO_SECRET_KEY: "${MINIO_SECRET_KEY:-minioadmin}"
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://config:config123@config:8888"
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://admin:admin123@discovery:8761/eureka/"
+      SPRING_REDIS_HOST: "redis"
+      SPRING_REDIS_PORT: "6379"
+
+  discussion:
+    build:
+      context: .
+      dockerfile: ./linghuzhiyan-discussion-service/Dockerfile
+    container_name: discussion
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      minio:
+        condition: service_started
+      config:
+        condition: service_started
+      discovery:
+        condition: service_started
+    ports:
+      - "8087:8087"
+    environment:
+      JAVA_OPTS: "-Xms256m -Xmx512m"
+      DB_HOST: "mysql"
+      DB_PORT: "3306"
+      DB_USERNAME: "root"
+      DB_PASSWORD: "${DB_PASSWORD:-password}"
+      MINIO_ENDPOINT: "http://minio:9000"
+      MINIO_ACCESS_KEY: "${MINIO_ACCESS_KEY:-minioadmin}"
+      MINIO_SECRET_KEY: "${MINIO_SECRET_KEY:-minioadmin}"
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://config:config123@config:8888"
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://admin:admin123@discovery:8761/eureka/"
+      SPRING_REDIS_HOST: "redis"
+      SPRING_REDIS_PORT: "6379"
+
 networks:
   default:
     name: linghuzhiyan-net

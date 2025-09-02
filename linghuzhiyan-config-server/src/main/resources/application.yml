@@ -11,7 +11,7 @@ spring:
       server:
         # 本地文件系统配置（开发环境使用）
         native:
-          search-locations: file:./config-repo,classpath:/config-repo
+          search-locations: classpath:/config-repo,file:./config-repo
           
   # 配置文件激活 native profile（本地文件系统）
   profiles:

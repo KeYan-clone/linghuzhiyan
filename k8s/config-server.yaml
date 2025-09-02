@@ -1,0 +1,115 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-repo
+  namespace: linghuzhiyan
+data:
+  application.yml: |
+    # 公共配置内容（从config-repo/application.yml复制）
+    spring:
+      redis:
+        host: redis
+        port: 6379
+        database: 0
+        timeout: 2000ms
+        jedis:
+          pool:
+            max-active: 8
+            max-wait: -1ms
+            max-idle: 8
+            min-idle: 0
+    
+    minio:
+      endpoint: http://minio:9000
+      accessKey: minioadmin
+      secretKey: minioadmin
+      bucketName: linghuzhiyan
+    
+    eureka:
+      client:
+        serviceUrl:
+          defaultZone: http://admin:admin123@discovery-server:8761/eureka/
+        registerWithEureka: true
+        fetchRegistry: true
+      instance:
+        preferIpAddress: true
+        instanceId: ${spring.application.name}:${spring.application.instance-id:${random.value}}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: config-server
+  namespace: linghuzhiyan
+  labels:
+    app: config-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: config-server
+  template:
+    metadata:
+      labels:
+        app: config-server
+    spec:
+      containers:
+      - name: config-server
+        image: linghuzhiyan/config-server:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: JAVA_OPTS
+          value: "-Xms256m -Xmx512m"
+        - name: SPRING_PROFILES_ACTIVE
+          value: "k8s"
+        - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
+          value: "http://admin:admin123@discovery-server:8761/eureka/"
+        ports:
+        - containerPort: 8888
+        volumeMounts:
+        - name: config-repo
+          mountPath: /app/config-repo
+          readOnly: true
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8888
+          initialDelaySeconds: 120
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8888
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      volumes:
+      - name: config-repo
+        configMap:
+          name: config-repo
+      depends_on:
+        - discovery-server
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: config-server
+  namespace: linghuzhiyan
+  labels:
+    app: config-server
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8888
+    targetPort: 8888
+  selector:
+    app: config-server

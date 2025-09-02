@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: discovery-server
+  namespace: linghuzhiyan
+  labels:
+    app: discovery-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: discovery-server
+  template:
+    metadata:
+      labels:
+        app: discovery-server
+    spec:
+      containers:
+      - name: discovery-server
+        image: linghuzhiyan/discovery-server:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: JAVA_OPTS
+          value: "-Xms256m -Xmx512m"
+        - name: SPRING_PROFILES_ACTIVE
+          value: "k8s"
+        ports:
+        - containerPort: 8761
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8761
+          initialDelaySeconds: 120
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8761
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: discovery-server
+  namespace: linghuzhiyan
+  labels:
+    app: discovery-server
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8761
+    targetPort: 8761
+  selector:
+    app: discovery-server
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: discovery-server-external
+  namespace: linghuzhiyan
+  labels:
+    app: discovery-server
+spec:
+  type: NodePort
+  ports:
+  - port: 8761
+    targetPort: 8761
+    nodePort: 30761
+  selector:
+    app: discovery-server
