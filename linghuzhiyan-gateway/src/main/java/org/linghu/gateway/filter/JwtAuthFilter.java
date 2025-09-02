@@ -41,7 +41,7 @@ public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Co
 
     private static final List<String> SKIP_AUTH_URLS = List.of(
         "/api/auth/login",
-        "/api/auth/register",
+        "/api/users/register",
         "/api/auth/refresh",
         "/actuator/health"
     );

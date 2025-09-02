@@ -10,6 +10,10 @@ LABEL org.opencontainers.image.title="linghuzhiyan-config-server" \
       org.opencontainers.image.description="Spring Cloud Config Server" \
       org.opencontainers.image.source="https://example.local/linghuzhiyan"
 WORKDIR /app
+# 安装 curl，用于容器健康检查
+RUN apt-get update \
+      && apt-get install -y --no-install-recommends curl \
+      && rm -rf /var/lib/apt/lists/*
 COPY --from=build /workspace/linghuzhiyan-config-server/target/linghuzhiyan-config-server-1.0.0.jar /app/app.jar
 ENV JAVA_OPTS=""
 EXPOSE 8888
