@@ -175,6 +175,7 @@ public class AuthServiceImpl implements AuthService {
             LoginResponseDTO response = new LoginResponseDTO();
             response.setAccessToken(accessToken);
             response.setRefreshToken(refreshToken);
+            response.setToken(accessToken);
             response.setTokenType("Bearer");
             response.setExpiresIn(jwtTokenUtil.getExpirationDateFromToken(accessToken).getTime());
             response.setUser(user);

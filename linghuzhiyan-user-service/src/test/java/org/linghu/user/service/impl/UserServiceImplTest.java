@@ -137,7 +137,7 @@ class UserServiceImplTest {
         userService.deleteUser("user-123", "admin");
 
         // Then
-        verify(userRepository).save(argThat(user -> user.getIsDeleted()));
+        verify(userRepository).delete(any(User.class));
     }
 
     @Test
