@@ -6,7 +6,7 @@ metadata:
   labels:
     app: gateway
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: gateway
@@ -21,7 +21,7 @@ spec:
         imagePullPolicy: IfNotPresent
         env:
         - name: JAVA_OPTS
-          value: "-Xms256m -Xmx512m"
+          value: "-Xms400m -Xmx800m"
         - name: SPRING_PROFILES_ACTIVE
           value: "k8s"
         - name: SPRING_CONFIG_IMPORT
@@ -34,10 +34,11 @@ spec:
           value: "6379"
         ports:
         - containerPort: 8080
+        - containerPort: 8081
         livenessProbe:
           httpGet:
             path: /actuator/health
-            port: 8080
+            port: 8081
           initialDelaySeconds: 120
           periodSeconds: 30
           timeoutSeconds: 10
@@ -45,17 +46,17 @@ spec:
         readinessProbe:
           httpGet:
             path: /actuator/health
-            port: 8080
+            port: 8081
           initialDelaySeconds: 60
           periodSeconds: 10
           timeoutSeconds: 5
           failureThreshold: 3
         resources:
           requests:
-            memory: "256Mi"
-            cpu: "200m"
+            memory: "400Mi"
+            cpu: "300m"
           limits:
-            memory: "512Mi"
+            memory: "1Gi"
             cpu: "500m"
 ---
 apiVersion: v1

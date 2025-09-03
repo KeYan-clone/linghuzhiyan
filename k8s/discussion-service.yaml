@@ -6,7 +6,7 @@ metadata:
   labels:
     app: discussion-service
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: discussion-service
@@ -21,7 +21,7 @@ spec:
         imagePullPolicy: IfNotPresent
         env:
         - name: JAVA_OPTS
-          value: "-Xms256m -Xmx512m"
+          value: "-Xms400m -Xmx800m"
         - name: SPRING_PROFILES_ACTIVE
           value: "k8s"
         - name: DB_HOST
@@ -49,6 +49,16 @@ spec:
           value: "redis"
         - name: SPRING_REDIS_PORT
           value: "6379"
+        - name: SPRING_DATA_MONGODB_HOST
+          value: "mongo"
+        - name: SPRING_DATA_MONGODB_PORT
+          value: "27017"
+        - name: SPRING_DATA_MONGODB_DATABASE
+          value: "linghuzhiyan_discussion"
+        - name: SPRING_DATA_MONGODB_USERNAME
+          value: "root"
+        - name: SPRING_DATA_MONGODB_PASSWORD
+          value: "example"
         ports:
         - containerPort: 8087
         livenessProbe:
@@ -69,10 +79,10 @@ spec:
           failureThreshold: 3
         resources:
           requests:
-            memory: "256Mi"
-            cpu: "200m"
+            memory: "400Mi"
+            cpu: "300m"
           limits:
-            memory: "512Mi"
+            memory: "1Gi"
             cpu: "500m"
 ---
 apiVersion: v1

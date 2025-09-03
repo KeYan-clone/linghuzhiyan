@@ -7,6 +7,42 @@ data:
   MYSQL_ROOT_PASSWORD: "password"
 ---
 apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-initdb-config
+  namespace: linghuzhiyan
+data:
+  001-init-databases.sql: |
+    -- Initialize databases for services (MySQL 8 default collation)
+    CREATE DATABASE IF NOT EXISTS linghuzhiyan_auth
+      DEFAULT CHARACTER SET utf8mb4
+      DEFAULT COLLATE utf8mb4_0900_ai_ci;
+
+    CREATE DATABASE IF NOT EXISTS linghuzhiyan_user
+      DEFAULT CHARACTER SET utf8mb4
+      DEFAULT COLLATE utf8mb4_0900_ai_ci;
+
+    -- Message service database
+    CREATE DATABASE IF NOT EXISTS linghuzhiyan_message
+      DEFAULT CHARACTER SET utf8mb4
+      DEFAULT COLLATE utf8mb4_0900_ai_ci;
+
+    -- Resource service database
+    CREATE DATABASE IF NOT EXISTS linghuzhiyan_resource
+      DEFAULT CHARACTER SET utf8mb4
+      DEFAULT COLLATE utf8mb4_0900_ai_ci;
+
+    -- Discussion service database
+    CREATE DATABASE IF NOT EXISTS linghuzhiyan_discussion
+      DEFAULT CHARACTER SET utf8mb4
+      DEFAULT COLLATE utf8mb4_0900_ai_ci;
+
+    -- Experiment service database
+    CREATE DATABASE IF NOT EXISTS linghuzhiyan_experiment
+      DEFAULT CHARACTER SET utf8mb4
+      DEFAULT COLLATE utf8mb4_0900_ai_ci;
+---
+apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: mysql-pvc
@@ -53,6 +89,8 @@ spec:
         volumeMounts:
         - name: mysql-storage
           mountPath: /var/lib/mysql
+        - name: mysql-initdb
+          mountPath: /docker-entrypoint-initdb.d
         livenessProbe:
           exec:
             command:
@@ -86,6 +124,9 @@ spec:
       - name: mysql-storage
         persistentVolumeClaim:
           claimName: mysql-pvc
+      - name: mysql-initdb
+        configMap:
+          name: mysql-initdb-config
 ---
 apiVersion: v1
 kind: Service
