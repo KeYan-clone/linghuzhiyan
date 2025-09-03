@@ -70,11 +70,13 @@ pipeline {
 								sh 'kubectl apply -f mysql.yaml'
 								sh 'kubectl apply -f redis.yaml'
 								sh 'kubectl apply -f minio.yaml'
+								sh 'kubectl apply -f mongo.yaml'
 							} else {
 								bat 'kubectl apply -f namespace.yaml'
 								bat 'kubectl apply -f mysql.yaml'
 								bat 'kubectl apply -f redis.yaml'
 								bat 'kubectl apply -f minio.yaml'
+								bat 'kubectl apply -f mongo.yaml'
 							}
 						}
 					}
@@ -88,15 +90,17 @@ pipeline {
 						echo 'Waiting for infrastructure to be ready...'
 						if (isUnix()) {
 							sh '''
-								kubectl wait --for=condition=available --timeout=40s deployment/mysql -n linghuzhiyan || true
-								kubectl wait --for=condition=available --timeout=40s deployment/redis -n linghuzhiyan || true
-								kubectl wait --for=condition=available --timeout=40s deployment/minio -n linghuzhiyan || true
+								kubectl wait --for=condition=available --timeout=300s deployment/mysql -n linghuzhiyan || true
+								kubectl wait --for=condition=available --timeout=300s deployment/redis -n linghuzhiyan || true
+								kubectl wait --for=condition=available --timeout=300s deployment/minio -n linghuzhiyan || true
+								kubectl wait --for=condition=available --timeout=300s deployment/mongo -n linghuzhiyan || true
 							'''
 						} else {
 							bat '''
-								kubectl wait --for=condition=available --timeout=40s deployment/mysql -n linghuzhiyan || echo "MySQL timeout"
-								kubectl wait --for=condition=available --timeout=40s deployment/redis -n linghuzhiyan || echo "Redis timeout"
-								kubectl wait --for=condition=available --timeout=40s deployment/minio -n linghuzhiyan || echo "MinIO timeout"
+								kubectl wait --for=condition=available --timeout=300s deployment/mysql -n linghuzhiyan || echo "MySQL timeout"
+								kubectl wait --for=condition=available --timeout=300s deployment/redis -n linghuzhiyan || echo "Redis timeout"
+								kubectl wait --for=condition=available --timeout=300s deployment/minio -n linghuzhiyan || echo "MinIO timeout"
+								kubectl wait --for=condition=available --timeout=300s deployment/mongo -n linghuzhiyan || echo "MongoDB timeout"
 							'''
 						}
 					}
