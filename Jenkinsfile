@@ -196,6 +196,23 @@ pipeline {
 								kubectl get pods -n linghuzhiyan
 								kubectl get services -n linghuzhiyan
 								
+								echo "Setting up port forwarding for access..."
+								echo "Starting gateway port forward on port 8080..."
+								nohup kubectl port-forward -n linghuzhiyan service/gateway 8080:8080 > /dev/null 2>&1 &
+								sleep 3
+								
+								echo "======================================================="
+								echo "DEPLOYMENT COMPLETED SUCCESSFULLY!"
+								echo "======================================================="
+								echo "Access URLs:"
+								echo "- Gateway: http://localhost:8080"
+								echo "- Swagger UI: http://localhost:8080/swagger-ui/index.html"
+								echo "- Health Check: http://localhost:8080/actuator/health"
+								echo "======================================================="
+								echo "Note: Port forwarding is running in background"
+								echo "To stop port forwarding, run: pkill -f 'kubectl port-forward'"
+								echo "======================================================="
+								
 								echo "Checking if all pods are running..."
 								FAILED_PODS=$(kubectl get pods -n linghuzhiyan --field-selector=status.phase!=Running --no-headers | wc -l)
 								if [ $FAILED_PODS -gt 0 ]; then
@@ -219,7 +236,22 @@ pipeline {
 								kubectl get pods -n linghuzhiyan
 								kubectl get services -n linghuzhiyan
 								
-								echo Deployment completed successfully!
+								echo Setting up port forwarding for access...
+								echo Starting gateway port forward on port 8080...
+								start /B kubectl port-forward -n linghuzhiyan service/gateway 8080:8080
+								timeout /t 3
+								
+								echo =======================================================
+								echo DEPLOYMENT COMPLETED SUCCESSFULLY!
+								echo =======================================================
+								echo Access URLs:
+								echo - Gateway: http://localhost:8080
+								echo - Swagger UI: http://localhost:8080/swagger-ui/index.html
+								echo - Health Check: http://localhost:8080/actuator/health
+								echo =======================================================
+								echo Note: Port forwarding is running in background
+								echo To stop port forwarding, run: taskkill /f /im kubectl.exe
+								echo =======================================================
 							'''
 						}
 					}
