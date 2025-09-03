@@ -11,8 +11,17 @@
 .DS_Store
 Thumbs.db
 
-# Maven build outputs
-**/target/
+# Maven build outputs (exclude most but keep JAR files)
+**/target/classes/
+**/target/test-classes/
+**/target/maven-archiver/
+**/target/maven-status/
+**/target/generated-sources/
+**/target/generated-test-sources/
+**/target/surefire-reports/
+**/target/*.original
+# Keep JAR files for Docker builds
+# !**/target/*.jar
 
 # Docker runtime data (sockets, large files)
 docker/**/data/

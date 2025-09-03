@@ -43,7 +43,6 @@ services:
         - BUILD_DATE=${BUILD_DATE:-}
         - VERSION=${VERSION:-latest}
       target: runtime
-      pull: false
     image: linghuzhiyan/discovery-server:${VERSION:-latest}
     container_name: discovery
     ports:
@@ -64,7 +63,6 @@ services:
         - BUILD_DATE=${BUILD_DATE:-}
         - VERSION=${VERSION:-latest}
       target: runtime
-      pull: false
     image: linghuzhiyan/config-server:${VERSION:-latest}
     container_name: config
     depends_on:
@@ -91,7 +89,6 @@ services:
         - BUILD_DATE=${BUILD_DATE:-}
         - VERSION=${VERSION:-latest}
       target: runtime
-      pull: false
     image: linghuzhiyan/gateway:${VERSION:-latest}
     container_name: gateway
     depends_on:
@@ -116,7 +113,6 @@ services:
         - BUILD_DATE=${BUILD_DATE:-}
         - VERSION=${VERSION:-latest}
       target: runtime
-      pull: false
     image: linghuzhiyan/auth-service:${VERSION:-latest}
     container_name: auth
     depends_on:
@@ -154,7 +150,6 @@ services:
         - BUILD_DATE=${BUILD_DATE:-}
         - VERSION=${VERSION:-latest}
       target: runtime
-      pull: false
     image: linghuzhiyan/user-service:${VERSION:-latest}
     container_name: user
     depends_on:
@@ -192,7 +187,6 @@ services:
         - BUILD_DATE=${BUILD_DATE:-}
         - VERSION=${VERSION:-latest}
       target: runtime
-      pull: false
     image: linghuzhiyan/experiment-service:${VERSION:-latest}
     container_name: experiment
     depends_on:
@@ -230,7 +224,6 @@ services:
         - BUILD_DATE=${BUILD_DATE:-}
         - VERSION=${VERSION:-latest}
       target: runtime
-      pull: false
     image: linghuzhiyan/resource-service:${VERSION:-latest}
     container_name: resource
     depends_on:
@@ -268,7 +261,6 @@ services:
         - BUILD_DATE=${BUILD_DATE:-}
         - VERSION=${VERSION:-latest}
       target: runtime
-      pull: false
     image: linghuzhiyan/message-service:${VERSION:-latest}
     container_name: message
     depends_on:
@@ -306,7 +298,6 @@ services:
         - BUILD_DATE=${BUILD_DATE:-}
         - VERSION=${VERSION:-latest}
       target: runtime
-      pull: false
     image: linghuzhiyan/discussion-service:${VERSION:-latest}
     container_name: discussion
     depends_on:
