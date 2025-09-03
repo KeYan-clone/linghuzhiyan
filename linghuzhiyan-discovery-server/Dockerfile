@@ -6,7 +6,7 @@ WORKDIR /workspace
 # 1. 先只复制 pom 文件，下载依赖
 COPY pom.xml .
 COPY linghuzhiyan-discovery-server/pom.xml ./linghuzhiyan-discovery-server/
-RUN mvn dependency:go-offline -B
+RUN mvn -f linghuzhiyan-discovery-server/pom.xml dependency:go-offline -B
 
 # 2. 再复制源码并编译指定模块
 COPY . .
