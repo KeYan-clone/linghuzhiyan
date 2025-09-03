@@ -10,6 +10,9 @@ LABEL org.opencontainers.image.title="linghuzhiyan-monitor-service" \
 
 WORKDIR /app
 
+# 安装curl用于健康检查
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
 # 复制已构建的 jar 包
 COPY linghuzhiyan-monitor-service/target/linghuzhiyan-monitor-service-1.0.0.jar /app/app.jar
 

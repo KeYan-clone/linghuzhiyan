@@ -327,6 +327,33 @@ services:
       SPRING_REDIS_HOST: "redis"
       SPRING_REDIS_PORT: "6379"
 
+  monitor:
+    build:
+      context: .
+      dockerfile: ./linghuzhiyan-monitor-service/Dockerfile
+      args:
+        - BUILD_DATE=${BUILD_DATE:-}
+        - VERSION=${VERSION:-latest}
+      target: runtime
+    image: linghuzhiyan/monitor-service:${VERSION:-latest}
+    container_name: monitor
+    depends_on:
+      config:
+        condition: service_healthy
+      discovery:
+        condition: service_started
+    ports:
+      - "8090:8090"
+    environment:
+      JAVA_OPTS: "-Xms256m -Xmx512m"
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://config:config123@config:8888"
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://admin:admin123@discovery:8761/eureka/"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8090/actuator/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
 networks:
   default:
     name: linghuzhiyan-net
