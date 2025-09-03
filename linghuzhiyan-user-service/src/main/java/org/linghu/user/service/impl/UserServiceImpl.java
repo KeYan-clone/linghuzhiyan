@@ -108,8 +108,10 @@ public class UserServiceImpl implements UserService {
         }
 
         // 执行软删除
-        targetUser.setIsDeleted(true);
-        userRepository.save(targetUser);
+        // targetUser.setIsDeleted(true);
+        // userRepository.save(targetUser);
+
+        userRepository.delete(targetUser);
         
         log.info("用户 {} 已被用户 {} 删除", userId, currentUsername);
     }

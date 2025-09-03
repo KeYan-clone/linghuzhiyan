@@ -8,8 +8,8 @@
     { "key": "baseUrl", "value": "http://localhost:8080", "type": "string" },
     { "key": "noopUrl", "value": "https://httpbin.org/status/204", "type": "string" },
     { "key": "authHeader", "value": "", "type": "string" },
-    { "key": "adminUsername", "value": "user1", "type": "string" },
-    { "key": "adminPassword", "value": "string", "type": "string" },
+    { "key": "adminUsername", "value": "admin1", "type": "string" },
+    { "key": "adminPassword", "value": "admin1", "type": "string" },
     { "key": "teacherUsername", "value": "teacher01", "type": "string" },
     { "key": "teacherPassword", "value": "Tpass123", "type": "string" },
     { "key": "studentUsername", "value": "student01", "type": "string" },
@@ -37,7 +37,7 @@
       "request": {
         "method": "POST",
         "header": [ { "key": "Content-Type", "value": "application/json" } ],
-        "url": { "raw": "{{baseUrl}}/api/users/login", "host": ["{{baseUrl}}"], "path": ["api","users","login"] },
+        "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api","auth","login"] },
         "body": { "mode": "raw", "raw": "{\n  \"username\": \"{{adminUsername}}\",\n  \"password\": \"{{adminPassword}}\",\n  \"role\": \"ADMIN\"\n}" }
       },
       "event": [ { "listen": "test", "script": { "exec": [
@@ -53,7 +53,7 @@
       "request": {
         "method": "POST",
         "header": [ { "key": "Content-Type", "value": "application/json" } ],
-        "url": { "raw": "{{baseUrl}}/api/users/login", "host": ["{{baseUrl}}"], "path": ["api","users","login"] },
+        "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api","auth","login"] },
         "body": { "mode": "raw", "raw": "{\n  \"username\": \"{{teacherUsername}}\",\n  \"password\": \"{{teacherPassword}}\",\n  \"role\": \"TEACHER\"\n}" }
       },
       "event": [ { "listen": "test", "script": { "exec": [
@@ -69,7 +69,7 @@
       "request": {
         "method": "POST",
         "header": [ { "key": "Content-Type", "value": "application/json" } ],
-        "url": { "raw": "{{baseUrl}}/api/users/login", "host": ["{{baseUrl}}"], "path": ["api","users","login"] },
+        "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api","auth","login"] },
         "body": { "mode": "raw", "raw": "{\n  \"username\": \"{{studentUsername}}\",\n  \"password\": \"{{studentPassword}}\",\n  \"role\": \"STUDENT\"\n}" }
       },
       "event": [ { "listen": "test", "script": { "exec": [
@@ -85,7 +85,7 @@
       "request": {
         "method": "POST",
         "header": [ { "key": "Content-Type", "value": "application/json" } ],
-        "url": { "raw": "{{baseUrl}}/api/users/login", "host": ["{{baseUrl}}"], "path": ["api","users","login"] },
+        "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api","auth","login"] },
         "body": { "mode": "raw", "raw": "{\n  \"username\": \"{{student2Username}}\",\n  \"password\": \"{{student2Password}}\",\n  \"role\": \"STUDENT\"\n}" }
       },
       "event": [ { "listen": "test", "script": { "exec": [

@@ -69,6 +69,7 @@
         "pm.test('业务码 200', () => json && json.code === 200);",
         "pm.test('返回 token', () => json && json.data && json.data.token);",
   "if (json && json.data) { pm.collectionVariables.set('authHeader', `${json.data.tokenType} ${json.data.token}`); }",
+  "if (json && json.data) { pm.collectionVariables.set('adminUserId', `${json.data.user.id}`); }",
   "if (!pm.collectionVariables.get('runId')) { pm.collectionVariables.set('runId', String(Date.now())); }",
   "pm.collectionVariables.set('uniqueToken', `UNIQ-${pm.collectionVariables.get('runId')}-Q`);"
       ] } } ]
@@ -341,7 +342,7 @@
       "request": {
         "method": "POST",
         "header": [ { "key": "Content-Type", "value": "application/json" } ],
-        "url": { "raw": "{{baseUrl}}/api/users/login", "host": ["{{baseUrl}}"], "path": ["api","users","login"] },
+        "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api","auth","login"] },
         "body": { "mode": "raw", "raw": "{\n  \"username\": \"{{adminUsername}}\",\n  \"password\": \"{{adminPassword}}\",\n  \"role\": \"ASSISTANT\"\n}" }
       },
       "event": [ { "listen": "test", "script": { "exec": [
@@ -370,7 +371,7 @@
       "request": {
         "method": "POST",
         "header": [ { "key": "Content-Type", "value": "application/json" } ],
-        "url": { "raw": "{{baseUrl}}/api/users/login", "host": ["{{baseUrl}}"], "path": ["api","users","login"] },
+        "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api","auth","login"] },
         "body": { "mode": "raw", "raw": "{\n  \"username\": \"{{adminUsername}}\",\n  \"password\": \"{{adminPassword}}\",\n  \"role\": \"TEACHER\"\n}" }
       },
       "event": [ { "listen": "test", "script": { "exec": [
@@ -431,7 +432,7 @@
       "request": {
         "method": "POST",
         "header": [ { "key": "Content-Type", "value": "application/json" } ],
-        "url": { "raw": "{{baseUrl}}/api/users/login", "host": ["{{baseUrl}}"], "path": ["api","users","login"] },
+        "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api","auth","login"] },
         "body": { "mode": "raw", "raw": "{\n  \"username\": \"{{teacherUsername}}\",\n  \"password\": \"{{teacherPassword}}\",\n  \"role\": \"TEACHER\"\n}" }
       },
       "event": [ { "listen": "test", "script": { "exec": [
@@ -793,7 +794,7 @@
       "request": {
         "method": "POST",
         "header": [ { "key": "Content-Type", "value": "application/json" } ],
-        "url": { "raw": "{{baseUrl}}/api/users/login", "host": ["{{baseUrl}}"], "path": ["api","users","login"] },
+        "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api","auth","login"] },
         "body": { "mode": "raw", "raw": "{\n  \"username\": \"{{studentUsername}}\",\n  \"password\": \"{{studentPassword}}\",\n  \"role\": \"STUDENT\"\n}" }
       },
       "event": [ { "listen": "test", "script": { "exec": [
@@ -808,7 +809,7 @@
       "request": {
         "method": "POST",
         "header": [ { "key": "Content-Type", "value": "application/json" } ],
-        "url": { "raw": "{{baseUrl}}/api/users/login", "host": ["{{baseUrl}}"], "path": ["api","users","login"] },
+        "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api","auth","login"] },
         "body": { "mode": "raw", "raw": "{\n  \"username\": \"{{student2Username}}\",\n  \"password\": \"{{student2Password}}\",\n  \"role\": \"STUDENT\"\n}" }
       },
       "event": [ { "listen": "test", "script": { "exec": [
