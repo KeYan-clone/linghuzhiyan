@@ -6,7 +6,7 @@ metadata:
   labels:
     app: discussion-service
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: discussion-service
@@ -49,6 +49,16 @@ spec:
           value: "redis"
         - name: SPRING_REDIS_PORT
           value: "6379"
+        - name: SPRING_DATA_MONGODB_HOST
+          value: "mongo"
+        - name: SPRING_DATA_MONGODB_PORT
+          value: "27017"
+        - name: SPRING_DATA_MONGODB_DATABASE
+          value: "linghuzhiyan_discussion"
+        - name: SPRING_DATA_MONGODB_USERNAME
+          value: "root"
+        - name: SPRING_DATA_MONGODB_PASSWORD
+          value: "password"
         ports:
         - containerPort: 8087
         livenessProbe:
