@@ -4,6 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.linghu.discussion.dto.*;
 import org.linghu.discussion.service.DiscussionService;
+import org.linghu.discussion.service.CommentService;
+import org.linghu.discussion.dto.CommentRequestDTO;
+import org.linghu.discussion.dto.CommentResponseDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,6 +31,7 @@ import java.util.Map;
 public class DiscussionController {
 
     private final DiscussionService discussionService;
+    private final CommentService commentService;
 
     /**
      * 创建讨论
@@ -52,6 +56,62 @@ public class DiscussionController {
             response.put("message", "创建讨论失败: " + e.getMessage());
             return ResponseEntity.badRequest().body(response);
         }
+    }
+
+    /**
+     * 创建评论（兼容路径）
+     * 说明：原生评论创建接口在 CommentController 下为 /api/comments/discussions/{discussionId}/comments。
+     * 为兼容客户端直接对 /api/discussions/{id}/comments 发起 POST，这里做一个转发委托。
+     */
+    @PostMapping("/{id}/comments")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER') or hasRole('STUDENT')")
+    public ResponseEntity<Map<String, Object>> createCommentCompat(
+            @PathVariable @NotNull String id,
+            @Valid @RequestBody CommentRequestDTO requestDTO) {
+        try {
+            String currentUser = getCurrentUserId();
+            CommentResponseDTO responseDTO = commentService.createComment(id, requestDTO, currentUser);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "评论创建成功");
+            response.put("data", responseDTO);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("创建评论失败(兼容路径): id={}", id, e);
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "创建评论失败: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    /**
+     * 获取讨论的评论列表（兼容路径）
+     * 说明：原生为 CommentController 下的 GET /api/comments/discussions/{discussionId}/comments。
+     * 为兼容客户端直接访问 /api/discussions/{id}/comments，这里做一个委托。
+     */
+    @GetMapping("/{id}/comments")
+    public ResponseEntity<Page<CommentResponseDTO>> getCommentsByDiscussionIdCompat(
+            @PathVariable @NotNull String id,
+            @RequestParam(required = false, defaultValue = "false") boolean rootOnly,
+            @RequestParam(required = false, defaultValue = "createTime") String sortBy,
+            @RequestParam(required = false, defaultValue = "asc") String order,
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "10") int size) {
+
+        String currentUserId = null;
+        try {
+            currentUserId = getCurrentUserId();
+        } catch (Exception e) {
+            // 未登录用户也允许浏览评论
+        }
+
+        Page<CommentResponseDTO> comments = commentService.getCommentsByDiscussionId(
+                id, rootOnly, sortBy, order, page, size, currentUserId);
+
+        return ResponseEntity.ok(comments);
     }
 
     /**

@@ -28,12 +28,12 @@ public interface UserServiceClient {
     @NoArgsConstructor
     @AllArgsConstructor
     class UserInfo {
-        private String id;
-        private String username;
-        private String email;
-        private String role;
-        private String avatar;
-        private String department;
-        private Boolean active;
+    private String id;
+    private String username;
+    private String email;
+    private String role;
+    private String avatar;
+    private String department;
+    private Boolean active;
     }
 }

@@ -65,9 +65,7 @@ public class CommentServiceImpl implements CommentService {
             String replyToUsername = null;
             if (StringUtils.hasText(requestDTO.getReplyToUserId())) {
                 UserServiceClient.UserInfo replyToUser = userServiceClient.getUserById(requestDTO.getReplyToUserId());
-                if (replyToUser != null) {
-                    replyToUsername = replyToUser.getUsername();
-                }
+                if (replyToUser != null) replyToUsername = replyToUser.getUsername();
             }
 
             Comment comment = Comment.builder()

@@ -88,7 +88,7 @@ public class CommentController {
     /**
      * 获取评论的回复列表
      */
-    @GetMapping("/comments/{commentId}/replies")
+    @GetMapping({"/comments/{commentId}/replies", "/{commentId}/replies"})
     public ResponseEntity<Map<String, Object>> getRepliesByCommentId(@PathVariable @NotNull String commentId) {
         try {
             String currentUserId = null;
@@ -138,7 +138,7 @@ public class CommentController {
     /**
      * 获取评论详情
      */
-    @GetMapping("/comments/{commentId}")
+    @GetMapping({"/comments/{commentId}", "/{commentId}"})
     public ResponseEntity<Map<String, Object>> getCommentById(@PathVariable @NotNull String commentId) {
         try {
             String currentUserId = null;
@@ -167,7 +167,7 @@ public class CommentController {
     /**
      * 删除评论
      */
-    @DeleteMapping("/comments/{commentId}")
+    @DeleteMapping({"/comments/{commentId}", "/{commentId}"})
     @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER') or hasRole('STUDENT')")
     public ResponseEntity<Map<String, Object>> deleteComment(@PathVariable @NotNull String commentId) {
         try {
@@ -191,7 +191,7 @@ public class CommentController {
     /**
      * 点赞/取消点赞评论
      */
-    @PostMapping("/comments/{commentId}/like")
+    @PostMapping({"/comments/{commentId}/like", "/{commentId}/like"})
     @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER') or hasRole('STUDENT')")
     public ResponseEntity<Map<String, Object>> toggleLike(@PathVariable @NotNull String commentId) {
         try {
@@ -216,7 +216,7 @@ public class CommentController {
     /**
      * 举报评论
      */
-    @PostMapping("/comments/{commentId}/report")
+    @PostMapping({"/comments/{commentId}/report", "/{commentId}/report"})
     @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER') or hasRole('STUDENT')")
     public ResponseEntity<Map<String, Object>> reportComment(
             @PathVariable @NotNull String commentId,
@@ -242,7 +242,7 @@ public class CommentController {
     /**
      * 审核评论（管理员）
      */
-    @PutMapping("/comments/{commentId}/review")
+    @PutMapping({"/comments/{commentId}/review", "/{commentId}/review"})
     @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
     public ResponseEntity<Map<String, Object>> reviewComment(
             @PathVariable @NotNull String commentId,
@@ -269,7 +269,7 @@ public class CommentController {
     /**
      * 搜索评论
      */
-    @GetMapping("/comments/search")
+    @GetMapping({"/comments/search", "/search"})
     public ResponseEntity<Page<CommentResponseDTO>> searchComments(
             @RequestParam @NotEmpty String keyword,
             @RequestParam(required = false, defaultValue = "0") int page,
@@ -289,7 +289,7 @@ public class CommentController {
     /**
      * 获取需要审核的评论（管理员）
      */
-    @GetMapping("/comments/reported")
+    @GetMapping({"/comments/reported", "/reported"})
     @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
     public ResponseEntity<Page<CommentResponseDTO>> getReportedComments(
             @RequestParam(required = false, defaultValue = "0") int page,
@@ -334,7 +334,7 @@ public class CommentController {
     /**
      * 获取用户评论统计
      */
-    @GetMapping("/comments/stats/user/{userId}")
+    @GetMapping({"/comments/stats/user/{userId}", "/stats/user/{userId}"})
     public ResponseEntity<Map<String, Object>> getUserCommentStats(@PathVariable String userId) {
         try {
             long count = commentService.getUserCommentCount(userId);
@@ -356,7 +356,7 @@ public class CommentController {
     /**
      * 获取讨论评论统计
      */
-    @GetMapping("/comments/stats/discussion/{discussionId}")
+    @GetMapping({"/comments/stats/discussion/{discussionId}", "/stats/discussion/{discussionId}"})
     public ResponseEntity<Map<String, Object>> getDiscussionCommentStats(@PathVariable String discussionId) {
         try {
             long count = commentService.getDiscussionCommentCount(discussionId);
