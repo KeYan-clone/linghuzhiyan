@@ -180,8 +180,9 @@ pipeline {
 		stage('Deploy Autoscaling') {
 			steps {
 				withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
-					script {
-						echo 'Deploying Horizontal Pod Autoscaler configurations...'
+					dir('k8s') {
+						script {
+							echo 'Deploying Horizontal Pod Autoscaler configurations...'
 						if (isUnix()) {
 							sh '''
 								echo "Checking if Metrics Server is available..."
@@ -227,6 +228,7 @@ pipeline {
 				}
 			}
 		}
+        }
 		stage('Health Check') {
 			steps {
 				withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
@@ -290,18 +292,6 @@ pipeline {
 								echo Starting gateway port forward on port 8080...
 								start /B kubectl port-forward -n linghuzhiyan service/gateway 8080:8080
 								timeout /t 3
-								
-								echo =======================================================
-								echo DEPLOYMENT COMPLETED SUCCESSFULLY!
-								echo =======================================================
-								echo Access URLs:
-								echo - Gateway: http://localhost:8080
-								echo - Swagger UI: http://localhost:8080/swagger-ui/index.html
-								echo - Health Check: http://localhost:8080/actuator/health
-								echo =======================================================
-								echo Note: Port forwarding is running in background
-								echo To stop port forwarding, run: taskkill /f /im kubectl.exe
-								echo =======================================================
 							'''
 						}
 					}
