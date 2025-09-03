@@ -106,8 +106,8 @@ public interface ExperimentSubmissionRepository extends JpaRepository<Experiment
      * @param userId 用户ID
      * @return 提交记录（可选）
      */
-    @Query("SELECT es FROM ExperimentSubmission es WHERE es.taskId = :taskId AND es.userId = :userId ORDER BY es.submitTime DESC")
-    Optional<ExperimentSubmission> findByTaskIdAndUserId(@Param("taskId") String taskId, @Param("userId") String userId);
+  // 获取指定任务和用户的最新一次提交记录（按提交时间倒序取第一条）
+  Optional<ExperimentSubmission> findFirstByTaskIdAndUserIdOrderBySubmitTimeDesc(String taskId, String userId);
     
     /**
      * 根据用户ID查找最新的提交记录

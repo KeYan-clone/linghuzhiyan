@@ -125,8 +125,8 @@ public class StudentExperimentServiceImpl implements StudentExperimentService {
         ExperimentTask task = findTaskById(taskId);
 
         // 查找该任务的最新提交
-        Optional<ExperimentSubmission> submission = submissionRepository.findByTaskIdAndUserId(taskId,
-                user.getId());
+    Optional<ExperimentSubmission> submission = submissionRepository
+        .findFirstByTaskIdAndUserIdOrderBySubmitTimeDesc(taskId, user.getId());
 
         if (!submission.isPresent()) {
             throw new RuntimeException("未找到该任务的提交记录");

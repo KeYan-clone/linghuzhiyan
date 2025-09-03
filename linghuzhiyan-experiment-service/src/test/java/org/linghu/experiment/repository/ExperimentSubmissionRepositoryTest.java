@@ -255,9 +255,9 @@ class ExperimentSubmissionRepositoryTest {
     }
 
     @Test
-    void findByTaskIdAndUserId_WithNonExistingTaskAndUser_ShouldReturnEmpty() {
+    void findFirstByTaskIdAndUserIdOrderBySubmitTimeDesc_WithNonExistingTaskAndUser_ShouldReturnEmpty() {
         // When
-        Optional<ExperimentSubmission> submission = submissionRepository.findByTaskIdAndUserId("nonexistent", "user1");
+        Optional<ExperimentSubmission> submission = submissionRepository.findFirstByTaskIdAndUserIdOrderBySubmitTimeDesc("nonexistent", "user1");
 
         // Then
         assertFalse(submission.isPresent());
