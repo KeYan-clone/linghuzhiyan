@@ -22,6 +22,24 @@ services:
     ports:
       - "6379:6379"
 
+  mongo:
+    image: mongo:6
+    container_name: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USERNAME:-root}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD:-password}
+    # 如需本机调试可开放端口；生产可省略映射
+    # ports:
+    #   - "27017:27017"
+    # volumes:
+    #   - ./docker/mongo/data:/data/db
+    healthcheck:
+      # 使用 Compose 变量展开，在部署时将用户名/密码写死到命令中，避免 $VAR 在 JSON 形式中不被 shell 展开
+      test: ["CMD", "mongosh", "--quiet", "mongodb://${MONGODB_USERNAME:-root}:${MONGODB_PASSWORD:-password}@localhost:27017/admin", "--eval", "db.runCommand({ ping: 1 }).ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
   minio:
     image: minio/minio:RELEASE.2024-01-11T07-46-16Z
     container_name: minio
@@ -301,6 +319,8 @@ services:
     image: linghuzhiyan/discussion-service:${VERSION:-latest}
     container_name: discussion
     depends_on:
+      mongo:
+        condition: service_healthy
       mysql:
         condition: service_healthy
       redis:
@@ -315,6 +335,11 @@ services:
       - "8087:8087"
     environment:
       JAVA_OPTS: "-Xms256m -Xmx512m"
+      # MongoDB 连接信息（覆盖配置中心中的默认 localhost）
+      MONGODB_HOST: "mongo"
+      MONGODB_PORT: "27017"
+      MONGODB_USERNAME: "${MONGODB_USERNAME:-root}"
+      MONGODB_PASSWORD: "${MONGODB_PASSWORD:-password}"
       DB_HOST: "mysql"
       DB_PORT: "3306"
       DB_USERNAME: "root"
