@@ -66,7 +66,7 @@ pipeline {
                         ).trim()
                     }
                     
-                    env.BUILD_VERSION = "${env.BUILD_NUMBER}-${env.GIT_COMMIT_SHORT}"
+                    env.BUILD_VERSION = "${env.BUILD_NUMBER}.${env.GIT_COMMIT_SHORT}"
                 }
                 
                 echo "构建版本: ${env.BUILD_VERSION}"
@@ -75,14 +75,46 @@ pipeline {
         
         stage('Code Quality Check') {
             parallel {
-                stage('Compile') {
+                stage('Build Package') {
                     steps {
-                        echo '🔨 编译项目...'
+                        echo '🔨 编译和打包项目...'
                         script {
                             if (env.IS_WINDOWS == 'true') {
-                                powershell "${env.MAVEN_CMD} clean compile"
+                                powershell """
+                                    Write-Host "开始Maven编译和打包..."
+                                    ${env.MAVEN_CMD} clean package -DskipTests
+                                    
+                                    if (\$LASTEXITCODE -eq 0) {
+                                        Write-Host "✅ Maven打包成功"
+                                        
+                                        # 检查生成的jar包
+                                        Write-Host "检查生成的jar包:"
+                                        Get-ChildItem -Path "." -Recurse -Name "*.jar" -Include "*-1.0.0.jar" | ForEach-Object {
+                                            Write-Host "找到jar包: \$_"
+                                        }
+                                    } else {
+                                        Write-Host "❌ Maven打包失败"
+                                        exit 1
+                                    }
+                                """
                             } else {
-                                sh "${env.MAVEN_CMD} clean package"
+                                sh """
+                                    echo "开始Maven编译和打包..."
+                                    ${env.MAVEN_CMD} clean package -DskipTests
+                                    
+                                    if [ \$? -eq 0 ]; then
+                                        echo "✅ Maven打包成功"
+                                        
+                                        # 检查生成的jar包
+                                        echo "检查生成的jar包:"
+                                        find . -name "*-1.0.0.jar" -type f | while read jar; do
+                                            echo "找到jar包: \$jar"
+                                        done
+                                    else
+                                        echo "❌ Maven打包失败"
+                                        exit 1
+                                    fi
+                                """
                             }
                         }
                     }
@@ -97,6 +129,24 @@ pipeline {
                     if (env.IS_WINDOWS == 'true') {
                         powershell """
                             Write-Host "开始使用Docker Compose构建所有服务镜像..."
+                            
+                            # 验证关键jar包是否存在
+                            Write-Host "验证jar包是否存在:"
+                            \$requiredJars = @(
+                                "linghuzhiyan-discovery-server/target/linghuzhiyan-discovery-server-1.0.0.jar",
+                                "linghuzhiyan-config-server/target/linghuzhiyan-config-server-1.0.0.jar",
+                                "linghuzhiyan-gateway/target/linghuzhiyan-gateway-1.0.0.jar",
+                                "linghuzhiyan-auth-service/target/linghuzhiyan-auth-service-1.0.0.jar"
+                            )
+                            
+                            foreach (\$jar in \$requiredJars) {
+                                if (Test-Path \$jar) {
+                                    Write-Host "✅ 找到: \$jar"
+                                } else {
+                                    Write-Host "❌ 缺失: \$jar"
+                                    throw "关键jar包缺失: \$jar"
+                                }
+                            }
                             
                             # 设置环境变量
                             \$env:BUILD_VERSION = "${env.BUILD_VERSION}"
@@ -138,13 +188,13 @@ pipeline {
                                     \$composeImageName = "linghuzhiyan/\$composeService"
                                     
                                     # 重新标记镜像为仓库格式
-                                    docker tag "\$composeImageName:${env.BUILD_VERSION}" "${env.DOCKER_REGISTRY}/\$fullServiceName:${env.BUILD_VERSION}"
-                                    docker tag "\$composeImageName:${env.BUILD_VERSION}" "${env.DOCKER_REGISTRY}/\$fullServiceName:latest"
+                                    docker tag "\$composeImageName:`${env:BUILD_VERSION}" "`${env:DOCKER_REGISTRY}/\$fullServiceName:`${env:BUILD_VERSION}"
+                                    docker tag "\$composeImageName:`${env:BUILD_VERSION}" "`${env:DOCKER_REGISTRY}/\$fullServiceName:latest"
                                     
                                     # 推送镜像
                                     Write-Host "推送 \$fullServiceName 镜像到仓库..."
-                                    docker push "${env.DOCKER_REGISTRY}/\$fullServiceName:${env.BUILD_VERSION}"
-                                    docker push "${env.DOCKER_REGISTRY}/\$fullServiceName:latest"
+                                    docker push "`${env:DOCKER_REGISTRY}/\$fullServiceName:`${env:BUILD_VERSION}"
+                                    docker push "`${env:DOCKER_REGISTRY}/\$fullServiceName:latest"
                                     
                                     Write-Host "✅ \$fullServiceName 镜像推送完成"
                                 }
@@ -158,6 +208,25 @@ pipeline {
                     } else {
                         sh """
                             echo "开始使用Docker Compose构建所有服务镜像..."
+                            
+                            # 验证关键jar包是否存在
+                            echo "验证jar包是否存在:"
+                            required_jars=(
+                                "linghuzhiyan-discovery-server/target/linghuzhiyan-discovery-server-1.0.0.jar"
+                                "linghuzhiyan-config-server/target/linghuzhiyan-config-server-1.0.0.jar"
+                                "linghuzhiyan-gateway/target/linghuzhiyan-gateway-1.0.0.jar"
+                                "linghuzhiyan-auth-service/target/linghuzhiyan-auth-service-1.0.0.jar"
+                            )
+                            
+                            for jar in "\${required_jars[@]}"; do
+                                if [ -f "\$jar" ]; then
+                                    echo "✅ 找到: \$jar"
+                                else
+                                    echo "❌ 缺失: \$jar"
+                                    echo "关键jar包缺失: \$jar"
+                                    exit 1
+                                fi
+                            done
                             
                             # 设置环境变量
                             export BUILD_VERSION="${env.BUILD_VERSION}"
@@ -199,13 +268,13 @@ pipeline {
                                     compose_image_name="linghuzhiyan/\$compose_service"
                                     
                                     # 重新标记镜像为仓库格式
-                                    docker tag "\$compose_image_name:${env.BUILD_VERSION}" "${env.DOCKER_REGISTRY}/\$full_service_name:${env.BUILD_VERSION}"
-                                    docker tag "\$compose_image_name:${env.BUILD_VERSION}" "${env.DOCKER_REGISTRY}/\$full_service_name:latest"
+                                    docker tag "\$compose_image_name:\$BUILD_VERSION" "\$DOCKER_REGISTRY/\$full_service_name:\$BUILD_VERSION"
+                                    docker tag "\$compose_image_name:\$BUILD_VERSION" "\$DOCKER_REGISTRY/\$full_service_name:latest"
                                     
                                     # 推送镜像
                                     echo "推送 \$full_service_name 镜像到仓库..."
-                                    docker push "${env.DOCKER_REGISTRY}/\$full_service_name:${env.BUILD_VERSION}"
-                                    docker push "${env.DOCKER_REGISTRY}/\$full_service_name:latest"
+                                    docker push "\$DOCKER_REGISTRY/\$full_service_name:\$BUILD_VERSION"
+                                    docker push "\$DOCKER_REGISTRY/\$full_service_name:latest"
                                     
                                     echo "✅ \$full_service_name 镜像推送完成"
                                 done

@@ -176,6 +176,7 @@ public class AuthServiceImpl implements AuthService {
             response.setAccessToken(accessToken);
             response.setToken(accessToken);
             response.setRefreshToken(refreshToken);
+            response.setToken(accessToken);
             response.setTokenType("Bearer");
             response.setExpiresIn(jwtTokenUtil.getExpirationDateFromToken(accessToken).getTime());
             response.setUser(user);
