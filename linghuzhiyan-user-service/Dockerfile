@@ -16,7 +16,7 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 
 # 复制已构建的 jar 包
-COPY target/linghuzhiyan-user-service-1.0.0.jar /app/app.jar
+COPY linghuzhiyan-user-service/target/linghuzhiyan-user-service-1.0.0.jar /app/app.jar
 
 # 创建非 root 用户
 RUN groupadd -r appuser && useradd -r -g appuser appuser
