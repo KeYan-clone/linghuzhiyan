@@ -149,6 +149,22 @@ public class Discussion {
     private LocalDateTime approvedTime;
 
     /**
+     * 上一次审核通过版本的快照（当编辑后回到未通过状态时，仍可对外展示该快照）
+     */
+    @Field("last_approved_title")
+    private String lastApprovedTitle;
+
+    @Field("last_approved_content")
+    private String lastApprovedContent;
+
+    @Field("last_approved_tags")
+    @Builder.Default
+    private List<String> lastApprovedTags = new ArrayList<>();
+
+    @Field("last_approved_time")
+    private LocalDateTime lastApprovedTime;
+
+    /**
      * 是否删除
      */
     @Field("deleted")

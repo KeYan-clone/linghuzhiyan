@@ -71,8 +71,16 @@ public class ExperimentAssignmentServiceImpl implements ExperimentAssignmentServ
         experimentTaskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("实验任务不存在"));
 
+        // 入参为空直接返回
+        if (userIds == null || userIds.isEmpty()) {
+            return;
+        }
+
         // 批量获取用户信息
         List<UserDTO> users = userServiceClient.getUsersByIdsInExp(userIds);
+        if (users == null || users.isEmpty()) {
+            return;
+        }
         
         // 逐个分配
         for (String userId : userIds) {
@@ -106,7 +114,14 @@ public class ExperimentAssignmentServiceImpl implements ExperimentAssignmentServ
      * @return 是否为学生
      */
     private boolean isStudentUser(UserDTO user) {
-        return user.getRoles().contains("STUDENT");
+        if (user == null || user.getRoles() == null) {
+            return false;
+        }
+        // 兼容 ROLE_ 前缀与大小写差异，例如 "ROLE_STUDENT" 或 "student"
+        return user.getRoles().stream()
+                .filter(r -> r != null)
+                .map(String::toUpperCase)
+                .anyMatch(r -> r.equals("STUDENT") || r.equals("ROLE_STUDENT") || r.endsWith("_STUDENT") || r.endsWith("STUDENT"));
     }
 
     @Override
@@ -120,6 +135,10 @@ public class ExperimentAssignmentServiceImpl implements ExperimentAssignmentServ
                 .stream()
                 .map(ExperimentAssignment::getUserId)
                 .collect(Collectors.toList());
+
+        if (userIds.isEmpty()) {
+            return java.util.Collections.emptyList();
+        }
 
         // 获取用户详情
         List<UserDTO> users = userServiceClient.getUsersByIdsInExp(userIds);

@@ -79,11 +79,43 @@ public class DiscussionServiceImpl implements DiscussionService {
         query.addCriteria(Criteria.where("deleted").is(false));
 
         // 添加过滤条件
-        if (StringUtils.hasText(status)) {
+    if (StringUtils.hasText(status)) {
+            // 显式指定状态则严格按状态过滤
             query.addCriteria(Criteria.where("status").is(status));
         } else {
-            // 默认只显示已审核通过的
-            query.addCriteria(Criteria.where("status").is("APPROVED"));
+            // 未指定状态：
+        // - 未登录：显示(已通过 OR 有历史通过快照)
+        // - 已登录且未传 userId：显示(已通过 OR 有历史通过快照 OR 自己发布的任意状态)
+        // - 已登录且传入的 userId 等于自己：查看自己所有状态（不加 status 条件）
+        // - 其他情况：显示(已通过 OR 有历史通过快照)
+            if (StringUtils.hasText(userId)) {
+                // 请求中显式传了 userId
+                if (StringUtils.hasText(currentUserId) && currentUserId.equals(userId)) {
+                    // 查看“我”的讨论：不过滤状态
+                } else {
+            // 查看他人讨论：显示(已通过 OR 有历史通过快照)
+            query.addCriteria(new Criteria().orOperator(
+                Criteria.where("status").is("APPROVED"),
+                Criteria.where("lastApprovedTime").ne(null)
+            ));
+                }
+            } else {
+                // 未传 userId
+                if (StringUtils.hasText(currentUserId)) {
+            // 登录用户：显示(已通过 OR 有历史通过快照 OR 自己发布)
+                    query.addCriteria(new Criteria().orOperator(
+                            Criteria.where("status").is("APPROVED"),
+                Criteria.where("lastApprovedTime").ne(null),
+                            Criteria.where("userId").is(currentUserId)
+                    ));
+                } else {
+            // 未登录：显示(已通过 OR 有历史通过快照)
+            query.addCriteria(new Criteria().orOperator(
+                Criteria.where("status").is("APPROVED"),
+                Criteria.where("lastApprovedTime").ne(null)
+            ));
+                }
+            }
         }
 
         if (tags != null && tags.length > 0) {
@@ -94,6 +126,7 @@ public class DiscussionServiceImpl implements DiscussionService {
             query.addCriteria(Criteria.where("experimentId").is(experimentId));
         }
 
+        // 若传入 userId，则始终限定为指定用户的讨论
         if (StringUtils.hasText(userId)) {
             query.addCriteria(Criteria.where("userId").is(userId));
         }
@@ -136,7 +169,15 @@ public class DiscussionServiceImpl implements DiscussionService {
             throw new RuntimeException("无权限更新此讨论");
         }
 
-        // 更新内容
+        // 若当前状态为已通过，则在改为待审核前记录快照（保留更改前对外可见的版本）
+        if (discussion.getStatus() == Discussion.DiscussionStatus.APPROVED) {
+            discussion.setLastApprovedTitle(discussion.getTitle());
+            discussion.setLastApprovedContent(discussion.getContent());
+            discussion.setLastApprovedTags(discussion.getTags() == null ? null : List.copyOf(discussion.getTags()));
+            discussion.setLastApprovedTime(LocalDateTime.now());
+        }
+
+        // 更新内容（在快照之后应用新改动）
         discussion.setTitle(requestDTO.getTitle());
         discussion.setContent(requestDTO.getContent());
         if (requestDTO.getTags() != null) {
@@ -145,7 +186,6 @@ public class DiscussionServiceImpl implements DiscussionService {
         if (requestDTO.getExperimentId() != null) {
             discussion.setExperimentId(requestDTO.getExperimentId());
         }
-
         // 更新后重新设为待审核状态
         discussion.setStatus(Discussion.DiscussionStatus.PENDING);
         discussion.setUpdateTime(LocalDateTime.now());
@@ -191,6 +231,11 @@ public class DiscussionServiceImpl implements DiscussionService {
         } else if (newStatus == Discussion.DiscussionStatus.APPROVED) {
             discussion.setApprovedTime(LocalDateTime.now());
             discussion.setRejectionReason(null);
+            // 记录通过版本快照
+            discussion.setLastApprovedTitle(discussion.getTitle());
+            discussion.setLastApprovedContent(discussion.getContent());
+            discussion.setLastApprovedTags(discussion.getTags() == null ? null : List.copyOf(discussion.getTags()));
+            discussion.setLastApprovedTime(LocalDateTime.now());
         }
 
         discussion.setUpdateTime(LocalDateTime.now());
@@ -293,30 +338,55 @@ public class DiscussionServiceImpl implements DiscussionService {
      * 转换为响应DTO
      */
     private DiscussionResponseDTO convertToResponseDTO(Discussion discussion, String currentUserId) {
-        boolean isLiked = currentUserId != null && discussion.getLikedBy().contains(currentUserId);
+    boolean isLiked = currentUserId != null && discussion.getLikedBy().contains(currentUserId);
 
-        return DiscussionResponseDTO.builder()
-                .id(discussion.getId())
-                .title(discussion.getTitle())
-                .content(discussion.getContent())
-                .userId(discussion.getUserId())
-                .username(discussion.getUsername())
-                .userAvatar(discussion.getUserAvatar())
-                .tags(discussion.getTags())
-                .experimentId(discussion.getExperimentId())
-                .status(discussion.getStatus().name())
-                .rejectionReason(discussion.getRejectionReason())
-                .priority(discussion.getPriority())
-                .viewCount(discussion.getViewCount())
-                .commentCount(discussion.getCommentCount())
-                .likeCount(discussion.getLikeCount())
-                .isLiked(isLiked)
-                .lastCommentTime(discussion.getLastCommentTime())
-                .lastActivityTime(discussion.getLastActivityTime())
-                .createTime(discussion.getCreateTime())
-                .updateTime(discussion.getUpdateTime())
-                .approvedTime(discussion.getApprovedTime())
-                .build();
+    // 对非作者且当前未通过但有历史通过快照的情况，返回快照内容
+        boolean isAuthor = currentUserId != null && currentUserId.equals(discussion.getUserId());
+        boolean isApproved = discussion.getStatus() == Discussion.DiscussionStatus.APPROVED;
+
+        String title;
+        String content;
+        List<String> tags;
+
+        if (isAuthor || isApproved) {
+            // 作者或已通过：返回最新内容
+            title = discussion.getTitle();
+            content = discussion.getContent();
+            tags = discussion.getTags();
+        } else if (discussion.getLastApprovedTime() != null) {
+            // 非作者，未通过但有快照：返回快照
+            title = discussion.getLastApprovedTitle();
+            content = discussion.getLastApprovedContent();
+            tags = discussion.getLastApprovedTags();
+        } else {
+            // 非作者，未通过且无快照：不返回正文，避免泄露未审核内容
+            title = null;
+            content = null;
+            tags = null;
+        }
+
+    return DiscussionResponseDTO.builder()
+        .id(discussion.getId())
+        .title(title)
+        .content(content)
+        .userId(discussion.getUserId())
+        .username(discussion.getUsername())
+        .userAvatar(discussion.getUserAvatar())
+        .tags(tags)
+        .experimentId(discussion.getExperimentId())
+        .status(discussion.getStatus().name())
+        .rejectionReason(discussion.getRejectionReason())
+        .priority(discussion.getPriority())
+        .viewCount(discussion.getViewCount())
+        .commentCount(discussion.getCommentCount())
+        .likeCount(discussion.getLikeCount())
+        .isLiked(isLiked)
+        .lastCommentTime(discussion.getLastCommentTime())
+        .lastActivityTime(discussion.getLastActivityTime())
+        .createTime(discussion.getCreateTime())
+        .updateTime(discussion.getUpdateTime())
+        .approvedTime(discussion.getApprovedTime())
+        .build();
     }
 
     /**
