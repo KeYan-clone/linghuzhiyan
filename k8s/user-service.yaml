@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: user-service
-        image: linghuzhiyan/user-service:latest
+        image: linghuzhiyan-user-service:latest
         imagePullPolicy: IfNotPresent
         env:
         - name: JAVA_OPTS

@@ -5,35 +5,77 @@ metadata:
   namespace: linghuzhiyan
 data:
   application.yml: |
-    # 公共配置内容（从config-repo/application.yml复制）
+    # 通用配置 - 所有服务共享（K8s环境）
     spring:
+      datasource:
+        # 数据库连接池配置
+        hikari:
+          maximum-pool-size: 20
+          minimum-idle: 5
+          idle-timeout: 300000
+          max-lifetime: 1800000
+          connection-timeout: 20000
+          validation-timeout: 5000
+          
+      # JPA 配置
+      jpa:
+        hibernate:
+          ddl-auto: update
+        show-sql: false
+        properties:
+          hibernate:
+            dialect: org.hibernate.dialect.MySQL8Dialect
+            format_sql: true
+            
+      # Redis 配置 - K8s环境
       redis:
         host: redis
         port: 6379
-        database: 0
         timeout: 2000ms
-        jedis:
+        lettuce:
           pool:
             max-active: 8
-            max-wait: -1ms
             max-idle: 8
             min-idle: 0
-    
+            max-wait: -1ms
+
+    # MongoDB 配置 - K8s环境
+    spring.data.mongodb:
+      host: mongo
+      port: 27017
+      database: linghuzhiyan
+      username: root
+      password: example
+      authentication-database: admin
+
+    # MinIO 配置 - K8s环境
     minio:
       endpoint: http://minio:9000
       accessKey: minioadmin
       secretKey: minioadmin
       bucketName: linghuzhiyan
-    
+
+    # Eureka 通用配置 - K8s环境
     eureka:
       client:
-        serviceUrl:
+        service-url:
           defaultZone: http://admin:admin123@discovery-server:8761/eureka/
-        registerWithEureka: true
-        fetchRegistry: true
+        register-with-eureka: true
+        fetch-registry: true
       instance:
-        preferIpAddress: true
-        instanceId: ${spring.application.name}:${spring.application.instance-id:${random.value}}
+        prefer-ip-address: true
+        lease-renewal-interval-in-seconds: 10
+        lease-expiration-duration-in-seconds: 30
+
+    # 通用监控配置
+    management:
+      endpoints:
+        web:
+          exposure:
+            include: health,info,metrics,env
+      endpoint:
+        health:
+          show-details: always
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -54,7 +96,7 @@ spec:
     spec:
       containers:
       - name: config-server
-        image: linghuzhiyan/config-server:latest
+        image: linghuzhiyan-config-server:latest
         imagePullPolicy: IfNotPresent
         env:
         - name: JAVA_OPTS
@@ -96,8 +138,6 @@ spec:
       - name: config-repo
         configMap:
           name: config-repo
-      depends_on:
-        - discovery-server
 ---
 apiVersion: v1
 kind: Service
