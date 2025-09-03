@@ -300,39 +300,51 @@ pipeline {
 		}
 	}
 	post {
-		always {
-			script {
-				echo 'Cleaning up resources...'
-				if (isUnix()) {
-					sh '''
-						echo "Cleaning up Docker resources..."
-						docker system prune -f || true
-						docker volume prune -f || true
-						docker network prune -f || true
-						echo "Cleaning up temporary files..."
-						rm -rf temp-* || true
-						rm -rf target/docker || true
-						echo "Cleanup completed"
-					'''
-				} else {
-					bat '''
-						echo Cleaning up Docker resources...
-						docker system prune -f || echo "Docker cleanup failed"
-						docker volume prune -f || echo "Volume cleanup failed"
-						docker network prune -f || echo "Network cleanup failed"
-						echo Cleaning up temporary files...
-						if exist temp-* rmdir /s /q temp-* || echo "No temp files to clean"
-						if exist target\\docker rmdir /s /q target\\docker || echo "No docker target to clean"
-						echo Cleanup completed
-					'''
-				}
-			}
-		}
-		failure {
-			echo 'Pipeline failed.'
-		}
-		success {
-			echo 'Pipeline succeeded.'
-		}
-	}
+    always {
+        script {
+            echo 'Cleaning up resources...'
+            if (isUnix()) {
+                sh '''
+                    echo "Cleaning up Docker resources..."
+                    docker system prune -f || true
+                    docker volume prune -f || true
+                    docker network prune -f || true
+                    echo "Cleaning up temporary files..."
+                    rm -rf temp-* || true
+                    rm -rf target/docker || true
+                    echo "Cleanup completed"
+                '''
+            } else {
+                bat '''
+                    echo Cleaning up Docker resources...
+                    docker system prune -f || echo Docker cleanup failed
+                    docker volume prune -f || echo Volume cleanup failed
+                    docker network prune -f || echo Network cleanup failed
+
+                    echo Cleaning up temporary files...
+                    if exist temp-* (
+                        rmdir /s /q temp-*
+                    ) else (
+                        echo No temp files to clean
+                    )
+
+                    if exist target\\docker (
+                        rmdir /s /q target\\docker
+                    ) else (
+                        echo No docker target to clean
+                    )
+
+                    echo Cleanup completed
+                '''
+            }
+        }
+    }
+    failure {
+        echo 'Pipeline failed.'
+    }
+    success {
+        echo 'Pipeline succeeded.'
+    }
+}
+
 }
