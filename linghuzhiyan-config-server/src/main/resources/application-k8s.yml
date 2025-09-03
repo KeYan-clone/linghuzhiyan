@@ -5,10 +5,6 @@ spring:
   application:
     name: linghuzhiyan-config-server
     
-  # 激活native profile
-  profiles:
-    active: native
-    
   # 配置中心配置 - K8s环境
   cloud:
     config:
@@ -16,6 +12,8 @@ spring:
         # 使用本地文件系统配置（从ConfigMap挂载）
         native:
           search-locations: file:/app/config-repo,classpath:/config-repo
+        # 激活native profile
+        default-profile: native
           
   # 安全配置
   security:

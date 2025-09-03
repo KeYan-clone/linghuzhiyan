@@ -9,9 +9,9 @@ spring:
   cloud:
     config:
       server:
-        # 本地文件系统配置（开发环境使用）
+        # 本地文件系统配置（开发环境和K8s环境都使用）
         native:
-          search-locations: classpath:/config-repo,file:./config-repo
+          search-locations: classpath:/config-repo,file:./config-repo,file:/app/config-repo
           
   # 配置文件激活 native profile（本地文件系统）
   profiles:

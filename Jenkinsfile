@@ -117,33 +117,33 @@ pipeline {
 								sh 'kubectl apply -f discovery-server.yaml'
 								sh '''
 									echo "Waiting for Discovery Server to be ready..."
-									kubectl wait --for=condition=available --timeout=40s deployment/discovery-server -n linghuzhiyan
+									kubectl wait --for=condition=available --timeout=300s deployment/discovery-server -n linghuzhiyan
 								'''
 								sh 'kubectl apply -f config-server.yaml'
 								sh '''
 									echo "Waiting for Config Server to be ready..."
-									kubectl wait --for=condition=available --timeout=40s deployment/config-server -n linghuzhiyan
+									kubectl wait --for=condition=available --timeout=300s deployment/config-server -n linghuzhiyan
 								'''
 								sh 'kubectl apply -f gateway.yaml'
 								sh '''
 									echo "Waiting for Gateway to be ready..."
-									kubectl wait --for=condition=available --timeout=40s deployment/gateway -n linghuzhiyan
+									kubectl wait --for=condition=available --timeout=300s deployment/gateway -n linghuzhiyan
 								'''
 							} else {
 								bat 'kubectl apply -f discovery-server.yaml'
 								bat '''
 									echo Waiting for Discovery Server to be ready...
-									kubectl wait --for=condition=available --timeout=40s deployment/discovery-server -n linghuzhiyan
+									kubectl wait --for=condition=available --timeout=300s deployment/discovery-server -n linghuzhiyan
 								'''
 								bat 'kubectl apply -f config-server.yaml'
 								bat '''
 									echo Waiting for Config Server to be ready...
-									kubectl wait --for=condition=available --timeout=40s deployment/config-server -n linghuzhiyan
+									kubectl wait --for=condition=available --timeout=300s deployment/config-server -n linghuzhiyan
 								'''
 								bat 'kubectl apply -f gateway.yaml'
 								bat '''
 									echo Waiting for Gateway to be ready...
-									kubectl wait --for=condition=available --timeout=40s deployment/gateway -n linghuzhiyan
+									kubectl wait --for=condition=available --timeout=300s deployment/gateway -n linghuzhiyan
 								'''
 							}
 						}
@@ -177,6 +177,58 @@ pipeline {
 				}
 			}
 		}
+		stage('Deploy Autoscaling') {
+			steps {
+				withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
+					dir('k8s') {
+						script {
+							echo 'Deploying Horizontal Pod Autoscaler configurations...'
+						if (isUnix()) {
+							sh '''
+								echo "Checking if Metrics Server is available..."
+								kubectl get deployment metrics-server -n kube-system || {
+									echo "Installing Metrics Server..."
+									kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+									kubectl patch deployment metrics-server -n kube-system --type='json' -p='[{"op": "add", "path": "/spec/template/spec/containers/0/args/-", "value": "--kubelet-insecure-tls"}]'
+									echo "Waiting for Metrics Server to be ready..."
+									kubectl wait --for=condition=available --timeout=120s deployment/metrics-server -n kube-system
+								}
+								
+								echo "Applying HPA configurations..."
+								kubectl apply -f autoscaling/hpa-all-services.yaml
+								
+								echo "Waiting for HPA to initialize..."
+								sleep 15
+								
+								echo "HPA status:"
+								kubectl get hpa -n linghuzhiyan
+							'''
+						} else {
+							bat '''
+								echo Checking if Metrics Server is available...
+								kubectl get deployment metrics-server -n kube-system >nul 2>&1 || (
+									echo Installing Metrics Server...
+									kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+									kubectl patch deployment metrics-server -n kube-system --type="json" -p="[{\"op\": \"add\", \"path\": \"/spec/template/spec/containers/0/args/-\", \"value\": \"--kubelet-insecure-tls\"}]"
+									echo Waiting for Metrics Server to be ready...
+									kubectl wait --for=condition=available --timeout=120s deployment/metrics-server -n kube-system
+								)
+								
+								echo Applying HPA configurations...
+								kubectl apply -f autoscaling/hpa-all-services.yaml
+								
+								echo Waiting for HPA to initialize...
+								timeout /t 15
+								
+								echo HPA status:
+								kubectl get hpa -n linghuzhiyan
+							'''
+						}
+					}
+				}
+			}
+		}
+        }
 		stage('Health Check') {
 			steps {
 				withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
@@ -185,16 +237,33 @@ pipeline {
 						if (isUnix()) {
 							sh '''
 								echo "Waiting for business services to be ready..."
-								kubectl wait --for=condition=available --timeout=40s deployment/auth-service -n linghuzhiyan || echo "Auth service timeout"
-								kubectl wait --for=condition=available --timeout=40s deployment/user-service -n linghuzhiyan || echo "User service timeout"
-								kubectl wait --for=condition=available --timeout=40s deployment/experiment-service -n linghuzhiyan || echo "Experiment service timeout"
-								kubectl wait --for=condition=available --timeout=40s deployment/resource-service -n linghuzhiyan || echo "Resource service timeout"
-								kubectl wait --for=condition=available --timeout=40s deployment/message-service -n linghuzhiyan || echo "Message service timeout"
-								kubectl wait --for=condition=available --timeout=40s deployment/discussion-service -n linghuzhiyan || echo "Discussion service timeout"
+								kubectl wait --for=condition=available --timeout=300s deployment/auth-service -n linghuzhiyan || echo "Auth service timeout"
+								kubectl wait --for=condition=available --timeout=300s deployment/user-service -n linghuzhiyan || echo "User service timeout"
+								kubectl wait --for=condition=available --timeout=300s deployment/experiment-service -n linghuzhiyan || echo "Experiment service timeout"
+								kubectl wait --for=condition=available --timeout=300s deployment/resource-service -n linghuzhiyan || echo "Resource service timeout"
+								kubectl wait --for=condition=available --timeout=300s deployment/message-service -n linghuzhiyan || echo "Message service timeout"
+								kubectl wait --for=condition=available --timeout=300s deployment/discussion-service -n linghuzhiyan || echo "Discussion service timeout"
 								
 								echo "Final health check - All services status:"
 								kubectl get pods -n linghuzhiyan
 								kubectl get services -n linghuzhiyan
+								
+								echo "Setting up port forwarding for access..."
+								echo "Starting gateway port forward on port 8080..."
+								nohup kubectl port-forward -n linghuzhiyan service/gateway 8080:8080 > /dev/null 2>&1 &
+								sleep 3
+								
+								echo "======================================================="
+								echo "DEPLOYMENT COMPLETED SUCCESSFULLY!"
+								echo "======================================================="
+								echo "Access URLs:"
+								echo "- Gateway: http://localhost:8080"
+								echo "- Swagger UI: http://localhost:8080/swagger-ui/index.html"
+								echo "- Health Check: http://localhost:8080/actuator/health"
+								echo "======================================================="
+								echo "Note: Port forwarding is running in background"
+								echo "To stop port forwarding, run: pkill -f 'kubectl port-forward'"
+								echo "======================================================="
 								
 								echo "Checking if all pods are running..."
 								FAILED_PODS=$(kubectl get pods -n linghuzhiyan --field-selector=status.phase!=Running --no-headers | wc -l)
@@ -208,18 +277,20 @@ pipeline {
 						} else {
 							bat '''
 								echo Waiting for business services to be ready...
-								kubectl wait --for=condition=available --timeout=40s deployment/auth-service -n linghuzhiyan || echo "Auth service timeout"
-								kubectl wait --for=condition=available --timeout=40s deployment/user-service -n linghuzhiyan || echo "User service timeout"
-								kubectl wait --for=condition=available --timeout=40s deployment/experiment-service -n linghuzhiyan || echo "Experiment service timeout"
-								kubectl wait --for=condition=available --timeout=40s deployment/resource-service -n linghuzhiyan || echo "Resource service timeout"
-								kubectl wait --for=condition=available --timeout=40s deployment/message-service -n linghuzhiyan || echo "Message service timeout"
-								kubectl wait --for=condition=available --timeout=40s deployment/discussion-service -n linghuzhiyan || echo "Discussion service timeout"
+								kubectl wait --for=condition=available --timeout=300s deployment/auth-service -n linghuzhiyan || echo "Auth service timeout"
+								kubectl wait --for=condition=available --timeout=300s deployment/user-service -n linghuzhiyan || echo "User service timeout"
+								kubectl wait --for=condition=available --timeout=300s deployment/experiment-service -n linghuzhiyan || echo "Experiment service timeout"
+								kubectl wait --for=condition=available --timeout=300s deployment/resource-service -n linghuzhiyan || echo "Resource service timeout"
+								kubectl wait --for=condition=available --timeout=300s deployment/message-service -n linghuzhiyan || echo "Message service timeout"
+								kubectl wait --for=condition=available --timeout=300s deployment/discussion-service -n linghuzhiyan || echo "Discussion service timeout"
 								
 								echo Final health check - All services status:
 								kubectl get pods -n linghuzhiyan
 								kubectl get services -n linghuzhiyan
-								
-								echo Deployment completed successfully!
+
+								powershell -Command ^
+                                              "Start-Process kubectl -ArgumentList 'port-forward','-n','linghuzhiyan','service/gateway','8080:8080' -WindowStyle Hidden"
+
 							'''
 						}
 					}
@@ -228,39 +299,51 @@ pipeline {
 		}
 	}
 	post {
-		always {
-			script {
-				echo 'Cleaning up resources...'
-				if (isUnix()) {
-					sh '''
-						echo "Cleaning up Docker resources..."
-						docker system prune -f || true
-						docker volume prune -f || true
-						docker network prune -f || true
-						echo "Cleaning up temporary files..."
-						rm -rf temp-* || true
-						rm -rf target/docker || true
-						echo "Cleanup completed"
-					'''
-				} else {
-					bat '''
-						echo Cleaning up Docker resources...
-						docker system prune -f || echo "Docker cleanup failed"
-						docker volume prune -f || echo "Volume cleanup failed"
-						docker network prune -f || echo "Network cleanup failed"
-						echo Cleaning up temporary files...
-						if exist temp-* rmdir /s /q temp-* || echo "No temp files to clean"
-						if exist target\\docker rmdir /s /q target\\docker || echo "No docker target to clean"
-						echo Cleanup completed
-					'''
-				}
-			}
-		}
-		failure {
-			echo 'Pipeline failed.'
-		}
-		success {
-			echo 'Pipeline succeeded.'
-		}
-	}
+    always {
+        script {
+            echo 'Cleaning up resources...'
+            if (isUnix()) {
+                sh '''
+                    echo "Cleaning up Docker resources..."
+                    docker system prune -f || true
+                    docker volume prune -f || true
+                    docker network prune -f || true
+                    echo "Cleaning up temporary files..."
+                    rm -rf temp-* || true
+                    rm -rf target/docker || true
+                    echo "Cleanup completed"
+                '''
+            } else {
+                bat '''
+                    echo Cleaning up Docker resources...
+                    docker system prune -f || echo Docker cleanup failed
+                    docker volume prune -f || echo Volume cleanup failed
+                    docker network prune -f || echo Network cleanup failed
+
+                    echo Cleaning up temporary files...
+                    if exist temp-* (
+                        rmdir /s /q temp-*
+                    ) else (
+                        echo No temp files to clean
+                    )
+
+                    if exist target\\docker (
+                        rmdir /s /q target\\docker
+                    ) else (
+                        echo No docker target to clean
+                    )
+
+                    echo Cleanup completed
+                '''
+            }
+        }
+    }
+    failure {
+        echo 'Pipeline failed.'
+    }
+    success {
+        echo 'Pipeline succeeded.'
+    }
+}
+
 }

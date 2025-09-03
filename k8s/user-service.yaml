@@ -6,7 +6,7 @@ metadata:
   labels:
     app: user-service
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: user-service
@@ -21,7 +21,7 @@ spec:
         imagePullPolicy: IfNotPresent
         env:
         - name: JAVA_OPTS
-          value: "-Xms256m -Xmx512m"
+          value: "-Xms400m -Xmx800m"
         - name: SPRING_PROFILES_ACTIVE
           value: "k8s"
         - name: DB_HOST
@@ -69,10 +69,10 @@ spec:
           failureThreshold: 3
         resources:
           requests:
-            memory: "256Mi"
-            cpu: "200m"
+            memory: "400Mi"
+            cpu: "300m"
           limits:
-            memory: "512Mi"
+            memory: "1Gi"
             cpu: "500m"
 ---
 apiVersion: v1
