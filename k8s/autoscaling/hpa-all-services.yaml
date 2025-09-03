@@ -12,8 +12,8 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: gateway
-  minReplicas: 2
-  maxReplicas: 8
+  minReplicas: 1
+  maxReplicas: 2
   metrics:
   - type: Resource
     resource:
@@ -61,8 +61,8 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: auth-service
-  minReplicas: 2
-  maxReplicas: 6
+  minReplicas: 1
+  maxReplicas: 2
   metrics:
   - type: Resource
     resource:
@@ -105,8 +105,8 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: user-service
-  minReplicas: 2
-  maxReplicas: 5
+  minReplicas: 1
+  maxReplicas: 2
   metrics:
   - type: Resource
     resource:
@@ -136,8 +136,8 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: experiment-service
-  minReplicas: 2
-  maxReplicas: 5
+  minReplicas: 1
+  maxReplicas: 2
   metrics:
   - type: Resource
     resource:
@@ -168,7 +168,7 @@ spec:
     kind: Deployment
     name: resource-service
   minReplicas: 1
-  maxReplicas: 3
+  maxReplicas: 1
   metrics:
   - type: Resource
     resource:
@@ -199,7 +199,7 @@ spec:
     kind: Deployment
     name: message-service
   minReplicas: 1
-  maxReplicas: 3
+  maxReplicas: 1
   metrics:
   - type: Resource
     resource:
@@ -230,7 +230,7 @@ spec:
     kind: Deployment
     name: discussion-service
   minReplicas: 1
-  maxReplicas: 3
+  maxReplicas: 1
   metrics:
   - type: Resource
     resource:
