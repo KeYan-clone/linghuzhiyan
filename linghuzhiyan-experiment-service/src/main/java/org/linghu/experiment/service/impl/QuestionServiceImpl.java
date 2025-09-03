@@ -41,7 +41,7 @@ public class QuestionServiceImpl implements QuestionService {
     public QuestionDTO createQuestion(QuestionRequestDTO requestDTO, String username) {
         log.info("创建题目: {}, 创建者: {}", requestDTO.getContent(), username);
         
-        UserDTO user = userServiceClient.getUserByUsername(username);
+        UserDTO user = userServiceClient.getUserByUsernameInExp(username);
         if (user == null) {
             throw new RuntimeException("用户不存在");
         }

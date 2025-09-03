@@ -85,7 +85,7 @@ class ExperimentAssignmentServiceImplTest {
     void assignTask_WithValidTaskAndStudentUser_ShouldAssignSuccessfully() {
         // Given
         when(experimentTaskRepository.findById("task1")).thenReturn(Optional.of(testTask));
-        when(userServiceClient.getUserById("user1")).thenReturn(testStudent);
+        when(userServiceClient.getUserByIdInExp("user1")).thenReturn(testStudent);
         when(assignmentRepository.existsByTaskIdAndUserId("task1", "user1")).thenReturn(false);
         when(assignmentRepository.save(any(ExperimentAssignment.class))).thenReturn(testAssignment);
 
@@ -94,7 +94,7 @@ class ExperimentAssignmentServiceImplTest {
 
         // Then
         verify(experimentTaskRepository).findById("task1");
-        verify(userServiceClient).getUserById("user1");
+        verify(userServiceClient).getUserByIdInExp("user1");
         verify(assignmentRepository).existsByTaskIdAndUserId("task1", "user1");
         verify(assignmentRepository).save(any(ExperimentAssignment.class));
     }
@@ -111,7 +111,7 @@ class ExperimentAssignmentServiceImplTest {
         assertEquals("实验任务不存在", exception.getMessage());
         
         verify(experimentTaskRepository).findById("nonexistent");
-        verify(userServiceClient, never()).getUserById(anyString());
+        verify(userServiceClient, never()).getUserByIdInExp(anyString());
         verify(assignmentRepository, never()).save(any());
     }
 
@@ -120,7 +120,7 @@ class ExperimentAssignmentServiceImplTest {
     void assignTask_WithNonExistentUser_ShouldThrowException() {
         // Given
         when(experimentTaskRepository.findById("task1")).thenReturn(Optional.of(testTask));
-        when(userServiceClient.getUserById("nonexistent")).thenReturn(null);
+        when(userServiceClient.getUserByIdInExp("nonexistent")).thenReturn(null);
 
         // When & Then
         RuntimeException exception = assertThrows(RuntimeException.class, 
@@ -128,7 +128,7 @@ class ExperimentAssignmentServiceImplTest {
         assertEquals("用户不存在", exception.getMessage());
         
         verify(experimentTaskRepository).findById("task1");
-        verify(userServiceClient).getUserById("nonexistent");
+        verify(userServiceClient).getUserByIdInExp("nonexistent");
         verify(assignmentRepository, never()).save(any());
     }
 
@@ -137,7 +137,7 @@ class ExperimentAssignmentServiceImplTest {
     void assignTask_WithAlreadyAssignedTask_ShouldThrowException() {
         // Given
         when(experimentTaskRepository.findById("task1")).thenReturn(Optional.of(testTask));
-        when(userServiceClient.getUserById("user1")).thenReturn(testStudent);
+        when(userServiceClient.getUserByIdInExp("user1")).thenReturn(testStudent);
         when(assignmentRepository.existsByTaskIdAndUserId("task1", "user1")).thenReturn(true);
 
         // When & Then
@@ -153,7 +153,7 @@ class ExperimentAssignmentServiceImplTest {
     void assignTask_WithNonStudentUser_ShouldThrowException() {
         // Given
         when(experimentTaskRepository.findById("task1")).thenReturn(Optional.of(testTask));
-        when(userServiceClient.getUserById("user2")).thenReturn(testTeacher);
+        when(userServiceClient.getUserByIdInExp("user2")).thenReturn(testTeacher);
         when(assignmentRepository.existsByTaskIdAndUserId("task1", "user2")).thenReturn(false);
 
         // When & Then
@@ -177,7 +177,7 @@ class ExperimentAssignmentServiceImplTest {
         List<UserDTO> users = Arrays.asList(testStudent, student2);
         
         when(experimentTaskRepository.findById("task1")).thenReturn(Optional.of(testTask));
-        when(userServiceClient.getUsersByIds(userIds)).thenReturn(users);
+        when(userServiceClient.getUsersByIdsInExp(userIds)).thenReturn(users);
         when(assignmentRepository.existsByTaskIdAndUserId("task1", "user1")).thenReturn(false);
         when(assignmentRepository.existsByTaskIdAndUserId("task1", "user3")).thenReturn(false);
         when(assignmentRepository.save(any(ExperimentAssignment.class))).thenReturn(testAssignment);
@@ -187,7 +187,7 @@ class ExperimentAssignmentServiceImplTest {
 
         // Then
         verify(experimentTaskRepository).findById("task1");
-        verify(userServiceClient).getUsersByIds(userIds);
+        verify(userServiceClient).getUsersByIdsInExp(userIds);
         verify(assignmentRepository, times(2)).save(any(ExperimentAssignment.class));
     }
 
@@ -204,7 +204,7 @@ class ExperimentAssignmentServiceImplTest {
         assertEquals("实验任务不存在", exception.getMessage());
         
         verify(experimentTaskRepository).findById("nonexistent");
-        verify(userServiceClient, never()).getUsersByIds(anyList());
+        verify(userServiceClient, never()).getUsersByIdsInExp(anyList());
         verify(assignmentRepository, never()).save(any());
     }
 
@@ -218,7 +218,7 @@ class ExperimentAssignmentServiceImplTest {
         
         when(experimentTaskRepository.findById("task1")).thenReturn(Optional.of(testTask));
         when(assignmentRepository.findByTaskId("task1")).thenReturn(assignments);
-        when(userServiceClient.getUsersByIds(userIds)).thenReturn(users);
+        when(userServiceClient.getUsersByIdsInExp(userIds)).thenReturn(users);
 
         // When
         List<UserDTO> result = assignmentService.getTaskAssignments("task1");
@@ -231,7 +231,7 @@ class ExperimentAssignmentServiceImplTest {
         
         verify(experimentTaskRepository).findById("task1");
         verify(assignmentRepository).findByTaskId("task1");
-        verify(userServiceClient).getUsersByIds(userIds);
+        verify(userServiceClient).getUsersByIdsInExp(userIds);
     }
 
     // getTaskAssignments 方法的反面测试 - 任务不存在
@@ -256,8 +256,8 @@ class ExperimentAssignmentServiceImplTest {
         List<UserDTO> allUsers = Arrays.asList(testStudent, testTeacher);
         
         when(experimentTaskRepository.findById("task1")).thenReturn(Optional.of(testTask));
-        when(userServiceClient.getAllUsers()).thenReturn(allUsers);
-        when(userServiceClient.getUsersByIds(Arrays.asList("user1"))).thenReturn(Arrays.asList(testStudent));
+        when(userServiceClient.getAllUsersInExp()).thenReturn(allUsers);
+        when(userServiceClient.getUsersByIdsInExp(Arrays.asList("user1"))).thenReturn(Arrays.asList(testStudent));
         when(assignmentRepository.existsByTaskIdAndUserId("task1", "user1")).thenReturn(false);
         when(assignmentRepository.save(any(ExperimentAssignment.class))).thenReturn(testAssignment);
 
@@ -266,8 +266,8 @@ class ExperimentAssignmentServiceImplTest {
 
         // Then
         verify(experimentTaskRepository).findById("task1");
-        verify(userServiceClient).getAllUsers();
-        verify(userServiceClient).getUsersByIds(Arrays.asList("user1"));
+        verify(userServiceClient).getAllUsersInExp();
+        verify(userServiceClient).getUsersByIdsInExp(Arrays.asList("user1"));
         verify(assignmentRepository).save(any(ExperimentAssignment.class));
     }
 
@@ -283,7 +283,7 @@ class ExperimentAssignmentServiceImplTest {
         assertEquals("实验任务不存在", exception.getMessage());
         
         verify(experimentTaskRepository).findById("nonexistent");
-        verify(userServiceClient).getAllUsers();
+        verify(userServiceClient).getAllUsersInExp();
     }
 
     // removeTaskAssignment 方法的正面测试
@@ -325,7 +325,7 @@ class ExperimentAssignmentServiceImplTest {
         List<UserDTO> users = Arrays.asList(testStudent, testTeacher);
         
         when(experimentTaskRepository.findById("task1")).thenReturn(Optional.of(testTask));
-        when(userServiceClient.getUsersByIds(userIds)).thenReturn(users);
+        when(userServiceClient.getUsersByIdsInExp(userIds)).thenReturn(users);
         when(assignmentRepository.existsByTaskIdAndUserId("task1", "user1")).thenReturn(false);
         when(assignmentRepository.existsByTaskIdAndUserId("task1", "user2")).thenReturn(false);
         when(assignmentRepository.save(any(ExperimentAssignment.class))).thenReturn(testAssignment);
@@ -335,7 +335,7 @@ class ExperimentAssignmentServiceImplTest {
 
         // Then
         verify(experimentTaskRepository).findById("task1");
-        verify(userServiceClient).getUsersByIds(userIds);
+        verify(userServiceClient).getUsersByIdsInExp(userIds);
         // 只有学生用户应该被分配，老师用户会被跳过
         verify(assignmentRepository, times(1)).save(any(ExperimentAssignment.class));
     }
@@ -346,7 +346,7 @@ class ExperimentAssignmentServiceImplTest {
         // Given
         when(experimentTaskRepository.findById("task1")).thenReturn(Optional.of(testTask));
         when(assignmentRepository.findByTaskId("task1")).thenReturn(Collections.emptyList());
-        when(userServiceClient.getUsersByIds(Collections.emptyList())).thenReturn(Collections.emptyList());
+        when(userServiceClient.getUsersByIdsInExp(Collections.emptyList())).thenReturn(Collections.emptyList());
 
         // When
         List<UserDTO> result = assignmentService.getTaskAssignments("task1");
@@ -357,7 +357,7 @@ class ExperimentAssignmentServiceImplTest {
         
         verify(experimentTaskRepository).findById("task1");
         verify(assignmentRepository).findByTaskId("task1");
-        verify(userServiceClient).getUsersByIds(Collections.emptyList());
+        verify(userServiceClient).getUsersByIdsInExp(Collections.emptyList());
     }
 
     // assignTaskToAllStudents 方法的正面测试 - 无学生用户
@@ -367,16 +367,16 @@ class ExperimentAssignmentServiceImplTest {
         List<UserDTO> allUsers = Arrays.asList(testTeacher); // 只有老师，没有学生
         
         when(experimentTaskRepository.findById("task1")).thenReturn(Optional.of(testTask));
-        when(userServiceClient.getAllUsers()).thenReturn(allUsers);
-        when(userServiceClient.getUsersByIds(Collections.emptyList())).thenReturn(Collections.emptyList());
+        when(userServiceClient.getAllUsersInExp()).thenReturn(allUsers);
+        when(userServiceClient.getUsersByIdsInExp(Collections.emptyList())).thenReturn(Collections.emptyList());
 
         // When
         assertDoesNotThrow(() -> assignmentService.assignTaskToAllStudents("task1"));
 
         // Then
         verify(experimentTaskRepository).findById("task1");
-        verify(userServiceClient).getAllUsers();
-        verify(userServiceClient).getUsersByIds(Collections.emptyList());
+        verify(userServiceClient).getAllUsersInExp();
+        verify(userServiceClient).getUsersByIdsInExp(Collections.emptyList());
         verify(assignmentRepository, never()).save(any());
     }
 }

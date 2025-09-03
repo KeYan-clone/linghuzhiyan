@@ -525,7 +525,7 @@ public class StudentExperimentServiceImpl implements StudentExperimentService {
 
     private UserDTO findUserByUsername(String username) {
         try {
-            return userServiceClient.getUserByUsername(username);
+            return userServiceClient.getUserByUsernameInExp(username);
         } catch (Exception e) {
             log.warn("User not found with username: {}", username);
             throw new RuntimeException("用户不存在");

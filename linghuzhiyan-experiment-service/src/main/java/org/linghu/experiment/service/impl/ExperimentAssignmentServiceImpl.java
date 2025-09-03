@@ -38,7 +38,7 @@ public class ExperimentAssignmentServiceImpl implements ExperimentAssignmentServ
         experimentTaskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("实验任务不存在"));
 
-        UserDTO user = userServiceClient.getUserById(userId);
+        UserDTO user = userServiceClient.getUserByIdInExp(userId);
         if (user == null) {
             throw new RuntimeException("用户不存在");
         }
@@ -72,7 +72,7 @@ public class ExperimentAssignmentServiceImpl implements ExperimentAssignmentServ
                 .orElseThrow(() -> new RuntimeException("实验任务不存在"));
 
         // 批量获取用户信息
-        List<UserDTO> users = userServiceClient.getUsersByIds(userIds);
+        List<UserDTO> users = userServiceClient.getUsersByIdsInExp(userIds);
         
         // 逐个分配
         for (String userId : userIds) {
@@ -122,7 +122,7 @@ public class ExperimentAssignmentServiceImpl implements ExperimentAssignmentServ
                 .collect(Collectors.toList());
 
         // 获取用户详情
-        List<UserDTO> users = userServiceClient.getUsersByIds(userIds);
+        List<UserDTO> users = userServiceClient.getUsersByIdsInExp(userIds);
 
         return users.stream()
                 .map(this::convertToDTO)
@@ -150,7 +150,7 @@ public class ExperimentAssignmentServiceImpl implements ExperimentAssignmentServ
      */
     private List<UserDTO> getAllStudentUsers() {
         // 获取所有用户并过滤出学生
-        List<UserDTO> allUsers = userServiceClient.getAllUsers();
+        List<UserDTO> allUsers = userServiceClient.getAllUsersInExp();
         return allUsers.stream()
                 .filter(this::isStudentUser)
                 .collect(Collectors.toList());

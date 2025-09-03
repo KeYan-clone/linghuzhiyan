@@ -7,6 +7,7 @@ import org.linghu.user.dto.UserRegistrationDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -48,7 +49,21 @@ public interface UserService {
      * @return 用户DTO
      */
     UserDTO getUserByUsername(String username);
-    
+
+    /**
+     * 批量获取用户
+     *
+     * @param userIds 用户ID列表
+     * @return 用户DTO列表
+     */
+    List<UserDTO> getUsersByIds(List<String> userIds);
+
+    /**
+     * 获取所有用户
+     *
+     * @return 所有用户DTO列表
+     */
+    List<UserDTO> getAllUsers();
     /**
      * 修改密码
      * 

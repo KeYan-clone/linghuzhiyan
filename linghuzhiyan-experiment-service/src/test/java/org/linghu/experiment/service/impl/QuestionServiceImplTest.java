@@ -79,7 +79,7 @@ class QuestionServiceImplTest {
     void createQuestion_WithValidData_ShouldCreateSuccessfully() {
         try (MockedStatic<JsonUtils> jsonUtilsMock = mockStatic(JsonUtils.class)) {
             // Given
-            when(userServiceClient.getUserByUsername("testuser")).thenReturn(testUser);
+            when(userServiceClient.getUserByUsernameInExp("testuser")).thenReturn(testUser);
             when(questionRepository.save(any(Question.class))).thenReturn(testQuestion);
             jsonUtilsMock.when(() -> JsonUtils.toJsonString(any())).thenReturn("{\"test\": \"value\"}");
             jsonUtilsMock.when(() -> JsonUtils.parseObject(anyString(), eq(Object.class))).thenReturn(Map.of("test", "value"));
@@ -99,7 +99,7 @@ class QuestionServiceImplTest {
     @Test
     void createQuestion_WithNonExistentUser_ShouldThrowException() {
         // Given
-        when(userServiceClient.getUserByUsername("nonexistent")).thenReturn(null);
+        when(userServiceClient.getUserByUsernameInExp("nonexistent")).thenReturn(null);
 
         // When & Then
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {

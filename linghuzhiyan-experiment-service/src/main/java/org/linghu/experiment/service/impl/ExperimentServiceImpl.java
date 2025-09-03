@@ -36,7 +36,7 @@ public class ExperimentServiceImpl implements ExperimentService {
     @Override
     @Transactional
     public ExperimentDTO createExperiment(ExperimentRequestDTO requestDTO, String creatorUsername) {
-        UserDTO creator = userServiceClient.getUserByUsername(creatorUsername);
+        UserDTO creator = userServiceClient.getUserByUsernameInExp(creatorUsername);
         if (creator == null) {
             throw new RuntimeException("用户不存在");
         }
@@ -84,7 +84,7 @@ public class ExperimentServiceImpl implements ExperimentService {
         Experiment experiment = experimentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("实验不存在"));
 
-        UserDTO user = userServiceClient.getUserByUsername(username);
+        UserDTO user = userServiceClient.getUserByUsernameInExp(username);
         if (user == null) {
             throw new RuntimeException("用户不存在");
         }
@@ -123,7 +123,7 @@ public class ExperimentServiceImpl implements ExperimentService {
         if (username == null || "anonymousUser".equals(username)) {
             throw new AccessDeniedException("未认证或权限不足：无权发布此实验");
         }
-        UserDTO user = userServiceClient.getUserByUsername(username);
+        UserDTO user = userServiceClient.getUserByUsernameInExp(username);
         if (user==null||!experiment.getCreatorId().equals(user.getId())) {
             throw new AccessDeniedException("权限不足：无权取消发布此实验");
         }
@@ -145,7 +145,7 @@ public class ExperimentServiceImpl implements ExperimentService {
         if (username == null || "anonymousUser".equals(username)) {
             throw new AccessDeniedException("未认证或权限不足：无权取消发布此实验");
         }
-        UserDTO user = userServiceClient.getUserByUsername(username);
+        UserDTO user = userServiceClient.getUserByUsernameInExp(username);
         if (user==null||!experiment.getCreatorId().equals(user.getId())) {
             throw new AccessDeniedException("权限不足：无权取消发布此实验");
         }

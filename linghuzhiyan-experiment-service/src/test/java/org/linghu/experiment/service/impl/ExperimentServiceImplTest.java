@@ -80,7 +80,7 @@ class ExperimentServiceImplTest {
     @Test
     void createExperiment_WithValidData_ShouldCreateSuccessfully() {
         // Given
-        when(userServiceClient.getUserByUsername("testuser")).thenReturn(testUser);
+        when(userServiceClient.getUserByUsernameInExp("testuser")).thenReturn(testUser);
         when(experimentRepository.save(any(Experiment.class))).thenReturn(testExperiment);
 
         // When
@@ -99,7 +99,7 @@ class ExperimentServiceImplTest {
     @Test
     void createExperiment_WithNonExistentUser_ShouldThrowException() {
         // Given
-        when(userServiceClient.getUserByUsername("nonexistent")).thenReturn(null);
+        when(userServiceClient.getUserByUsernameInExp("nonexistent")).thenReturn(null);
 
         // When & Then
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
@@ -177,7 +177,7 @@ class ExperimentServiceImplTest {
     void updateExperiment_WithValidDataAndPermission_ShouldUpdateSuccessfully() {
         // Given
         when(experimentRepository.findById("experiment1")).thenReturn(Optional.of(testExperiment));
-        when(userServiceClient.getUserByUsername("testuser")).thenReturn(testUser);
+        when(userServiceClient.getUserByUsernameInExp("testuser")).thenReturn(testUser);
         when(experimentRepository.save(any(Experiment.class))).thenReturn(testExperiment);
 
         ExperimentRequestDTO updateRequest = ExperimentRequestDTO.builder()
@@ -214,7 +214,7 @@ class ExperimentServiceImplTest {
     void updateExperiment_WithNonExistentUser_ShouldThrowException() {
         // Given
         when(experimentRepository.findById("experiment1")).thenReturn(Optional.of(testExperiment));
-        when(userServiceClient.getUserByUsername("nonexistent")).thenReturn(null);
+        when(userServiceClient.getUserByUsernameInExp("nonexistent")).thenReturn(null);
 
         // When & Then
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
@@ -232,7 +232,7 @@ class ExperimentServiceImplTest {
         anotherUser.setUsername("anotheruser");
 
         when(experimentRepository.findById("experiment1")).thenReturn(Optional.of(testExperiment));
-        when(userServiceClient.getUserByUsername("anotheruser")).thenReturn(anotherUser);
+        when(userServiceClient.getUserByUsernameInExp("anotheruser")).thenReturn(anotherUser);
 
         // When & Then
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
@@ -286,7 +286,7 @@ class ExperimentServiceImplTest {
                 
         when(experimentRepository.save(any(Experiment.class))).thenReturn(publishedExperiment);
         when(experimentService.getCurrentUsernameFromSecurityContext()).thenReturn("testuser");
-        when(userServiceClient.getUserByUsername("testuser")).thenReturn(testUser);
+        when(userServiceClient.getUserByUsernameInExp("testuser")).thenReturn(testUser);
 
         // When
         ExperimentDTO result = experimentService.publishExperiment("experiment1");
@@ -343,7 +343,7 @@ class ExperimentServiceImplTest {
                 
         when(experimentRepository.save(any(Experiment.class))).thenReturn(unpublishedExperiment);
         when(experimentService.getCurrentUsernameFromSecurityContext()).thenReturn("testuser");
-        when(userServiceClient.getUserByUsername("testuser")).thenReturn(testUser);
+        when(userServiceClient.getUserByUsernameInExp("testuser")).thenReturn(testUser);
         // When
         ExperimentDTO result = experimentService.unpublishExperiment("experiment1");
 

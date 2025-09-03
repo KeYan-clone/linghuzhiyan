@@ -133,6 +133,32 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public List<UserDTO> getUsersByIds(List<String> userIds) {
+        List<User> users = userRepository.findAllById(userIds);
+        List<UserDTO> userDTOs = new ArrayList<>();
+
+        for (User user : users) {
+            if (!user.getIsDeleted()) {
+                userDTOs.add(convertToDTO(user));
+            }
+        }
+
+        return userDTOs;
+    }
+
+    @Override
+    public List<UserDTO> getAllUsers() {
+        List<User> users = userRepository.findByIsDeletedFalse();
+        List<UserDTO> userDTOs = new ArrayList<>();
+
+        for (User user : users) {
+            userDTOs.add(convertToDTO(user));
+        }
+
+        return userDTOs;
+    }
+
+    @Override
     @Transactional
     public void changePassword(String username, String oldPassword, String newPassword) {
         User user = userRepository.findByUsername(username)

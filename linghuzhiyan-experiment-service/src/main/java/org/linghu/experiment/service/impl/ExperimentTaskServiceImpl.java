@@ -202,7 +202,7 @@ public class ExperimentTaskServiceImpl implements ExperimentTaskService {
         if (username == null || "anonymousUser".equals(username)) {
             throw new AccessDeniedException("未认证或权限不足");
         }
-        var user = userServiceClient.getUserByUsername(username);
+        var user = userServiceClient.getUserByUsernameInExp(username);
         if (!experiment.getCreatorId().equals(user.getId())) {
             throw new AccessDeniedException(messageIfDenied != null ? messageIfDenied : "权限不足");
         }

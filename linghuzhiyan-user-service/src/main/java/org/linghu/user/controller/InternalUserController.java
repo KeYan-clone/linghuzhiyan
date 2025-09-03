@@ -6,12 +6,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.linghu.user.domain.User;
 import org.linghu.user.dto.Result;
+import org.linghu.user.dto.UserDTO;
 import org.linghu.user.dto.UserInfo;
 import org.linghu.user.repository.UserRepository;
 import org.linghu.user.service.UserService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -174,6 +176,41 @@ public class InternalUserController {
         }
     }
 
+    /**
+     * 实验中根据用户Id信息
+     */
+    @GetMapping("/exp/{id}")
+    @Operation(summary = "实验中根据用户Id信息", description = "供实验服务间调用的获取用户信息接口")
+    public UserDTO getUserByIdInExp(@PathVariable("id") String id) {
+        return userService.getUserById(id);
+    }
+
+    /**
+     * 实验中根据用户名获取用户信息
+     */
+    @GetMapping("/exp/username/{username}")
+    @Operation(summary = "实验中根据用户名获取用户信息", description = "供实验服务间调用的获取用户信息接口")
+    public UserDTO getUserByUsernameInExp(@PathVariable("username") String username) {
+         return userService.getUserByUsername(username);
+    }
+
+    /**
+     * 实验中批量获取用户信息
+     */
+    @PostMapping("/exp/batch")
+    @Operation(summary = "实验中批量获取用户信息", description = "供实验服务间调用的批量获取用户信息接口")
+    public List<UserDTO> getUsersByIdsInExp(@RequestBody List<String> userIds) {
+        return userService.getUsersByIds(userIds);
+    }
+
+    /**
+     * 实验中获取所有用户信息
+     */
+    @GetMapping("/exp/all")
+    @Operation(summary = "实验中获取所有用户信息", description = "供实验服务间调用的获取所有用户信息接口")
+    public List<UserDTO> getAllUsersInExp() {
+        return userService.getAllUsers();
+    }
     /**
      * 健康检查接口
      * @return 服务状态

@@ -18,24 +18,24 @@ public interface UserServiceClient {
     /**
      * 根据用户ID获取用户信息
      */
-    @GetMapping("/{id}")
-    UserDTO getUserById(@PathVariable("id") String id);
+    @GetMapping("/exp/{id}")
+    UserDTO getUserByIdInExp(@PathVariable("id") String id);
 
     /**
      * 根据用户名获取用户信息
      */
-    @GetMapping("/username/{username}")
-    UserDTO getUserByUsername(@PathVariable("username") String username);
+    @GetMapping("/exp/username/{username}")
+    UserDTO getUserByUsernameInExp(@PathVariable("username") String username);
 
     /**
      * 批量获取用户信息
      */
-    @PostMapping("/batch")
-    List<UserDTO> getUsersByIds(@RequestBody List<String> userIds);
+    @PostMapping("/exp/batch")
+    List<UserDTO> getUsersByIdsInExp(@RequestBody List<String> userIds);
 
     /**
      * 获取所有用户信息
      */
-    @GetMapping("/all")
-    List<UserDTO> getAllUsers();
+    @GetMapping("/exp/all")
+    List<UserDTO> getAllUsersInExp();
 }
