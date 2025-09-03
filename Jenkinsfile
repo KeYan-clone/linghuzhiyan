@@ -177,6 +177,56 @@ pipeline {
 				}
 			}
 		}
+		stage('Deploy Autoscaling') {
+			steps {
+				withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
+					script {
+						echo 'Deploying Horizontal Pod Autoscaler configurations...'
+						if (isUnix()) {
+							sh '''
+								echo "Checking if Metrics Server is available..."
+								kubectl get deployment metrics-server -n kube-system || {
+									echo "Installing Metrics Server..."
+									kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+									kubectl patch deployment metrics-server -n kube-system --type='json' -p='[{"op": "add", "path": "/spec/template/spec/containers/0/args/-", "value": "--kubelet-insecure-tls"}]'
+									echo "Waiting for Metrics Server to be ready..."
+									kubectl wait --for=condition=available --timeout=120s deployment/metrics-server -n kube-system
+								}
+								
+								echo "Applying HPA configurations..."
+								kubectl apply -f autoscaling/hpa-all-services.yaml
+								
+								echo "Waiting for HPA to initialize..."
+								sleep 15
+								
+								echo "HPA status:"
+								kubectl get hpa -n linghuzhiyan
+							'''
+						} else {
+							bat '''
+								echo Checking if Metrics Server is available...
+								kubectl get deployment metrics-server -n kube-system >nul 2>&1 || (
+									echo Installing Metrics Server...
+									kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+									kubectl patch deployment metrics-server -n kube-system --type="json" -p="[{\"op\": \"add\", \"path\": \"/spec/template/spec/containers/0/args/-\", \"value\": \"--kubelet-insecure-tls\"}]"
+									echo Waiting for Metrics Server to be ready...
+									kubectl wait --for=condition=available --timeout=120s deployment/metrics-server -n kube-system
+								)
+								
+								echo Applying HPA configurations...
+								kubectl apply -f autoscaling/hpa-all-services.yaml
+								
+								echo Waiting for HPA to initialize...
+								timeout /t 15
+								
+								echo HPA status:
+								kubectl get hpa -n linghuzhiyan
+							'''
+						}
+					}
+				}
+			}
+		}
 		stage('Health Check') {
 			steps {
 				withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
