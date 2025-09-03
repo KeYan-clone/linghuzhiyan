@@ -102,7 +102,7 @@ spec:
         - name: JAVA_OPTS
           value: "-Xms256m -Xmx512m"
         - name: SPRING_PROFILES_ACTIVE
-          value: "k8s"
+          value: "native"
         - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
           value: "http://admin:admin123@discovery-server:8761/eureka/"
         ports:
