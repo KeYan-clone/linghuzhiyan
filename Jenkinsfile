@@ -287,10 +287,9 @@ pipeline {
 								echo Final health check - All services status:
 								kubectl get pods -n linghuzhiyan
 								kubectl get services -n linghuzhiyan
-								
-								echo Setting up port forwarding for access...
-								echo Starting gateway port forward on port 8080...
-								Start-Process -FilePath "kubectl" -ArgumentList "port-forward", "-n", "linghuzhiyan", "service/gateway", "8080:8080" -WindowStyle Hidden
+
+								start /B kubectl port-forward -n linghuzhiyan service/gateway 8080:8080
+
 							'''
 						}
 					}
