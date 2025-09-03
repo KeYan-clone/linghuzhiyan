@@ -346,8 +346,6 @@ class ExperimentAssignmentServiceImplTest {
         // Given
         when(experimentTaskRepository.findById("task1")).thenReturn(Optional.of(testTask));
         when(assignmentRepository.findByTaskId("task1")).thenReturn(Collections.emptyList());
-        when(userServiceClient.getUsersByIdsInExp(Collections.emptyList())).thenReturn(Collections.emptyList());
-
         // When
         List<UserDTO> result = assignmentService.getTaskAssignments("task1");
 
@@ -357,7 +355,6 @@ class ExperimentAssignmentServiceImplTest {
         
         verify(experimentTaskRepository).findById("task1");
         verify(assignmentRepository).findByTaskId("task1");
-        verify(userServiceClient).getUsersByIdsInExp(Collections.emptyList());
     }
 
     // assignTaskToAllStudents 方法的正面测试 - 无学生用户
@@ -368,7 +365,6 @@ class ExperimentAssignmentServiceImplTest {
         
         when(experimentTaskRepository.findById("task1")).thenReturn(Optional.of(testTask));
         when(userServiceClient.getAllUsersInExp()).thenReturn(allUsers);
-        when(userServiceClient.getUsersByIdsInExp(Collections.emptyList())).thenReturn(Collections.emptyList());
 
         // When
         assertDoesNotThrow(() -> assignmentService.assignTaskToAllStudents("task1"));
@@ -376,7 +372,6 @@ class ExperimentAssignmentServiceImplTest {
         // Then
         verify(experimentTaskRepository).findById("task1");
         verify(userServiceClient).getAllUsersInExp();
-        verify(userServiceClient).getUsersByIdsInExp(Collections.emptyList());
         verify(assignmentRepository, never()).save(any());
     }
 }
