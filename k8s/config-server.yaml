@@ -29,8 +29,8 @@ data:
             
       # Redis 配置 - K8s环境
       redis:
-        host: redis
-        port: 6379
+        host: ${SPRING_REDIS_HOST:redis}
+        port: ${SPRING_REDIS_PORT:6379}
         timeout: 2000ms
         lettuce:
           pool:
@@ -105,6 +105,10 @@ spec:
           value: "native"
         - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
           value: "http://admin:admin123@discovery-server:8761/eureka/"
+        - name: SPRING_REDIS_HOST
+          value: "redis"
+        - name: SPRING_REDIS_PORT
+          value: "6379"
         ports:
         - containerPort: 8888
         volumeMounts:
@@ -115,7 +119,7 @@ spec:
           httpGet:
             path: /actuator/health
             port: 8888
-          initialDelaySeconds: 120
+          initialDelaySeconds: 30
           periodSeconds: 30
           timeoutSeconds: 10
           failureThreshold: 3
@@ -123,7 +127,7 @@ spec:
           httpGet:
             path: /actuator/health
             port: 8888
-          initialDelaySeconds: 60
+          initialDelaySeconds: 20
           periodSeconds: 10
           timeoutSeconds: 5
           failureThreshold: 3
