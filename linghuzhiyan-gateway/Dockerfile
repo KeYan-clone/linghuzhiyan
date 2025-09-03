@@ -10,6 +10,11 @@ LABEL org.opencontainers.image.title="linghuzhiyan-gateway" \
 
 WORKDIR /app
 
+# 安装 curl，用于容器健康检查
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends curl \
+  && rm -rf /var/lib/apt/lists/*
+
 # 复制已构建的 jar 包
 COPY linghuzhiyan-gateway/target/linghuzhiyan-gateway-1.0.0.jar /app/app.jar
 
@@ -21,9 +26,9 @@ USER appuser
 # 环境变量
 ENV JAVA_OPTS="-Xms256m -Xmx512m -Djava.security.egd=file:/dev/./urandom"
 
-# 健康检查
+# 健康检查（Actuator 暴露在管理端口 8081）
 HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
-  CMD curl -f http://localhost:8080/actuator/health || exit 1
+  CMD curl -f http://localhost:8081/actuator/health || exit 1
 
 EXPOSE 8080
 

@@ -10,6 +10,11 @@ LABEL org.opencontainers.image.title="linghuzhiyan-experiment-service" \
 
 WORKDIR /app
 
+# 安装 curl，用于容器健康检查
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends curl \
+  && rm -rf /var/lib/apt/lists/*
+
 # 复制已构建的 jar 包
 COPY linghuzhiyan-experiment-service/target/linghuzhiyan-experiment-service-1.0.0.jar /app/app.jar
 

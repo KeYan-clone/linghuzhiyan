@@ -8,8 +8,8 @@
     { "key": "baseUrl", "value": "http://localhost:8080", "type": "string" },
   { "key": "runId", "value": "", "type": "string" },
     { "key": "authHeader", "value": "", "type": "string" },
-    { "key": "adminUsername", "value": "admin1", "type": "string" },
-    { "key": "adminPassword", "value": "admin1", "type": "string" },
+    { "key": "adminUsername", "value": "user1", "type": "string" },
+    { "key": "adminPassword", "value": "string", "type": "string" },
   { "key": "adminUserId", "value": "", "type": "string" },
     { "key": "teacherUsername", "value": "teacher01", "type": "string" },
     { "key": "teacherEmail", "value": "teacher01@example.com", "type": "string" },
@@ -221,7 +221,7 @@
       "request": {
         "method": "POST",
         "header": [ { "key": "Content-Type", "value": "application/json" } ],
-        "url": { "raw": "{{baseUrl}}/api/users/login", "host": ["{{baseUrl}}"], "path": ["api","users","login"] },
+        "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api","users","login"] },
         "body": { "mode": "raw", "raw": "{\n  \"username\": \"{{student3Username}}\",\n  \"password\": \"{{student3Password}}\",\n  \"role\": \"STUDENT\"\n}" }
       },
         "event": [ { "listen": "test", "script": { "exec": [
