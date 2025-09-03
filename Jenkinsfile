@@ -117,33 +117,33 @@ pipeline {
 								sh 'kubectl apply -f discovery-server.yaml'
 								sh '''
 									echo "Waiting for Discovery Server to be ready..."
-									kubectl wait --for=condition=available --timeout=40s deployment/discovery-server -n linghuzhiyan
+									kubectl wait --for=condition=available --timeout=300s deployment/discovery-server -n linghuzhiyan
 								'''
 								sh 'kubectl apply -f config-server.yaml'
 								sh '''
 									echo "Waiting for Config Server to be ready..."
-									kubectl wait --for=condition=available --timeout=40s deployment/config-server -n linghuzhiyan
+									kubectl wait --for=condition=available --timeout=300s deployment/config-server -n linghuzhiyan
 								'''
 								sh 'kubectl apply -f gateway.yaml'
 								sh '''
 									echo "Waiting for Gateway to be ready..."
-									kubectl wait --for=condition=available --timeout=40s deployment/gateway -n linghuzhiyan
+									kubectl wait --for=condition=available --timeout=300s deployment/gateway -n linghuzhiyan
 								'''
 							} else {
 								bat 'kubectl apply -f discovery-server.yaml'
 								bat '''
 									echo Waiting for Discovery Server to be ready...
-									kubectl wait --for=condition=available --timeout=40s deployment/discovery-server -n linghuzhiyan
+									kubectl wait --for=condition=available --timeout=300s deployment/discovery-server -n linghuzhiyan
 								'''
 								bat 'kubectl apply -f config-server.yaml'
 								bat '''
 									echo Waiting for Config Server to be ready...
-									kubectl wait --for=condition=available --timeout=40s deployment/config-server -n linghuzhiyan
+									kubectl wait --for=condition=available --timeout=300s deployment/config-server -n linghuzhiyan
 								'''
 								bat 'kubectl apply -f gateway.yaml'
 								bat '''
 									echo Waiting for Gateway to be ready...
-									kubectl wait --for=condition=available --timeout=40s deployment/gateway -n linghuzhiyan
+									kubectl wait --for=condition=available --timeout=300s deployment/gateway -n linghuzhiyan
 								'''
 							}
 						}
