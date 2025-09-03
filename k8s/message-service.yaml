@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: message-service
-        image: linghuzhiyan/message-service:latest
+        image: linghuzhiyan-message-service:latest
         imagePullPolicy: IfNotPresent
         env:
         - name: JAVA_OPTS

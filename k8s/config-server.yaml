@@ -54,7 +54,7 @@ spec:
     spec:
       containers:
       - name: config-server
-        image: linghuzhiyan/config-server:latest
+        image: linghuzhiyan-config-server:latest
         imagePullPolicy: IfNotPresent
         env:
         - name: JAVA_OPTS
@@ -96,8 +96,6 @@ spec:
       - name: config-repo
         configMap:
           name: config-repo
-      depends_on:
-        - discovery-server
 ---
 apiVersion: v1
 kind: Service

@@ -88,15 +88,15 @@ pipeline {
 						echo 'Waiting for infrastructure to be ready...'
 						if (isUnix()) {
 							sh '''
-								kubectl wait --for=condition=available --timeout=300s deployment/mysql -n linghuzhiyan || true
-								kubectl wait --for=condition=available --timeout=300s deployment/redis -n linghuzhiyan || true
-								kubectl wait --for=condition=available --timeout=300s deployment/minio -n linghuzhiyan || true
+								kubectl wait --for=condition=available --timeout=20s deployment/mysql -n linghuzhiyan || true
+								kubectl wait --for=condition=available --timeout=20s deployment/redis -n linghuzhiyan || true
+								kubectl wait --for=condition=available --timeout=20s deployment/minio -n linghuzhiyan || true
 							'''
 						} else {
 							bat '''
-								kubectl wait --for=condition=available --timeout=300s deployment/mysql -n linghuzhiyan || echo "MySQL timeout"
-								kubectl wait --for=condition=available --timeout=300s deployment/redis -n linghuzhiyan || echo "Redis timeout"
-								kubectl wait --for=condition=available --timeout=300s deployment/minio -n linghuzhiyan || echo "MinIO timeout"
+								kubectl wait --for=condition=available --timeout=20s deployment/mysql -n linghuzhiyan || echo "MySQL timeout"
+								kubectl wait --for=condition=available --timeout=20s deployment/redis -n linghuzhiyan || echo "Redis timeout"
+								kubectl wait --for=condition=available --timeout=20s deployment/minio -n linghuzhiyan || echo "MinIO timeout"
 							'''
 						}
 					}
@@ -113,33 +113,33 @@ pipeline {
 								sh 'kubectl apply -f discovery-server.yaml'
 								sh '''
 									echo "Waiting for Discovery Server to be ready..."
-									kubectl wait --for=condition=available --timeout=300s deployment/discovery-server -n linghuzhiyan
+									kubectl wait --for=condition=available --timeout=20s deployment/discovery-server -n linghuzhiyan
 								'''
 								sh 'kubectl apply -f config-server.yaml'
 								sh '''
 									echo "Waiting for Config Server to be ready..."
-									kubectl wait --for=condition=available --timeout=300s deployment/config-server -n linghuzhiyan
+									kubectl wait --for=condition=available --timeout=20s deployment/config-server -n linghuzhiyan
 								'''
 								sh 'kubectl apply -f gateway.yaml'
 								sh '''
 									echo "Waiting for Gateway to be ready..."
-									kubectl wait --for=condition=available --timeout=300s deployment/gateway -n linghuzhiyan
+									kubectl wait --for=condition=available --timeout=20s deployment/gateway -n linghuzhiyan
 								'''
 							} else {
 								bat 'kubectl apply -f discovery-server.yaml'
 								bat '''
 									echo Waiting for Discovery Server to be ready...
-									kubectl wait --for=condition=available --timeout=300s deployment/discovery-server -n linghuzhiyan
+									kubectl wait --for=condition=available --timeout=20s deployment/discovery-server -n linghuzhiyan
 								'''
 								bat 'kubectl apply -f config-server.yaml'
 								bat '''
 									echo Waiting for Config Server to be ready...
-									kubectl wait --for=condition=available --timeout=300s deployment/config-server -n linghuzhiyan
+									kubectl wait --for=condition=available --timeout=20s deployment/config-server -n linghuzhiyan
 								'''
 								bat 'kubectl apply -f gateway.yaml'
 								bat '''
 									echo Waiting for Gateway to be ready...
-									kubectl wait --for=condition=available --timeout=300s deployment/gateway -n linghuzhiyan
+									kubectl wait --for=condition=available --timeout=20s deployment/gateway -n linghuzhiyan
 								'''
 							}
 						}
@@ -181,12 +181,12 @@ pipeline {
 						if (isUnix()) {
 							sh '''
 								echo "Waiting for business services to be ready..."
-								kubectl wait --for=condition=available --timeout=300s deployment/auth-service -n linghuzhiyan || echo "Auth service timeout"
-								kubectl wait --for=condition=available --timeout=300s deployment/user-service -n linghuzhiyan || echo "User service timeout"
-								kubectl wait --for=condition=available --timeout=300s deployment/experiment-service -n linghuzhiyan || echo "Experiment service timeout"
-								kubectl wait --for=condition=available --timeout=300s deployment/resource-service -n linghuzhiyan || echo "Resource service timeout"
-								kubectl wait --for=condition=available --timeout=300s deployment/message-service -n linghuzhiyan || echo "Message service timeout"
-								kubectl wait --for=condition=available --timeout=300s deployment/discussion-service -n linghuzhiyan || echo "Discussion service timeout"
+								kubectl wait --for=condition=available --timeout=20s deployment/auth-service -n linghuzhiyan || echo "Auth service timeout"
+								kubectl wait --for=condition=available --timeout=20s deployment/user-service -n linghuzhiyan || echo "User service timeout"
+								kubectl wait --for=condition=available --timeout=20s deployment/experiment-service -n linghuzhiyan || echo "Experiment service timeout"
+								kubectl wait --for=condition=available --timeout=20s deployment/resource-service -n linghuzhiyan || echo "Resource service timeout"
+								kubectl wait --for=condition=available --timeout=20s deployment/message-service -n linghuzhiyan || echo "Message service timeout"
+								kubectl wait --for=condition=available --timeout=20s deployment/discussion-service -n linghuzhiyan || echo "Discussion service timeout"
 								
 								echo "Final health check - All services status:"
 								kubectl get pods -n linghuzhiyan
@@ -204,12 +204,12 @@ pipeline {
 						} else {
 							bat '''
 								echo Waiting for business services to be ready...
-								kubectl wait --for=condition=available --timeout=300s deployment/auth-service -n linghuzhiyan || echo "Auth service timeout"
-								kubectl wait --for=condition=available --timeout=300s deployment/user-service -n linghuzhiyan || echo "User service timeout"
-								kubectl wait --for=condition=available --timeout=300s deployment/experiment-service -n linghuzhiyan || echo "Experiment service timeout"
-								kubectl wait --for=condition=available --timeout=300s deployment/resource-service -n linghuzhiyan || echo "Resource service timeout"
-								kubectl wait --for=condition=available --timeout=300s deployment/message-service -n linghuzhiyan || echo "Message service timeout"
-								kubectl wait --for=condition=available --timeout=300s deployment/discussion-service -n linghuzhiyan || echo "Discussion service timeout"
+								kubectl wait --for=condition=available --timeout=20s deployment/auth-service -n linghuzhiyan || echo "Auth service timeout"
+								kubectl wait --for=condition=available --timeout=20s deployment/user-service -n linghuzhiyan || echo "User service timeout"
+								kubectl wait --for=condition=available --timeout=20s deployment/experiment-service -n linghuzhiyan || echo "Experiment service timeout"
+								kubectl wait --for=condition=available --timeout=20s deployment/resource-service -n linghuzhiyan || echo "Resource service timeout"
+								kubectl wait --for=condition=available --timeout=20s deployment/message-service -n linghuzhiyan || echo "Message service timeout"
+								kubectl wait --for=condition=available --timeout=20s deployment/discussion-service -n linghuzhiyan || echo "Discussion service timeout"
 								
 								echo Final health check - All services status:
 								kubectl get pods -n linghuzhiyan
