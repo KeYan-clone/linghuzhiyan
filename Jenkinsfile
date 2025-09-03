@@ -288,7 +288,8 @@ pipeline {
 								kubectl get pods -n linghuzhiyan
 								kubectl get services -n linghuzhiyan
 
-								start /B kubectl port-forward -n linghuzhiyan service/gateway 8080:8080
+								powershell -Command ^
+                                              "Start-Process kubectl -ArgumentList 'port-forward','-n','linghuzhiyan','service/gateway','8080:8080' -WindowStyle Hidden"
 
 							'''
 						}
