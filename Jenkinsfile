@@ -290,8 +290,7 @@ pipeline {
 								
 								echo Setting up port forwarding for access...
 								echo Starting gateway port forward on port 8080...
-								start /B kubectl port-forward -n linghuzhiyan service/gateway 8080:8080
-								timeout /t 3
+								Start-Process -FilePath "kubectl" -ArgumentList "port-forward", "-n", "linghuzhiyan", "service/gateway", "8080:8080" -WindowStyle Hidden
 							'''
 						}
 					}
