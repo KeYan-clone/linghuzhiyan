@@ -184,6 +184,12 @@ public class CommentController {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", "删除评论失败: " + e.getMessage());
+            
+            // 如果是权限相关的错误，返回403状态码
+            if (e.getMessage().contains("无权限删除此评论") || e.getMessage().contains("权限不足")) {
+                return ResponseEntity.status(403).body(response);
+            }
+            
             return ResponseEntity.badRequest().body(response);
         }
     }

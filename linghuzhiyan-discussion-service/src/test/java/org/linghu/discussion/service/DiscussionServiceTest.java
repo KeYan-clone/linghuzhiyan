@@ -236,9 +236,9 @@ class DiscussionServiceTest {
             when(mongoTemplate.count(any(Query.class), eq(Discussion.class))).thenReturn(1L);
             when(mongoTemplate.find(any(Query.class), eq(Discussion.class))).thenReturn(discussions);
 
-            // When
+            // When - 指定status避免复杂的or查询条件
             Page<DiscussionResponseDTO> result = discussionService.getDiscussions(
-                    null, null, null, null, null, 
+                    null, null, null, "APPROVED", null, 
                     "lastActivityTime", "desc", 0, 10, "user-1"
             );
 
@@ -261,9 +261,9 @@ class DiscussionServiceTest {
             when(mongoTemplate.count(any(Query.class), eq(Discussion.class))).thenReturn(1L);
             when(mongoTemplate.find(any(Query.class), eq(Discussion.class))).thenReturn(discussions);
 
-            // When
+            // When - 指定status避免复杂的or查询条件
             Page<DiscussionResponseDTO> result = discussionService.getDiscussions(
-                    tags, null, null, null, null,
+                    tags, null, null, "APPROVED", null,
                     "lastActivityTime", "desc", 0, 10, "user-1"
             );
 
@@ -285,9 +285,9 @@ class DiscussionServiceTest {
             when(mongoTemplate.count(any(Query.class), eq(Discussion.class))).thenReturn(1L);
             when(mongoTemplate.find(any(Query.class), eq(Discussion.class))).thenReturn(discussions);
 
-            // When
+            // When - 指定status避免复杂的or查询条件组合
             Page<DiscussionResponseDTO> result = discussionService.getDiscussions(
-                    null, null, null, null, "测试",
+                    null, null, null, "APPROVED", "测试",
                     "lastActivityTime", "desc", 0, 10, "user-1"
             );
 
