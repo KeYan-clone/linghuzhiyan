@@ -234,7 +234,7 @@ services:
       minio:
         condition: service_started
       config:
-        condition: service_started
+        condition: service_healthy
       discovery:
         condition: service_started
     ports:
@@ -271,7 +271,7 @@ services:
       minio:
         condition: service_started
       config:
-        condition: service_started
+        condition: service_healthy
       discovery:
         condition: service_started
     ports:
@@ -308,7 +308,7 @@ services:
       minio:
         condition: service_started
       config:
-        condition: service_started
+        condition: service_healthy
       discovery:
         condition: service_started
     ports:
