@@ -12,6 +12,10 @@ import org.linghu.user.service.UserService;
 import org.linghu.user.utils.JsonUtils;
 import org.linghu.user.utils.MinioUtil;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -117,6 +121,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Cacheable(value = "users", key = "#id", unless = "#result == null")
     public UserDTO getUserById(String id) {
         User user = userRepository.findById(id)
                 .orElseThrow(UserException::userNotFound);
@@ -125,6 +130,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Cacheable(value = "users", key = "'username:' + #username", unless = "#result == null")
     public UserDTO getUserByUsername(String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(UserException::userNotFound);
@@ -176,6 +182,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Cacheable(value = "userList", key = "#pageNum + ':' + #pageSize")
     public Page<UserDTO> listUsers(int pageNum, int pageSize) {
         // 页码从0开始计算
         Pageable pageable = PageRequest.of(pageNum - 1, pageSize);
@@ -188,6 +195,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "users", key = "#result.id"),
+        @CacheEvict(value = "users", key = "'username:' + #username"),
+        @CacheEvict(value = "userList", allEntries = true)
+    })
     public UserDTO updateUserProfile(String username, ProfileUpdateDTO profileUpdateDTO) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(UserException::userNotFound);
@@ -285,6 +297,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Cacheable(value = "userPermissions", key = "#userId", unless = "#result == null || #result.isEmpty()")
     public Set<String> getUserRoleIds(String userId) {
         try {
             Result<Set<String>> result = authServiceClient.getUserRoleIds(userId);
