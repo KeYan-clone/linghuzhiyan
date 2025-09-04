@@ -26,7 +26,10 @@ public class MinioUtil {
     
     @Value("${minio.bucketName}")
     private String bucketName;
-    
+
+    @Value("${minio.endpoint}")
+    private String minioEndpoint;
+
     // 用户头像前缀
     private static final String PREFIX_AVATARS = "avatars/";
     
@@ -110,14 +113,84 @@ public class MinioUtil {
      * 获取头像预览URL
      */
     public String getAvatarPreviewUrl(String objectName, int expiry) throws Exception {
-        return minioClient.getPresignedObjectUrl(
-            GetPresignedObjectUrlArgs.builder()
-                .method(Method.GET)
-                .bucket(bucketName)
-                .object(objectName)
-                .expiry(expiry, TimeUnit.SECONDS)
-                .build()
-        );
+        if (objectName == null || !objectName.startsWith(PREFIX_AVATARS)) {
+            throw new IllegalArgumentException("非法的头像路径");
+        }
+
+        return generatePreviewUrl(objectName, expiry);
+    }
+
+    /**
+     * 生成文件的临时预览URL
+     *
+     * @param objectName MinIO中的对象名
+     * @param expiryTime URL过期时间(秒)
+     * @return 临时访问URL
+     * @throws Exception 如果生成URL失败
+     */
+    public String generatePreviewUrl(String objectName, int expiryTime) throws Exception {
+        // 验证对象路径前缀合法性
+        if (objectName == null || objectName.trim().isEmpty()) {
+            throw new IllegalArgumentException("对象路径不能为空");
+        }
+
+        if (objectName.contains("../") || objectName.contains("..\\")) {
+            throw new IllegalArgumentException("非法的对象路径：不允许使用相对路径");
+        }
+
+        if (objectName.startsWith("/") || objectName.startsWith("\\")) {
+            throw new IllegalArgumentException("非法的对象路径：不允许以分隔符开头");
+        }
+
+        // 根据对象路径确定使用哪个bucket
+        String bucketName = determineBucketByObjectPath(objectName);
+
+        // 构建拼接式URL: http://your-minio-server/bucket/object-path
+        String baseUrl = minioEndpoint;
+
+        // 移除末尾的斜杠（如果有）
+        if (baseUrl.endsWith("/")) {
+            baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
+        }
+
+        // 构建完整的URL
+        String fullUrl = String.format("%s/%s/%s", baseUrl, bucketName, objectName);
+
+        return fullUrl;
+    }
+
+    private String determineBucketByObjectPath(String objectName) {
+        if (objectName == null) {
+            return bucketName;
+        }
+        // 头像文件应该存储在默认bucket中
+        if (objectName.startsWith(PREFIX_AVATARS)) {
+            return bucketName;
+        }
+        // 判断是否为实验资源路径格式：{experimentId}/experiment/...
+        if (isExperimentResourcePath(objectName)) {
+            return "resource";
+        }
+
+        // 判断是否为学生提交路径格式：{studentId}/{experimentId}/{taskId}/...
+        if (isStudentSubmissionPath(objectName)) {
+            return "submission";
+        }
+
+        // 其他情况使用默认bucket
+        return bucketName;
+    }
+
+    private boolean isExperimentResourcePath(String objectName) {
+        // 实验资源路径格式：{experimentId}/experiment/...
+        String[] parts = objectName.split("/");
+        return parts.length >= 2 && "experiment".equals(parts[1]);
+    }
+
+    private boolean isStudentSubmissionPath(String objectName) {
+        // 学生提交路径格式：{studentId}/{experimentId}/{taskId}/...
+        String[] parts = objectName.split("/");
+        return parts.length >= 3 && !objectName.startsWith(PREFIX_AVATARS);
     }
 
     /**

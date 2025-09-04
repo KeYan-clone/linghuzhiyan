@@ -1,6 +1,7 @@
 package org.linghu.experiment.controller;
 
 import org.linghu.experiment.dto.ExperimentDTO;
+import org.linghu.experiment.dto.Result;
 import org.linghu.experiment.service.ExperimentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -29,8 +30,9 @@ public class ExperimentInternalController {
      * @return 实验信息
      */
     @GetMapping("/{experimentId}")
-    public ExperimentDTO getExperimentById(@PathVariable String experimentId) {
-        return experimentService.getExperimentById(experimentId);
+    public Result<ExperimentDTO> getExperimentById(@PathVariable String experimentId) {
+        // 直接交由全局异常处理器处理异常场景
+        return Result.success(experimentService.getExperimentById(experimentId));
     }
 
     /**
@@ -40,12 +42,13 @@ public class ExperimentInternalController {
      * @return 是否存在
      */
     @GetMapping("/{experimentId}/exists")
-    public Boolean experimentExists(@PathVariable String experimentId) {
+    public Result<Boolean> experimentExists(@PathVariable String experimentId) {
         try {
             ExperimentDTO experiment = experimentService.getExperimentById(experimentId);
-            return experiment != null;
+            return Result.success(experiment != null);
         } catch (Exception e) {
-            return false;
+            // 内部接口：异常场景返回 false，避免调用方因异常而失败
+            return Result.success(false);
         }
     }
 
@@ -56,7 +59,7 @@ public class ExperimentInternalController {
      * @return 验证结果映射
      */
     @PostMapping("/batch-exists")
-    public java.util.Map<String, Boolean> batchExperimentExists(@RequestBody java.util.List<String> experimentIds) {
+    public Result<java.util.Map<String, Boolean>> batchExperimentExists(@RequestBody java.util.List<String> experimentIds) {
         java.util.Map<String, Boolean> result = new java.util.HashMap<>();
         for (String experimentId : experimentIds) {
             try {
@@ -66,7 +69,7 @@ public class ExperimentInternalController {
                 result.put(experimentId, false);
             }
         }
-        return result;
+        return Result.success(result);
     }
 
     /**
@@ -76,7 +79,7 @@ public class ExperimentInternalController {
      * @return 基本信息
      */
     @GetMapping("/{experimentId}/basic")
-    public ExperimentDTO getExperimentBasicInfo(@PathVariable String experimentId) {
-        return experimentService.getExperimentById(experimentId);
+    public Result<ExperimentDTO> getExperimentBasicInfo(@PathVariable String experimentId) {
+        return Result.success(experimentService.getExperimentById(experimentId));
     }
 }
