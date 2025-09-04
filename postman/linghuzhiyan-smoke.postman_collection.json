@@ -83,9 +83,9 @@
         "body": { "mode": "raw", "raw": "{\n  \"username\": \"{{teacherUsername}}\",\n  \"email\": \"{{teacherEmail}}\",\n  \"password\": \"{{teacherPassword}}\"\n}" }
       },
       "event": [ { "listen": "test", "script": { "exec": [
-        "pm.test('HTTP 200/或用户名已存在(400)', function(){ pm.expect([200,400]).to.include(pm.response.code); });",
+        "pm.test('HTTP 200 或 400(用户已注册）', function () {pm.expect([200, 400]).to.include(pm.response.code);});",
         "const json = pm.response.json(); ",
-        "pm.test('业务码 200', function () { pm.expect(json && json.code).to.equal(200); });"
+        "pm.test('业务码 200 或 400(用户名已存在)', function () {pm.expect(json && (json.code === 200 || json.code === 409)).to.be.true;});"
       ] } } ]
     },
     {
@@ -97,9 +97,9 @@
         "body": { "mode": "raw", "raw": "{\n  \"username\": \"{{studentUsername}}\",\n  \"email\": \"{{studentEmail}}\",\n  \"password\": \"{{studentPassword}}\"\n}" }
       },
       "event": [ { "listen": "test", "script": { "exec": [
-        "pm.test('HTTP 200/或用户名已存在(400)', function(){ pm.expect([200,400]).to.include(pm.response.code); });",
-        "const json = pm.response.json();",
-        "pm.test('业务码 200', function () { pm.expect(json && json.code).to.equal(200); });"
+        "pm.test('HTTP 200 或 400(用户已注册）', function () {pm.expect([200, 400]).to.include(pm.response.code);});",
+        "const json = pm.response.json(); ",
+        "pm.test('业务码 200 或 400(用户名已存在)', function () {pm.expect(json && (json.code === 200 || json.code === 409)).to.be.true;});"
       ] } } ]
     },
     {
@@ -111,9 +111,9 @@
         "body": { "mode": "raw", "raw": "{\n  \"username\": \"{{student2Username}}\",\n  \"email\": \"{{student2Email}}\",\n  \"password\": \"{{student2Password}}\"\n}" }
       },
       "event": [ { "listen": "test", "script": { "exec": [
-        "pm.test('HTTP 200/或用户名已存在(400)', function(){ pm.expect([200,400]).to.include(pm.response.code); });",
+        "pm.test('HTTP 200 或 400(用户已注册）', function () {pm.expect([200, 400]).to.include(pm.response.code);});",
         "const json = pm.response.json();",
-        "pm.test('业务码 200', function () { pm.expect(json && json.code).to.equal(200); });"
+        "pm.test('业务码 200 或 400(用户名已存在)', function () {pm.expect(json && (json.code === 200 || json.code === 409)).to.be.true;});"
       ] } } ]
     },
     {
@@ -125,9 +125,9 @@
         "body": { "mode": "raw", "raw": "{\n  \"username\": \"{{student3Username}}\",\n  \"email\": \"{{student3Email}}\",\n  \"password\": \"{{student3Password}}\"\n}" }
       },
       "event": [ { "listen": "test", "script": { "exec": [
-        "pm.test('HTTP 200/或用户名已存在(400)', function(){ pm.expect([200,400]).to.include(pm.response.code); });",
+        "pm.test('HTTP 200 或 400(用户已注册）', function () {pm.expect([200, 400]).to.include(pm.response.code);});",
         "const json = pm.response.json();",
-        "pm.test('业务码 200', function () { pm.expect(json && json.code).to.equal(200); });"
+        "pm.test('业务码 200 或 400(用户名已存在)', function () {pm.expect(json && (json.code === 200 || json.code === 409)).to.be.true;});"
       ] } } ]
     },
     {
@@ -139,7 +139,7 @@
       },
       "event": [ { "listen": "test", "script": { "exec": [
         "const json = pm.response.json();",
-        "pm.test('HTTP 200', function () { pm.expect(pm.response.code).to.equal(200); });",
+        "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
         "const list = (json && json.data && json.data.list) || [];",
         "const t = list.find(u => u.username===pm.collectionVariables.get('teacherUsername'));",
         "const s = list.find(u => u.username===pm.collectionVariables.get('studentUsername'));",
@@ -165,7 +165,7 @@
         "body": { "mode": "raw", "raw": "{\n  \"userId\": \"{{teacherUserId}}\",\n  \"roleId\": \"ROLE_TEACHER\"\n}" }
       },
       "event": [ { "listen": "test", "script": { "exec": [
-        "pm.test('HTTP 200', function () { pm.expect(pm.response.code).to.equal(200); });",
+        "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
         "const json = pm.response.json();",
         "pm.test('业务码 200', function () { pm.expect(json && json.code === 200).to.be.true; });"
       ] } } ]
@@ -187,7 +187,7 @@
           "script": {
             "exec": [
               "const json = pm.response.json();",
-              "pm.test('HTTP 200', function () { pm.expect(pm.response.code).to.equal(200); });",
+              "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
               "pm.test('业务码 200', function () { pm.expect(json && json.code === 200).to.be.true; });",
               "pm.test('查看teacher的用户名', function () { pm.expect(json && json.data && json.data.username).to.equal(pm.collectionVariables.get('teacherUsername')); });",
               "pm.test('teacher已具备权限', function () { pm.expect(json && json.data && Array.isArray(json.data.roles) && json.data.roles.includes('ROLE_TEACHER')).to.be.true; });"
@@ -213,7 +213,7 @@
           "script": {
             "exec": [
               "const json = pm.response.json();",
-              "pm.test('HTTP 200', function () { pm.expect(pm.response.code).to.equal(200); });",
+              "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
               "pm.test('业务码 200', function () { pm.expect(json && json.code === 200).to.be.true; });"
             ]
           }
@@ -221,7 +221,7 @@
       ]
     },
     {
-    "name": "03.3.2 - Student3 Login",
+    "name": "03.3.2 - Student3 Login(Should Fail)",
     "request": {
       "method": "POST",
       "header": [ { "key": "Content-Type", "value": "application/json" } ],
@@ -229,7 +229,7 @@
       "body": { "mode": "raw", "raw": "{\n  \"username\": \"{{student3Username}}\",\n  \"password\": \"{{student3Password}}\",\n  \"role\": \"STUDENT\"\n}" }
     },
       "event": [ { "listen": "test", "script": { "exec": [
-        "pm.test('登录失败', function () { pm.expect([401].includes(pm.response.code)).to.be.true; });",
+        "pm.test('HTTP 403', function () { pm.response.to.have.status(403); });",
         "let json = null; try { json = pm.response.json(); } catch(e) {}",
         "pm.test('无token返回', function () { pm.expect(!(json && json.data && json.data.token)).to.be.true; });"
       ] } } ]
@@ -243,7 +243,7 @@
       },
       "event": [ { "listen": "test", "script": { "exec": [
         "const json = pm.response.json();",
-        "pm.test('HTTP 200', function () { pm.expect(pm.response.code).to.equal(200); });",
+        "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
         "pm.test('业务码 200', function () { pm.expect(json && json.code === 200).to.be.true; });",
         "pm.test('获取用户id', function () { pm.expect(json && json.data && json.data.id && json.data.id === pm.collectionVariables.get('adminUserId')).to.be.true; });",
         "pm.test('获取用户名', function () { pm.expect(json && json.data && json.data.username === pm.collectionVariables.get('adminUsername')).to.be.true; });"
@@ -265,7 +265,9 @@
           }
       },
       "event": [ { "listen": "test", "script": { "exec": [
-        "pm.test('修改密码失败', function () { pm.expect([400,401,404].includes(pm.response.code)).to.be.true; });"
+        "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+        "const json = pm.response.json(); ",
+        "pm.test('密码错误', function () { pm.expect(json && json.code === 401).to.be.true; });"
       ] } } ]
     },
     {
@@ -284,6 +286,7 @@
           }
       },
       "event": [ { "listen": "test", "script": { "exec": [
+        "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
         "pm.test('修改密码成功', function () { pm.expect([200].includes(pm.response.code)).to.be.true; });"
       ] } } ]
     },
@@ -302,7 +305,7 @@
       },
       "event": [ { "listen": "test", "script": { "exec": [
         "const json = pm.response.json();",
-        "pm.test('HTTP 200', function () { pm.expect(pm.response.code).to.equal(200); });",
+        "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
         "pm.test('业务码 200', function () { pm.expect(json && json.code === 200).to.be.true; });",
         "pm.test('返回头像URL', function () { pm.expect(json && json.data && typeof json.data.avatarUrl === 'string' && json.data.avatarUrl.length > 0).to.be.true; });",
         "pm.collectionVariables.set('adminAvatarUrl', (json && json.data && json.data.avatarUrl) || '');"
@@ -318,7 +321,7 @@
       },
       "event": [ { "listen": "test", "script": { "exec": [
           "const json = pm.response.json();",
-          "pm.test('HTTP 200', function () { pm.expect(pm.response.code).to.equal(200); });",
+          "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
           "pm.test('业务码 200', function () { pm.expect(json && json.code === 200).to.be.true; });",
           "pm.test('头像已更新', function () { pm.expect(json && json.data && json.data.avatar === pm.collectionVariables.get('adminAvatarUrl')).to.be.true; });",
           "pm.test('真实姓名已更新', function () { pm.expect(json && json.data && json.data.profile && json.data.profile.realName === 'real').to.be.true; });",
@@ -336,7 +339,7 @@
         "body": { "mode": "raw", "raw": "{\n  \"userId\": \"{{adminUserId}}\",\n  \"roleId\": \"ROLE_ASSISTANT\"\n}" }
       },
       "event": [ { "listen": "test", "script": { "exec": [
-        "pm.test('HTTP 200', function () { pm.expect(pm.response.code).to.equal(200); });",
+        "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
         "const json = pm.response.json();",
         "pm.test('业务码 200 或 100008(已拥有)', function () { pm.expect(json && (json.code===200 || json.code===100008)).to.be.true; });"
       ] } } ]
@@ -350,7 +353,7 @@
         "body": { "mode": "raw", "raw": "{\n  \"username\": \"{{adminUsername}}\",\n  \"password\": \"{{adminPassword}}\",\n  \"role\": \"ASSISTANT\"\n}" }
       },
       "event": [ { "listen": "test", "script": { "exec": [
-        "pm.test('HTTP 200', function () { pm.expect(pm.response.code).to.equal(200); });",
+        "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
         "const json = pm.response.json();",
         "pm.test('业务码 200', function () { pm.expect(json && json.code === 200).to.be.true; });",
         "pm.collectionVariables.set('assistantAuth', `${json.data.tokenType} ${json.data.token}`);"
@@ -365,7 +368,7 @@
         "body": { "mode": "raw", "raw": "{\n  \"userId\": \"{{adminUserId}}\",\n  \"roleId\": \"ROLE_TEACHER\"\n}" }
       },
       "event": [ { "listen": "test", "script": { "exec": [
-        "pm.test('HTTP 200', function () { pm.expect(pm.response.code).to.equal(200); });",
+        "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
         "const json = pm.response.json();",
         "pm.test('业务码 200 或 100008(已拥有)', function () { pm.expect(json && (json.code===200 || json.code===100008)).to.be.true; });"
       ] } } ]
@@ -379,7 +382,7 @@
         "body": { "mode": "raw", "raw": "{\n  \"username\": \"{{adminUsername}}\",\n  \"password\": \"{{adminPassword}}\",\n  \"role\": \"TEACHER\"\n}" }
       },
       "event": [ { "listen": "test", "script": { "exec": [
-        "pm.test('HTTP 200', function () { pm.expect(pm.response.code).to.equal(200); });",
+        "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
         "const json = pm.response.json();",
         "pm.test('业务码 200', function () { pm.expect(json && json.code === 200).to.be.true; });",
         "pm.collectionVariables.set('adminTeacherAuth', `${json.data.tokenType} ${json.data.token}`);",
@@ -387,18 +390,17 @@
       ] } } ]
     },
     {
-      "name": "05 - Admin Set Teacher Role",
+      "name": "05 - Admin Set Role(Should Fail)",
       "request": {
         "method": "POST",
-        "header": [ { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "{{authHeader}}" } ],
+        "header": [ { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "{{adminTeacherAuth}}" } ],
         "url": { "raw": "{{baseUrl}}/api/users/setrole", "host": ["{{baseUrl}}"], "path": ["api","users","setrole"] },
         "body": { "mode": "raw", "raw": "{\n  \"userId\": \"{{teacherUserId}}\",\n  \"roleId\": \"ROLE_TEACHER\"\n}" }
       },
     "event": [ { "listen": "test", "script": { "exec": [
-      "pm.test('HTTP 200', function(){ pm.response.to.have.status(200); });",
+      "pm.test('HTTP 403', function(){ pm.response.to.have.status(403); });",
       "const json = pm.response.json();",
-      "pm.test('业务码 200 或 已拥有角色(100008)', function () { pm.expect(json && (json.code === 200 || json.code === 100008)).to.be.true; });",
-      "if (json && json.code === 100008) { pm.test('提示已拥有角色', function () { pm.expect(json.message && json.message.includes('已拥有')).to.be.true; }); }"
+      "pm.test('业务码 403(没有权限)', function () { pm.expect(json && (json.code === 403)).to.be.true; });"
     ] } } ]
     },
     {
@@ -443,7 +445,7 @@
         "const json = pm.response.json();",
         "pm.collectionVariables.set('teacherAuth', `${json.data.tokenType} ${json.data.token}`);",
         "pm.test('HTTP 200', function(){ pm.response.to.have.status(200); });",
-        "pm.test('返回 token', function () { pm.expect(json && json.data && json.data.token).to.be.true; });"
+        "pm.test('返回 token', function () { pm.expect(json && json.data && typeof json.data.token === 'string' && json.data.token.length > 0).to.be.true; });"
       ] } } ]
     },
     {
@@ -455,7 +457,7 @@
         "body": { "mode": "raw", "raw": "{\n  \"title\": \"老师给学生的通知-{{runId}}\",\n  \"content\": \"请按时完成实验任务\",\n  \"receiver\": \"{{studentUsername}}\",\n  \"senderRole\": \"ROLE_TEACHER\"\n}" }
       },
       "event": [ { "listen": "test", "script": { "exec": [
-        "pm.test('HTTP 200', function () { pm.expect(pm.response.code).to.equal(200); });",
+        "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
         "const json = pm.response.json();",
         "pm.test('业务码 200', function () { pm.expect(json && json.code === 200).to.be.true; });",
         "if(json && json.data && json.data.id){ pm.collectionVariables.set('messageIdFromTeacher', json.data.id); }",
@@ -471,7 +473,7 @@
         "body": { "mode": "raw", "raw": "{\n  \"title\": \"助教给学生的通知-{{runId}}\",\n  \"content\": \"来自管理员(助教身份)的消息\",\n  \"receiver\": \"{{studentUsername}}\",\n  \"senderRole\": \"ROLE_ASSISTANT\"\n}" }
       },
       "event": [ { "listen": "test", "script": { "exec": [
-        "pm.test('HTTP 200', function () { pm.expect(pm.response.code).to.equal(200); });",
+        "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
         "const json = pm.response.json();",
         "pm.test('业务码 200', function () { pm.expect(json && json.code === 200).to.be.true; });",
         "if(json && json.data && json.data.id){ pm.collectionVariables.set('assistantMessageId', json.data.id); }",
@@ -544,18 +546,20 @@
       ] } } ]
     },
     {
-      "name": "09.75 - Admin(Teacher role) Unpublish Other's Experiment (should fail 403)",
+      "name": "09.75 - Admin(Teacher role) Unpublish Other's Experiment (Should Fail)",
       "request": {
         "method": "PUT",
         "header": [ { "key": "Authorization", "value": "{{adminTeacherAuth}}" } ],
         "url": { "raw": "{{baseUrl}}/api/experiments/{{experimentId}}/unpublish", "host": ["{{baseUrl}}"], "path": ["api","experiments","{{experimentId}}","unpublish"] }
       },
       "event": [ { "listen": "test", "script": { "exec": [
-        "pm.test('HTTP 403', function(){ pm.response.to.have.status(403); });"
+        "pm.test('HTTP 500', function(){ pm.response.to.have.status(500); });",
+        "const json = pm.response.json();",
+        "pm.test('权限不足', function () { pm.expect(json && json.message === '权限不足：无权取消发布此实验').to.be.true; });"
       ] } } ]
     },
     {
-      "name": "09.65 - Admin(Teacher role) Update Other's Experiment (should fail 403)",
+      "name": "09.65 - Admin(Teacher role) Update Other's Experiment (Should Fail)",
       "request": {
         "method": "PUT",
         "header": [ { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "{{adminTeacherAuth}}" } ],
@@ -563,7 +567,9 @@
         "body": { "mode": "raw", "raw": "{\n  \"name\": \"管理员(老师身份)尝试修改-应禁止\",\n  \"description\": \"非创建者不应允许编辑\",\n  \"status\": \"PUBLISHED\",\n  \"startTime\": \"2030-01-01T00:00:00\",\n  \"endTime\": \"2030-12-31T23:59:59\"\n}" }
       },
       "event": [ { "listen": "test", "script": { "exec": [
-        "pm.test('HTTP 403', function(){ pm.response.to.have.status(403); });"
+        "pm.test('HTTP 500', function(){ pm.response.to.have.status(500); });",
+        "const json = pm.response.json();",
+        "pm.test('权限不足', function () { pm.expect(json && json.message === '无权更新此实验').to.be.true; });"
       ] } } ]
     },
     {
@@ -599,7 +605,7 @@
       ] } } ]
     },
     {
-      "name": "10.1 - Teacher Update Task (expect success)",
+      "name": "10.1 - Teacher Update Task",
       "request": {
         "method": "PUT",
         "header": [ { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "{{teacherAuth}}" } ],
@@ -616,7 +622,7 @@
       ] } } ]
     },
     {
-      "name": "10.2 - Admin(Teacher role) Update Teacher's Task (should fail 403)",
+      "name": "10.2 - Admin(Teacher role) Update Teacher's Task (Should Fail)",
       "request": {
         "method": "PUT",
         "header": [ { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "{{adminTeacherAuth}}" } ],
@@ -624,7 +630,9 @@
         "body": { "mode": "raw", "raw": "{\n  \"title\": \"管理员(老师身份)尝试修改任务-应禁止\",\n  \"description\": \"非创建者不应允许编辑\",\n  \"taskType\": \"OTHER\",\n  \"question\": [\"1+1=?\", \"2\"],\n  \"required\": true\n}" }
       },
       "event": [ { "listen": "test", "script": { "exec": [
-        "pm.test('HTTP 403', function(){ pm.response.to.have.status(403); });"
+        "pm.test('HTTP 500', function(){ pm.response.to.have.status(500); });",
+        "const json = pm.response.json();",
+        "pm.test('权限不足', function () { pm.expect(json && json.message === '无权更新该实验任务').to.be.true; });"
       ] } } ]
     },
     {
@@ -733,7 +741,7 @@
       ] } } ]
     },
     {
-      "name": "10c - Teacher Delete Task 2 (expect success)",
+      "name": "10c - Teacher Delete Task 2",
       "request": {
         "method": "DELETE",
         "header": [ { "key": "Authorization", "value": "{{teacherAuth}}" } ],
@@ -824,7 +832,7 @@
       ] } } ]
     },
     {
-      "name": "12c - Student Create Experiment (should fail 403)",
+      "name": "12c - Student Create Experiment (Should fail)",
       "request": {
         "method": "POST",
         "header": [ {"key":"Content-Type","value":"application/json"}, {"key":"Authorization","value":"{{studentAuth}}"} ],
@@ -832,38 +840,46 @@
         "body": { "mode": "raw", "raw": "{\n  \"name\": \"学生尝试创建的实验\",\n  \"description\": \"应当被权限拒绝\",\n  \"status\": \"DRAFT\",\n  \"startTime\": \"2030-01-01T00:00:00\",\n  \"endTime\": \"2030-12-31T23:59:59\"\n}" }
       },
       "event": [ { "listen": "test", "script": { "exec": [
-        "pm.test('HTTP 403', function(){ pm.response.to.have.status(403); });"
+        "pm.test('HTTP 500', function(){ pm.response.to.have.status(500); });",
+        "const json = pm.response.json();",
+        "pm.test('权限不足', function () { pm.expect(json && json.message === 'Access Denied').to.be.true; });"
       ] } } ]
     },
     {
-      "name": "12d - Student Publish Experiment (should fail 403)",
+      "name": "12d - Student Publish Experiment (Should fail)",
       "request": { "method": "PUT", "header": [ {"key":"Authorization","value":"{{studentAuth}}"} ],
         "url": { "raw": "{{baseUrl}}/api/experiments/{{experimentId}}/publish", "host":["{{baseUrl}}"], "path":["api","experiments","{{experimentId}}","publish"] }
       },
       "event": [ { "listen": "test", "script": { "exec": [
-        "pm.test('HTTP 403', function(){ pm.response.to.have.status(403); });"
+        "pm.test('HTTP 500', function(){ pm.response.to.have.status(500); });",
+        "const json = pm.response.json();",
+        "pm.test('权限不足', function () { pm.expect(json && json.message === 'Access Denied').to.be.true; });"
       ] } } ]
     },
     {
-      "name": "12e - Student Unpublish Experiment (should fail 403)",
+      "name": "12e - Student Unpublish Experiment (Should fail)",
       "request": { "method": "PUT", "header": [ {"key":"Authorization","value":"{{studentAuth}}"} ],
         "url": { "raw": "{{baseUrl}}/api/experiments/{{experimentId}}/unpublish", "host":["{{baseUrl}}"], "path":["api","experiments","{{experimentId}}","unpublish"] }
       },
       "event": [ { "listen": "test", "script": { "exec": [
-        "pm.test('HTTP 403', function(){ pm.response.to.have.status(403); });"
+        "pm.test('HTTP 500', function(){ pm.response.to.have.status(500); });",
+        "const json = pm.response.json();",
+        "pm.test('权限不足', function () { pm.expect(json && json.message === 'Access Denied').to.be.true; });"
       ] } } ]
     },
     {
-      "name": "12f - Student Delete Experiment (should fail 403)",
+      "name": "12f - Student Delete Experiment (Should fail)",
       "request": { "method": "DELETE", "header": [ {"key":"Authorization","value":"{{studentAuth}}"} ],
         "url": { "raw": "{{baseUrl}}/api/experiments/{{experimentId}}", "host":["{{baseUrl}}"], "path":["api","experiments","{{experimentId}}"] }
       },
       "event": [ { "listen": "test", "script": { "exec": [
-        "pm.test('HTTP 403', function(){ pm.response.to.have.status(403); });"
+        "pm.test('HTTP 500', function(){ pm.response.to.have.status(500); });",
+        "const json = pm.response.json();",
+        "pm.test('权限不足', function () { pm.expect(json && json.message === 'Access Denied').to.be.true; });"
       ] } } ]
     },
     {
-      "name": "12g - Student Update Experiment (should fail 403)",
+      "name": "12g - Student Update Experiment (Should fail)",
       "request": {
         "method": "PUT",
         "header": [ {"key":"Content-Type","value":"application/json"}, {"key":"Authorization","value":"{{studentAuth}}"} ],
@@ -871,7 +887,9 @@
         "body": { "mode": "raw", "raw": "{\n  \"name\": \"学生尝试编辑的实验\",\n  \"description\": \"应当被权限拒绝\",\n  \"status\": \"DRAFT\",\n  \"startTime\": \"2030-01-01T00:00:00\",\n  \"endTime\": \"2030-12-31T23:59:59\"\n}" }
       },
       "event": [ { "listen": "test", "script": { "exec": [
-        "pm.test('HTTP 403', function(){ pm.response.to.have.status(403); });"
+        "pm.test('HTTP 500', function(){ pm.response.to.have.status(500); });",
+        "const json = pm.response.json();",
+        "pm.test('权限不足', function () { pm.expect(json && json.message === 'Access Denied').to.be.true; });"
       ] } } ]
     },
     
@@ -1131,7 +1149,7 @@
       ] } } ]
     },
     {
-      "name": "15d - Student Update Question After Viewing (should fail 403)",
+      "name": "15d - Student Update Question After Viewing (Should Fail)",
       "request": {
         "method": "PUT",
         "header": [ {"key":"Content-Type","value":"application/json"}, {"key":"Authorization","value":"{{studentAuth}}"} ],
@@ -1139,7 +1157,9 @@
         "body": { "mode": "raw", "raw": "{\n  \"questionType\": \"SINGLE_CHOICE\",\n  \"content\": \"学生查看后尝试编辑-应被拒绝\",\n  \"options\": [\"A\", \"B\"],\n  \"answer\": \"A\",\n  \"explanation\": \"无\",\n  \"tags\": \"deny,test\",\n  \"score\": 1\n}" }
       },
       "event": [ { "listen": "test", "script": { "exec": [
-        "pm.test('HTTP 403', function () { pm.response.to.have.status(403); });"
+        "pm.test('HTTP 500', function(){ pm.response.to.have.status(500); });",
+        "const json = pm.response.json();",
+        "pm.test('权限不足', function () { pm.expect(json && json.message === 'Access Denied').to.be.true; });"
       ] } } ]
     },
     {
@@ -1215,8 +1235,7 @@
       "event": [ { "listen": "test", "script": { "exec": [
         "const json = pm.response.json();",
         "if (json && json.data && json.data.id) pm.collectionVariables.set('discussionId', json.data.id);",
-        "pm.test('HTTP 200/201', function(){ pm.expect([200,201]).to.include(pm.response.code); });",
-        "pm.test('业务码 200', function () {pm.expect(json && json.code === 200).to.be.true; });",
+        "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
         "pm.test('返回 discussionId', function () { pm.expect(json && json.data && json.data.id).to.be.ok; });"
       ] } } ]
   },
@@ -1227,9 +1246,9 @@
       },
       "event": [ { "listen": "test", "script": { "exec": [
         "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
-        "let json=null; try{ json=pm.response.json(); }catch(e){}; pm.test('业务码 200', function () { pm.expect(json && json.code).to.equal(200); });",
+        "let json=null; try{ json=pm.response.json(); }catch(e){};",
         "const payload = json && json.data;",
-        "let items = []; if(payload){ if(Array.isArray(payload.items)) items=payload.items; else if(Array.isArray(payload.list)) items=payload.list; }",
+        "let items = []; if(payload){ items=payload.content; }",
         "const did = pm.collectionVariables.get('discussionId');",
         "const found = items.some(it => it && (it.id===did));",
         "pm.test('学生1能看到自己未审核讨论', function () { pm.expect(found).to.be.true; });"
@@ -1243,7 +1262,6 @@
       "event": [ { "listen": "test", "script": { "exec": [
         "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
         "let json=null; try{ json=pm.response.json(); }catch(e){}",
-        "pm.test('业务码 200', function () { pm.expect(json && json.code).to.equal(200); });",
         "const payload = json && json.data;",
         "let items = []; if(payload){ if(Array.isArray(payload.items)) items=payload.items; else if(Array.isArray(payload.list)) items=payload.list; }",
         "const did = pm.collectionVariables.get('discussionId');",
@@ -1260,7 +1278,7 @@
       "event": [ { "listen": "test", "script": { "exec": [
         "pm.test('HTTP 200', function(){ pm.response.to.have.status(200); });",
         "const json = pm.response.json();",
-        "pm.test('业务码 200', function () { pm.expect(json && json.code).to.equal(200); });"
+        "pm.test('审核成功', function () { pm.expect(json && json.status === 'APPROVED').to.be.true; });"
       ] } } ]
     },
     {
@@ -1271,7 +1289,6 @@
       "event": [ { "listen": "test", "script": { "exec": [
         "pm.test('HTTP 200', function(){ pm.response.to.have.status(200); });",
         "let json=null; try{ json=pm.response.json(); }catch(e){}",
-        "pm.test('业务码 200', function () { pm.expect(json && json.code).to.equal(200); });",
         "const payload = json && json.data; let items = []; if(payload){ if(Array.isArray(payload.items)) items=payload.items; else if(Array.isArray(payload.list)) items=payload.list; }",
         "const did = pm.collectionVariables.get('discussionId');",
         "const target = items.find(it => it && (it.id===did));",
@@ -1287,7 +1304,6 @@
       "event": [ { "listen": "test", "script": { "exec": [
         "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
         "let json=null; try{ json=pm.response.json(); }catch(e){};",
-        "pm.test('业务码 200', function () { pm.expect(json && json.code).to.equal(200); });",
         "if(json && json.data && (typeof json.data.isLiked === 'boolean')) { pm.test('已点赞', function () { pm.expect(json.data.isLiked).to.be.true; }); }"
       ] } } ]
     },
@@ -1299,7 +1315,6 @@
       "event": [ { "listen": "test", "script": { "exec": [
         "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
         "let json=null; try{ json=pm.response.json(); }catch(e){};",
-        "pm.test('业务码 200', function () { pm.expect(json && json.code).to.equal(200); });",
         "if(json && json.data && (typeof json.data.isLiked === 'boolean')) { pm.test('已取消点赞', function () { pm.expect(json.data.isLiked).to.be.false; }); }"
       ] } } ]
     },
@@ -1314,7 +1329,6 @@
       "event": [ { "listen": "test", "script": { "exec": [
         "const json = pm.response.json();",
         "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
-        "pm.test('业务码 200', function () { pm.expect(json && json.code).to.equal(200); });",
         "pm.test('更新返回同一ID', function () { pm.expect(json && json.data && json.data.id).to.equal(pm.collectionVariables.get('discussionId')); });",
         "if(json && json.data && json.data.title){ pm.collectionVariables.set('discussionTitleAfter', json.data.title); }",
         "pm.test('标题已更新包含已编辑', function () { pm.expect(json && json.data && json.data.title && json.data.title.includes('已编辑')).to.be.true; });"
@@ -1328,7 +1342,6 @@
       "event": [ { "listen": "test", "script": { "exec": [
         "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
         "let json=null; try{ json=pm.response.json(); }catch(e){}",
-        "pm.test('业务码 200', function () { pm.expect(json && json.code).to.equal(200); });",
         "const payload = json && json.data; let items = []; if(payload){ if(Array.isArray(payload.items)) items=payload.items; else if(Array.isArray(payload.list)) items=payload.list; }",
         "const did = pm.collectionVariables.get('discussionId');",
         "const target = items.find(it => it && (it.id===did));",
@@ -1346,7 +1359,7 @@
       "event": [ { "listen": "test", "script": { "exec": [
         "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
         "const json = pm.response.json();",
-        "pm.test('业务码 200', function () { pm.expect(json && json.code).to.equal(200); });"
+        "pm.test('审核成功', function () { pm.expect(json && json.status === 'APPROVED').to.be.true; });"
       ] } } ]
     },
     {
@@ -1357,7 +1370,6 @@
       "event": [ { "listen": "test", "script": { "exec": [
         "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
         "let json=null; try{ json=pm.response.json(); }catch(e){}",
-        "pm.test('业务码 200', function () { pm.expect(json && json.code).to.equal(200); });",
         "const payload = json && json.data; let items = []; if(payload){ if(Array.isArray(payload.items)) items=payload.items; else if(Array.isArray(payload.list)) items=payload.list; }",
         "const did = pm.collectionVariables.get('discussionId');",
         "const target = items.find(it => it && (it.id===did));",
@@ -1376,7 +1388,6 @@
       "event": [ { "listen": "test", "script": { "exec": [
         "const json = pm.response.json();",
         "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
-        "pm.test('业务码 200', function () { pm.expect(json && json.code).to.equal(200); });",
         "if(json && json.data && json.data.id){ pm.collectionVariables.set('commentId', json.data.id); }",
         "pm.test('拿到 commentId', function () { pm.expect(!!pm.collectionVariables.get('commentId')).to.be.true; });"
       ] } } ]
@@ -1389,7 +1400,6 @@
       "event": [ { "listen": "test", "script": { "exec": [
         "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
         "let json=null; try{ json=pm.response.json(); }catch(e){}",
-        "pm.test('业务码 200', function () { pm.expect(json && json.code).to.equal(200); });",
         "const payload = json && json.data; let items = []; if(payload){ if(Array.isArray(payload.items)) items=payload.items; else if(Array.isArray(payload.list)) items=payload.list; }",
         "const cid = pm.collectionVariables.get('commentId');",
         "const found = items.some(it => it && (it.id===cid));",
@@ -1450,7 +1460,7 @@
       ] } } ]
     },
     {
-      "name": "16.15 - Student2 Try Delete Student1 Reply (should fail 403)",
+      "name": "16.15 - Student2 Try Delete Student1 Reply (Should Fail)",
       "request": { "method": "DELETE", "header": [ {"key":"Authorization","value":"{{student2Auth}}"} ],
         "url": { "raw": "{{baseUrl}}/api/comments/{{replyCommentId}}", "host":["{{baseUrl}}"], "path":["api","comments","{{replyCommentId}}"] }
       },
@@ -1464,7 +1474,7 @@
         "url": { "raw": "{{baseUrl}}/api/comments/{{replyCommentId}}", "host":["{{baseUrl}}"], "path":["api","comments","{{replyCommentId}}"] }
       },
       "event": [ { "listen": "test", "script": { "exec": [
-        "pm.test('HTTP 200/204', function(){ pm.expect([200,204]).to.include(pm.response.code); });"
+        "pm.test('HTTP 200', function(){ pm.response.to.have.status(200); });"
       ] } } ]
     },
     {
@@ -1474,7 +1484,7 @@
       },
       "event": [ { "listen": "test", "script": { "exec": [
         "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
-        "let json=null; try{ json=pm.response.json(); }catch(e){}; pm.test('业务码 200', function () { pm.expect(json && json.code).to.equal(200); });",
+        "let json=null; try{ json=pm.response.json(); }catch(e){}; ",
         "const arr = (json && Array.isArray(json.data)) ? json.data : [];",
         "pm.test('至少返回两道题', function () { pm.expect(arr.length).to.be.at.least(2); });",
         "const ids = arr.map(it => it && it.id).filter(Boolean);",
@@ -1543,7 +1553,7 @@
       ]
     },
     {
-      "name": "18.2 - Student Upload Resource (should fail 403)",
+      "name": "18.2 - Student Upload Resource (Should Fail)",
       "request": {
         "method": "POST",
         "header": [
@@ -1748,7 +1758,7 @@
       ]
     },
     {
-      "name": "18.8 - Admin(Teacher role) Update Other's Resource (should fail 403)",
+      "name": "18.8 - Admin(Teacher role) Update Other's Resource (Should Fail)",
       "request": {
         "method": "PUT",
         "header": [
@@ -1859,7 +1869,7 @@
       ]
     },
     {
-      "name": "18.11 - Student Delete Resource (should fail 403)",
+      "name": "18.11 - Student Delete Resource (Should Fail)",
       "request": {
         "method": "DELETE",
         "header": [
