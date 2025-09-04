@@ -19,13 +19,6 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
         format_sql: true
-    
-  # SQL 初始化配置
-  sql:
-    init:
-      mode: always
-      continue-on-error: false
-      encoding: UTF-8
         
   # Redis 配置
   data:

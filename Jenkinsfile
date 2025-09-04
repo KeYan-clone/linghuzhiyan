@@ -327,7 +327,6 @@ pipeline {
 							'''
 						} else {
 							bat '''
-								
 								echo Installing Newman if not present...
 								npm install -g newman || echo Newman installation failed, trying alternative...
 								
@@ -343,13 +342,7 @@ pipeline {
 								
 								echo Running smoke tests...
 								cd postman
-								newman run linghuzhiyan-smoke.postman_collection.json ^
-									--env-var "baseUrl=http://localhost:%GATEWAY_PORT%" ^
-									--reporters cli,junit ^
-									--reporter-junit-export ../test-results.xml ^
-									--timeout-request 30000 ^
-									--delay-request 1000 ^
-									--bail || echo Some tests failed, check results
+								newman run linghuzhiyan-smoke.postman_collection.json --env-var "baseUrl=http://localhost:%GATEWAY_PORT%" --reporters cli,junit --reporter-junit-export ../test-results.xml --timeout-request 30000 --delay-request 1000 --bail || echo Some tests failed, check results
 								
 								echo Integration tests completed
 							'''
