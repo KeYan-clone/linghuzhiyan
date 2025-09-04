@@ -83,9 +83,9 @@
         "body": { "mode": "raw", "raw": "{\n  \"username\": \"{{teacherUsername}}\",\n  \"email\": \"{{teacherEmail}}\",\n  \"password\": \"{{teacherPassword}}\"\n}" }
       },
       "event": [ { "listen": "test", "script": { "exec": [
-        "pm.test('HTTP 200/或用户名已存在(400)', function(){ pm.expect([200,400]).to.include(pm.response.code); });",
+        "pm.test('HTTP 200/或用户名已存在(409)', function(){ pm.expect([200,409]).to.include(pm.response.code); });",
         "const json = pm.response.json(); ",
-        "pm.test('业务码 200', function () { pm.expect(json && json.code).to.equal(200); });"
+        "pm.test('业务码 200/409', function () { pm.test('业务码 200 或 409', function() {\n    pm.expect([200, 409]).to.include(json.code);\n}); });"
       ] } } ]
     },
     {
@@ -97,9 +97,9 @@
         "body": { "mode": "raw", "raw": "{\n  \"username\": \"{{studentUsername}}\",\n  \"email\": \"{{studentEmail}}\",\n  \"password\": \"{{studentPassword}}\"\n}" }
       },
       "event": [ { "listen": "test", "script": { "exec": [
-        "pm.test('HTTP 200/或用户名已存在(400)', function(){ pm.expect([200,400]).to.include(pm.response.code); });",
+        "pm.test('HTTP 200/或用户名已存在(409)', function(){ pm.expect([200,409]).to.include(pm.response.code); });",
         "const json = pm.response.json();",
-        "pm.test('业务码 200', function () { pm.expect(json && json.code).to.equal(200); });"
+        "pm.test('业务码 200 或 409', function () {\n    const json = pm.response.json();\n    pm.expect([200, 409]).to.include(json.code);\n});\n"
       ] } } ]
     },
     {
@@ -111,7 +111,7 @@
         "body": { "mode": "raw", "raw": "{\n  \"username\": \"{{student2Username}}\",\n  \"email\": \"{{student2Email}}\",\n  \"password\": \"{{student2Password}}\"\n}" }
       },
       "event": [ { "listen": "test", "script": { "exec": [
-        "pm.test('HTTP 200/或用户名已存在(400)', function(){ pm.expect([200,400]).to.include(pm.response.code); });",
+        "pm.test('HTTP 200/或用户名已存在(409)', function(){ pm.expect([200,409]).to.include(pm.response.code); });",
         "const json = pm.response.json();",
         "pm.test('业务码 200', function () { pm.expect(json && json.code).to.equal(200); });"
       ] } } ]
