@@ -1248,8 +1248,7 @@
       "event": [ { "listen": "test", "script": { "exec": [
         "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
         "let json=null; try{ json=pm.response.json(); }catch(e){};",
-        "const payload = json && json.data;",
-        "let items = []; if(payload){ items=payload.content; }",
+        "const items = json && json.content;",
         "const did = pm.collectionVariables.get('discussionId');",
         "const found = items.some(it => it && (it.id===did));",
         "pm.test('学生1能看到自己未审核讨论', function () { pm.expect(found).to.be.true; });"
@@ -1263,8 +1262,7 @@
       "event": [ { "listen": "test", "script": { "exec": [
         "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
         "let json=null; try{ json=pm.response.json(); }catch(e){}",
-        "const payload = json && json.data;",
-        "let items = []; if(payload){ if(Array.isArray(payload.items)) items=payload.items; else if(Array.isArray(payload.list)) items=payload.list; }",
+        "const items = json && json.content;",
         "const did = pm.collectionVariables.get('discussionId');",
         "const found = items.some(it => it && (it.id===did));",
         "pm.test('学生2看不到未审核讨论', function () { pm.expect(found).to.be.false; });"
@@ -1279,7 +1277,7 @@
       "event": [ { "listen": "test", "script": { "exec": [
         "pm.test('HTTP 200', function(){ pm.response.to.have.status(200); });",
         "const json = pm.response.json();",
-        "pm.test('审核成功', function () { pm.expect(json && json.status === 'APPROVED').to.be.true; });"
+        "pm.test('审核成功', function () { pm.expect(json && json.data && json.data.status === 'APPROVED').to.be.true; });"
       ] } } ]
     },
     {
@@ -1290,7 +1288,7 @@
       "event": [ { "listen": "test", "script": { "exec": [
         "pm.test('HTTP 200', function(){ pm.response.to.have.status(200); });",
         "let json=null; try{ json=pm.response.json(); }catch(e){}",
-        "const payload = json && json.data; let items = []; if(payload){ if(Array.isArray(payload.items)) items=payload.items; else if(Array.isArray(payload.list)) items=payload.list; }",
+        "const items = json && json.content; ",
         "const did = pm.collectionVariables.get('discussionId');",
         "const target = items.find(it => it && (it.id===did));",
         "pm.test('学生2能看到已通过讨论', function () { pm.expect(target).to.be.ok; });",
@@ -1304,8 +1302,8 @@
       },
       "event": [ { "listen": "test", "script": { "exec": [
         "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
-        "let json=null; try{ json=pm.response.json(); }catch(e){};",
-        "if(json && json.data && (typeof json.data.isLiked === 'boolean')) { pm.test('已点赞', function () { pm.expect(json.data.isLiked).to.be.true; }); }"
+        "const json = pm.response.json();",
+        "pm.test('已点赞', function () { pm.expect(json && json.data && json.data.isLiked).to.be.true; });"
       ] } } ]
     },
     {
@@ -1315,8 +1313,8 @@
       },
       "event": [ { "listen": "test", "script": { "exec": [
         "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
-        "let json=null; try{ json=pm.response.json(); }catch(e){};",
-        "if(json && json.data && (typeof json.data.isLiked === 'boolean')) { pm.test('已取消点赞', function () { pm.expect(json.data.isLiked).to.be.false; }); }"
+        "const json = pm.response.json();",
+        "pm.test('已点赞', function () { pm.expect(json && json.data && json.data.isLiked).to.be.false; });"
       ] } } ]
     },
     {
@@ -1343,7 +1341,7 @@
       "event": [ { "listen": "test", "script": { "exec": [
         "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
         "let json=null; try{ json=pm.response.json(); }catch(e){}",
-        "const payload = json && json.data; let items = []; if(payload){ if(Array.isArray(payload.items)) items=payload.items; else if(Array.isArray(payload.list)) items=payload.list; }",
+        "const items = json && json.content;",
         "const did = pm.collectionVariables.get('discussionId');",
         "const target = items.find(it => it && (it.id===did));",
         "pm.test('仍可看到该讨论', function () { pm.expect(!!target).to.be.true; });",
@@ -1360,7 +1358,7 @@
       "event": [ { "listen": "test", "script": { "exec": [
         "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
         "const json = pm.response.json();",
-        "pm.test('审核成功', function () { pm.expect(json && json.status === 'APPROVED').to.be.true; });"
+        "pm.test('审核成功', function () { pm.expect(json && json.data && json.data.status === 'APPROVED').to.be.true; });"
       ] } } ]
     },
     {
@@ -1371,7 +1369,7 @@
       "event": [ { "listen": "test", "script": { "exec": [
         "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
         "let json=null; try{ json=pm.response.json(); }catch(e){}",
-        "const payload = json && json.data; let items = []; if(payload){ if(Array.isArray(payload.items)) items=payload.items; else if(Array.isArray(payload.list)) items=payload.list; }",
+        "const items = json && json.content;",
         "const did = pm.collectionVariables.get('discussionId');",
         "const target = items.find(it => it && (it.id===did));",
         "pm.test('学生2能看到已再次审核的讨论', function () { pm.expect(!!target).to.be.true; });",
@@ -1401,7 +1399,7 @@
       "event": [ { "listen": "test", "script": { "exec": [
         "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
         "let json=null; try{ json=pm.response.json(); }catch(e){}",
-        "const payload = json && json.data; let items = []; if(payload){ if(Array.isArray(payload.items)) items=payload.items; else if(Array.isArray(payload.list)) items=payload.list; }",
+        "const items = json && json.content;",
         "const cid = pm.collectionVariables.get('commentId');",
         "const found = items.some(it => it && (it.id===cid));",
         "pm.test('学生1能看到学生2的回复', function () { pm.expect(found).to.be.true; });"
@@ -1414,7 +1412,8 @@
       },
       "event": [ { "listen": "test", "script": { "exec": [
         "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
-        "let json=null; try{ json=pm.response.json(); }catch(e){}; pm.test('业务码 200', function () { pm.expect(json && json.code).to.equal(200); });"
+        "let json=null; try{ json=pm.response.json(); }catch(e){}; ",
+        "pm.test('点赞成功', function () { pm.expect(json && json.data && json.data.isLiked).to.be.true; });"
       ] } } ]
     },
     {
@@ -1424,7 +1423,8 @@
       },
       "event": [ { "listen": "test", "script": { "exec": [
         "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
-        "let json=null; try{ json=pm.response.json(); }catch(e){}; pm.test('业务码 200', function () { pm.expect(json && json.code).to.equal(200); });"
+        "let json=null; try{ json=pm.response.json(); }catch(e){}; ",
+        "pm.test('取消点赞成功', function () { pm.expect(json && json.data && json.data.isLiked).to.be.false; });"
       ] } } ]
     },
     {
@@ -1434,7 +1434,7 @@
         "body": { "mode":"raw", "raw": "{\n  \"content\": \"学生1对学生2回复的回复\",\n  \"parentId\": \"{{commentId}}\"\n}" }
       },
       "event": [ { "listen": "test", "script": { "exec": [
-        "const json = pm.response.json(); pm.test('HTTP 200', function(){ pm.response.to.have.status(200); }); pm.test('业务码 200', function () { pm.expect(json && json.code).to.equal(200); });",
+        "const json = pm.response.json(); pm.test('HTTP 200', function(){ pm.response.to.have.status(200); }); ",
         "if(json && json.data && json.data.id){ pm.collectionVariables.set('replyCommentId', json.data.id); }",
         "pm.test('拿到 replyCommentId', function () { pm.expect(!!pm.collectionVariables.get('replyCommentId')).to.be.true; });"
       ] } } ]
@@ -1445,9 +1445,12 @@
         "url": { "raw": "{{baseUrl}}/api/comments/{{commentId}}/replies?page=0&size=10", "host":["{{baseUrl}}"], "path":["api","comments","{{commentId}}","replies"], "query":[{"key":"page","value":"0"},{"key":"size","value":"10"}] }
       },
       "event": [ { "listen": "test", "script": { "exec": [
-        "pm.test('HTTP 200', function(){ pm.response.to.have.status(200); }); let json=null; try{ json=pm.response.json(); }catch(e){}; pm.test('业务码 200', function () { pm.expect(json && json.code).to.equal(200); });",
-        "const payload = json && json.data; let items = []; if(payload){ if(Array.isArray(payload.items)) items=payload.items; else if(Array.isArray(payload.list)) items=payload.list; }",
-        "const rid = pm.collectionVariables.get('replyCommentId'); const found = items.some(it => it && (it.id===rid)); pm.test('学生2能看到学生1的回复', function () { pm.expect(found).to.be.true; });"
+        "pm.test('HTTP 200', function(){ pm.response.to.have.status(200); }); ",
+        "let json=null; try{ json=pm.response.json(); }catch(e){}; ",
+        "const items = json && json.data; ",
+        "const rid = pm.collectionVariables.get('replyCommentId'); ",
+        "const found = items.some(it => it && (it.id===rid)); ",
+        "pm.test('学生2能看到学生1的回复', function () { pm.expect(found).to.be.true; });"
       ] } } ]
     },
     {
@@ -1457,7 +1460,9 @@
         "body": { "mode":"raw", "raw": "{\n  \"reason\": \"INAPPROPRIATE\",\n  \"details\": \"测试举报\"\n}" }
       },
       "event": [ { "listen": "test", "script": { "exec": [
-        "pm.test('HTTP 200', function(){ pm.response.to.have.status(200); }); let json=null; try{ json=pm.response.json(); }catch(e){}; pm.test('业务码 200', function () { pm.expect(json && json.code).to.equal(200); });"
+        "pm.test('HTTP 200', function(){ pm.response.to.have.status(200); }); ",
+        "let json=null; try{ json=pm.response.json(); }catch(e){};",
+        "pm.test('举报提交', function () { pm.expect(json && json.message === '举报提交成功').to.be.true; });"
       ] } } ]
     },
     {
@@ -1466,7 +1471,9 @@
         "url": { "raw": "{{baseUrl}}/api/comments/{{replyCommentId}}", "host":["{{baseUrl}}"], "path":["api","comments","{{replyCommentId}}"] }
       },
       "event": [ { "listen": "test", "script": { "exec": [
-        "pm.test('HTTP 403', function(){ pm.response.to.have.status(403); });"
+        "pm.test('HTTP 403', function(){ pm.response.to.have.status(403); });",
+        "let json=null; try{ json=pm.response.json(); }catch(e){};",
+        "pm.test('删除评论', function () { pm.expect(json && json.message === '删除评论失败: 无权限删除此评论').to.be.true; });"
       ] } } ]
     },
     {
@@ -1475,7 +1482,9 @@
         "url": { "raw": "{{baseUrl}}/api/comments/{{replyCommentId}}", "host":["{{baseUrl}}"], "path":["api","comments","{{replyCommentId}}"] }
       },
       "event": [ { "listen": "test", "script": { "exec": [
-        "pm.test('HTTP 200', function(){ pm.response.to.have.status(200); });"
+        "pm.test('HTTP 200', function(){ pm.response.to.have.status(200); });",
+        "let json=null; try{ json=pm.response.json(); }catch(e){};",
+        "pm.test('删除评论', function () { pm.expect(json && json.message === '评论删除成功').to.be.true; });"
       ] } } ]
     },
     {
