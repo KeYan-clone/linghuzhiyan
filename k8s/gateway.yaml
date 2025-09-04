@@ -28,9 +28,9 @@ spec:
           value: "optional:configserver:http://config:config123@config-server:8888"
         - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
           value: "http://admin:admin123@discovery-server:8761/eureka/"
-        - name: SPRING_REDIS_HOST
+        - name: SPRING_DATA_REDIS_HOST
           value: "redis"
-        - name: SPRING_REDIS_PORT
+        - name: SPRING_DATA_REDIS_PORT
           value: "6379"
         ports:
         - containerPort: 8080
@@ -82,10 +82,11 @@ metadata:
   labels:
     app: gateway
 spec:
-  type: LoadBalancer
+  type: NodePort
   ports:
   - port: 80
     targetPort: 8080
+    nodePort: 30080
     protocol: TCP
   selector:
     app: gateway

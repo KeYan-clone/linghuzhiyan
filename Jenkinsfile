@@ -287,10 +287,6 @@ pipeline {
 								echo Final health check - All services status:
 								kubectl get pods -n linghuzhiyan
 								kubectl get services -n linghuzhiyan
-
-								powershell -Command ^
-                                              "Start-Process kubectl -ArgumentList 'port-forward','-n','linghuzhiyan','service/gateway','8080:8080' -WindowStyle Hidden"
-
 							'''
 						}
 					}
