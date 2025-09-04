@@ -182,15 +182,21 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Cacheable(value = "userList", key = "#pageNum + ':' + #pageSize")
-    public Page<UserDTO> listUsers(int pageNum, int pageSize) {
+    @Cacheable(value = "userListV2", key = "#pageNum + ':' + #pageSize")
+    public PageResult<UserDTO> listUsers(int pageNum, int pageSize) {
         // 页码从0开始计算
         Pageable pageable = PageRequest.of(pageNum - 1, pageSize);
         // 只查询未被软删除的用户
         Page<User> userPage = userRepository.findByIsDeletedFalse(pageable);
         
-        // 转换为DTO
-        return userPage.map(this::convertToDTO);
+        // 转换为DTO并封装为 PageResult，避免将 PageImpl 直接缓存到 Redis
+        Page<UserDTO> dtoPage = userPage.map(this::convertToDTO);
+        PageResult<UserDTO> pageResult = new PageResult<>();
+        pageResult.setList(dtoPage.getContent());
+        pageResult.setTotal(dtoPage.getTotalElements());
+        pageResult.setPageNum(pageNum);
+        pageResult.setPageSize(pageSize);
+        return pageResult;
     }
 
     @Override
@@ -198,7 +204,7 @@ public class UserServiceImpl implements UserService {
     @Caching(evict = {
         @CacheEvict(value = "users", key = "#result.id"),
         @CacheEvict(value = "users", key = "'username:' + #username"),
-        @CacheEvict(value = "userList", allEntries = true)
+    @CacheEvict(value = "userListV2", allEntries = true)
     })
     public UserDTO updateUserProfile(String username, ProfileUpdateDTO profileUpdateDTO) {
         User user = userRepository.findByUsername(username)

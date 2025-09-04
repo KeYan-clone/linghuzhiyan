@@ -206,9 +206,9 @@ class UserControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void listUsers_Success() throws Exception {
-        List<UserDTO> users = Arrays.asList(userDTO);
-        Page<UserDTO> page = new PageImpl<>(users);
-        when(userService.listUsers(anyInt(), anyInt())).thenReturn(page);
+    List<UserDTO> users = Arrays.asList(userDTO);
+    PageResult<UserDTO> page = new PageResult<>(users, 1, 1, 10);
+    when(userService.listUsers(anyInt(), anyInt())).thenReturn(page);
 
         mockMvc.perform(get("/api/users")
                         .param("pageNum", "1")

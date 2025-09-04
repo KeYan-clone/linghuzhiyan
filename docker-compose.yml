@@ -55,11 +55,11 @@ services:
 
   discovery:
     build:
-      context: .
-      dockerfile: ./linghuzhiyan-discovery-server/Dockerfile
+      context: ./linghuzhiyan-discovery-server
+      dockerfile: Dockerfile
       args:
-        - BUILD_DATE=${BUILD_DATE:-}
-        - VERSION=${VERSION:-latest}
+        BUILD_DATE: ${BUILD_DATE:-}
+        VERSION: ${VERSION:-latest}
       target: runtime
     image: linghuzhiyan/discovery-server:${VERSION:-latest}
     container_name: discovery
@@ -75,11 +75,11 @@ services:
 
   config:
     build:
-      context: .
-      dockerfile: ./linghuzhiyan-config-server/Dockerfile
+      context: ./linghuzhiyan-config-server
+      dockerfile: Dockerfile
       args:
-        - BUILD_DATE=${BUILD_DATE:-}
-        - VERSION=${VERSION:-latest}
+        BUILD_DATE: ${BUILD_DATE:-}
+        VERSION: ${VERSION:-latest}
       target: runtime
     image: linghuzhiyan/config-server:${VERSION:-latest}
     container_name: config
@@ -101,11 +101,11 @@ services:
 
   gateway:
     build:
-      context: .
-      dockerfile: ./linghuzhiyan-gateway/Dockerfile
+      context: ./linghuzhiyan-gateway
+      dockerfile: Dockerfile
       args:
-        - BUILD_DATE=${BUILD_DATE:-}
-        - VERSION=${VERSION:-latest}
+        BUILD_DATE: ${BUILD_DATE:-}
+        VERSION: ${VERSION:-latest}
       target: runtime
     image: linghuzhiyan/gateway:${VERSION:-latest}
     container_name: gateway
@@ -125,11 +125,11 @@ services:
 
   auth:
     build:
-      context: .
-      dockerfile: ./linghuzhiyan-auth-service/Dockerfile
+      context: ./linghuzhiyan-auth-service
+      dockerfile: Dockerfile
       args:
-        - BUILD_DATE=${BUILD_DATE:-}
-        - VERSION=${VERSION:-latest}
+        BUILD_DATE: ${BUILD_DATE:-}
+        VERSION: ${VERSION:-latest}
       target: runtime
     image: linghuzhiyan/auth-service:${VERSION:-latest}
     container_name: auth
@@ -162,11 +162,11 @@ services:
 
   user:
     build:
-      context: .
-      dockerfile: ./linghuzhiyan-user-service/Dockerfile
+      context: ./linghuzhiyan-user-service
+      dockerfile: Dockerfile
       args:
-        - BUILD_DATE=${BUILD_DATE:-}
-        - VERSION=${VERSION:-latest}
+        BUILD_DATE: ${BUILD_DATE:-}
+        VERSION: ${VERSION:-latest}
       target: runtime
     image: linghuzhiyan/user-service:${VERSION:-latest}
     container_name: user
@@ -199,11 +199,11 @@ services:
 
   experiment:
     build:
-      context: .
-      dockerfile: ./linghuzhiyan-experiment-service/Dockerfile
+      context: ./linghuzhiyan-experiment-service
+      dockerfile: Dockerfile
       args:
-        - BUILD_DATE=${BUILD_DATE:-}
-        - VERSION=${VERSION:-latest}
+        BUILD_DATE: ${BUILD_DATE:-}
+        VERSION: ${VERSION:-latest}
       target: runtime
     image: linghuzhiyan/experiment-service:${VERSION:-latest}
     container_name: experiment
@@ -236,11 +236,11 @@ services:
 
   resource:
     build:
-      context: .
-      dockerfile: ./linghuzhiyan-resource-service/Dockerfile
+      context: ./linghuzhiyan-resource-service
+      dockerfile: Dockerfile
       args:
-        - BUILD_DATE=${BUILD_DATE:-}
-        - VERSION=${VERSION:-latest}
+        BUILD_DATE: ${BUILD_DATE:-}
+        VERSION: ${VERSION:-latest}
       target: runtime
     image: linghuzhiyan/resource-service:${VERSION:-latest}
     container_name: resource
@@ -273,11 +273,11 @@ services:
 
   message:
     build:
-      context: .
-      dockerfile: ./linghuzhiyan-message-service/Dockerfile
+      context: ./linghuzhiyan-message-service
+      dockerfile: Dockerfile
       args:
-        - BUILD_DATE=${BUILD_DATE:-}
-        - VERSION=${VERSION:-latest}
+        BUILD_DATE: ${BUILD_DATE:-}
+        VERSION: ${VERSION:-latest}
       target: runtime
     image: linghuzhiyan/message-service:${VERSION:-latest}
     container_name: message
@@ -310,11 +310,11 @@ services:
 
   discussion:
     build:
-      context: .
-      dockerfile: ./linghuzhiyan-discussion-service/Dockerfile
+      context: ./linghuzhiyan-discussion-service
+      dockerfile: Dockerfile
       args:
-        - BUILD_DATE=${BUILD_DATE:-}
-        - VERSION=${VERSION:-latest}
+        BUILD_DATE: ${BUILD_DATE:-}
+        VERSION: ${VERSION:-latest}
       target: runtime
     image: linghuzhiyan/discussion-service:${VERSION:-latest}
     container_name: discussion
@@ -354,11 +354,11 @@ services:
 
   monitor:
     build:
-      context: .
-      dockerfile: ./linghuzhiyan-monitor-service/Dockerfile
+      context: ./linghuzhiyan-monitor-service
+      dockerfile: Dockerfile
       args:
-        - BUILD_DATE=${BUILD_DATE:-}
-        - VERSION=${VERSION:-latest}
+        BUILD_DATE: ${BUILD_DATE:-}
+        VERSION: ${VERSION:-latest}
       target: runtime
     image: linghuzhiyan/monitor-service:${VERSION:-latest}
     container_name: monitor

@@ -92,8 +92,8 @@ public class RedisCacheConfig {
         // 用户统计缓存 - 1小时
         configMap.put("userStats", defaultCacheConfig.entryTtl(Duration.ofHours(1)));
         
-        // 用户列表缓存 - 5分钟
-        configMap.put("userList", defaultCacheConfig.entryTtl(Duration.ofMinutes(5)));
+    // 用户列表缓存 - 5分钟（v2 版本，避免旧值反序列化问题）
+    configMap.put("userListV2", defaultCacheConfig.entryTtl(Duration.ofMinutes(5)));
 
         return RedisCacheManager.builder(connectionFactory)
             .cacheDefaults(defaultCacheConfig)

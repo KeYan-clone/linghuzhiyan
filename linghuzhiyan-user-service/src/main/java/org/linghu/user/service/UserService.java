@@ -1,10 +1,10 @@
 package org.linghu.user.service;
 
 import org.linghu.user.domain.User;
+import org.linghu.user.dto.PageResult;
 import org.linghu.user.dto.ProfileUpdateDTO;
 import org.linghu.user.dto.UserDTO;
 import org.linghu.user.dto.UserRegistrationDTO;
-import org.springframework.data.domain.Page;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -80,7 +80,7 @@ public interface UserService {
      * @param pageSize 每页大小
      * @return 用户分页列表
      */
-    Page<UserDTO> listUsers(int pageNum, int pageSize);
+    PageResult<UserDTO> listUsers(int pageNum, int pageSize);
     
     /**
      * 更新用户资料

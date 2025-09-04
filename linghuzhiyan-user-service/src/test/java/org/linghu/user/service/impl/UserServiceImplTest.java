@@ -259,12 +259,12 @@ class UserServiceImplTest {
         mockUserRoles("user-123", Set.of(SystemConstants.ROLE_STUDENT));
 
         // When
-        Page<UserDTO> result = userService.listUsers(1, 10);
+    PageResult<UserDTO> result = userService.listUsers(1, 10);
 
         // Then
         assertNotNull(result);
-        assertEquals(1, result.getTotalElements());
-        assertEquals("testuser", result.getContent().get(0).getUsername());
+    assertEquals(1, result.getTotal());
+    assertEquals("testuser", result.getList().get(0).getUsername());
     }
 
     // ===== 更新个人资料测试 =====

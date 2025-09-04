@@ -88,14 +88,7 @@ public class UserController {
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER','ASSISTANT')")
     public Result<PageResult<UserDTO>> listUsers(@RequestParam(defaultValue = "1") int pageNum,
             @RequestParam(defaultValue = "10") int pageSize) {
-        Page<UserDTO> page = userService.listUsers(pageNum, pageSize);
-
-        PageResult<UserDTO> pageResult = new PageResult<>();
-        pageResult.setList(page.getContent());
-        pageResult.setTotal(page.getTotalElements());
-        pageResult.setPageNum(pageNum);
-        pageResult.setPageSize(pageSize);
-
+        PageResult<UserDTO> pageResult = userService.listUsers(pageNum, pageSize);
         return Result.success(pageResult);
     }
 
