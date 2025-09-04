@@ -38,7 +38,8 @@ public class SecurityConfig {
                 .requestMatchers("/actuator/**").permitAll()
                 // Swagger/OpenAPI 端点
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                .requestMatchers("/api/internal/experiments/").permitAll()
+                // 内部调用端点（资源服务等会通过 Feign 调用这些接口）
+                .requestMatchers("/api/internal/experiments/**").permitAll()
                 .anyRequest().authenticated()
             ).addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

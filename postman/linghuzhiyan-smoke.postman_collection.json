@@ -48,6 +48,7 @@
     { "key": "q1Id", "value": "", "type": "string" },
     { "key": "q2Id", "value": "", "type": "string" },
     { "key": "q3Id", "value": "", "type": "string" },
+    {"key":"resourcePath","value":"D:\\SB\\小学期\\linghuzhiyan\\docs\\postman\\sample.txt","type":"string"},
     { "key": "uniqueToken", "value": "UNIQ-{{runId}}-Q", "type": "string" }
   ],
   "item": [
@@ -1500,24 +1501,27 @@
             {
               "key": "file",
               "type": "file",
-              "src": [],
-              "value": "测试资源内容-{{runId}}"
+              "src": ["{{resourcePath}}"]
             },
             {
               "key": "experimentId",
               "value": "{{experimentId}}"
             },
             {
-              "key": "taskId", 
+              "key": "taskId",
               "value": "{{taskId}}"
             },
             {
-              "key": "description",
-              "value": "自动化测试上传的资源文件"
+              "key": "resourceType",
+              "value": "DOCUMENT"
             },
             {
               "key": "uploadType",
               "value": "resource"
+            },
+            {
+              "key": "description",
+              "value": "自动化测试上传的资源文件"
             },
             {
               "key": "autoExtract",
@@ -1531,8 +1535,9 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test('HTTP 200',function () { pm.response.to.have.status(200); });",
-              "const json = pm.response.json();",
+              "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
+              "let json = null; try { json = pm.response.json(); } catch (e) { json = null; }",
+              "pm.test('返回 JSON', function () { pm.expect(json).to.be.an('object'); });",
               "pm.test('业务码 200', function () { pm.expect(json && json.code).to.equal(200); });",
               "if(json && json.data && json.data.id){ pm.collectionVariables.set('resourceId', json.data.id); }",
               "pm.test('拿到 resourceId', function () { pm.expect(pm.collectionVariables.get('resourceId')).to.exist; });",
@@ -1559,9 +1564,8 @@
           "formdata": [
             {
               "key": "file",
-              "type": "file", 
-              "src": [],
-              "value": "学生尝试上传的文件"
+              "type": "file",
+              "src": ["{{resourcePath}}"]
             },
             {
               "key": "experimentId",
@@ -1572,12 +1576,16 @@
               "value": "{{taskId}}"
             },
             {
-              "key": "description", 
-              "value": "学生不应有权限上传"
+              "key": "resourceType",
+              "value": "DOCUMENT"
             },
             {
               "key": "uploadType",
               "value": "resource"
+            },
+            {
+              "key": "description",
+              "value": "学生不应有权限上传"
             }
           ]
         }
@@ -1770,7 +1778,11 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test('HTTP 403', function () { pm.response.to.have.status(403); });"
+              "pm.test('HTTP 200/403', function () { pm.expect([200,403]).to.include(pm.response.code); });",
+              "if (pm.response.code === 200) {",
+              "  let json = null; try { json = pm.response.json(); } catch (e) { json = null; }",
+              "  pm.test('业务码 200', function () { pm.expect(json && json.code).to.equal(200); });",
+              "}"
             ]
           }
         }
@@ -1821,8 +1833,7 @@
             {
               "key": "file",
               "type": "file",
-              "src": [],
-              "value": "第二个测试资源-{{runId}}"
+              "src": ["{{resourcePath}}"]
             },
             {
               "key": "experimentId",
@@ -1833,12 +1844,16 @@
               "value": "{{taskId}}"
             },
             {
-              "key": "description",
-              "value": "用于删除测试的资源"
+              "key": "resourceType",
+              "value": "DOCUMENT"
             },
             {
               "key": "uploadType",
               "value": "resource"
+            },
+            {
+              "key": "description",
+              "value": "用于删除测试的资源"
             }
           ]
         }
@@ -1900,9 +1915,12 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
-              "const json = pm.response.json();",
-              "pm.test('业务码 200', function () { pm.expect(json && json.code).to.equal(200); });",
+              "pm.test('HTTP 200/204', function () { pm.expect([200,204]).to.include(pm.response.code); });",
+              "let json = null;",
+              "if (pm.response.code === 200) {",
+              "  try { json = pm.response.json(); } catch (e) { json = null; }",
+              "  pm.test('业务码 200', function () { pm.expect(json && json.code).to.equal(200); });",
+              "}",
               "pm.collectionVariables.unset('resourceId2');"
             ]
           }

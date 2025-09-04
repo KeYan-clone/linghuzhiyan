@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.linghu.experiment.dto.ExperimentDTO;
 import org.linghu.experiment.service.ExperimentService;
+import org.linghu.experiment.dto.Result;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -59,13 +60,14 @@ class ExperimentInternalControllerTest {
             when(experimentService.getExperimentById("exp123")).thenReturn(sampleExperimentDTO);
 
             // when
-            ExperimentDTO response = experimentInternalController.getExperimentById("exp123");
+            Result<ExperimentDTO> response = experimentInternalController.getExperimentById("exp123");
 
             // then
             assertThat(response).isNotNull();
-            assertThat(response).isEqualTo(sampleExperimentDTO);
-            assertThat(response.getId()).isEqualTo("exp123");
-            assertThat(response.getName()).isEqualTo("测试实验名称");
+            assertThat(response.getCode()).isEqualTo(200);
+            assertThat(response.getData()).isEqualTo(sampleExperimentDTO);
+            assertThat(response.getData().getId()).isEqualTo("exp123");
+            assertThat(response.getData().getName()).isEqualTo("测试实验名称");
 
             verify(experimentService).getExperimentById("exp123");
         }
@@ -94,10 +96,11 @@ class ExperimentInternalControllerTest {
             when(experimentService.getExperimentById("exp123")).thenReturn(null);
 
             // when
-            ExperimentDTO response = experimentInternalController.getExperimentById("exp123");
+            Result<ExperimentDTO> response = experimentInternalController.getExperimentById("exp123");
 
             // then
-            assertThat(response).isNull();
+            assertThat(response.getCode()).isEqualTo(200);
+            assertThat(response.getData()).isNull();
 
             verify(experimentService).getExperimentById("exp123");
         }
@@ -114,10 +117,11 @@ class ExperimentInternalControllerTest {
             when(experimentService.getExperimentById("exp123")).thenReturn(sampleExperimentDTO);
 
             // when
-            Boolean exists = experimentInternalController.experimentExists("exp123");
+            Result<Boolean> exists = experimentInternalController.experimentExists("exp123");
 
             // then
-            assertThat(exists).isTrue();
+            assertThat(exists.getCode()).isEqualTo(200);
+            assertThat(exists.getData()).isTrue();
 
             verify(experimentService).getExperimentById("exp123");
         }
@@ -130,10 +134,11 @@ class ExperimentInternalControllerTest {
                     .thenThrow(new RuntimeException("实验未找到"));
 
             // when
-            Boolean exists = experimentInternalController.experimentExists("nonexistent");
+            Result<Boolean> exists = experimentInternalController.experimentExists("nonexistent");
 
             // then
-            assertThat(exists).isFalse();
+            assertThat(exists.getCode()).isEqualTo(200);
+            assertThat(exists.getData()).isFalse();
 
             verify(experimentService).getExperimentById("nonexistent");
         }
@@ -145,10 +150,11 @@ class ExperimentInternalControllerTest {
             when(experimentService.getExperimentById("exp123")).thenReturn(null);
 
             // when
-            Boolean exists = experimentInternalController.experimentExists("exp123");
+            Result<Boolean> exists = experimentInternalController.experimentExists("exp123");
 
             // then
-            assertThat(exists).isFalse();
+            assertThat(exists.getCode()).isEqualTo(200);
+            assertThat(exists.getData()).isFalse();
 
             verify(experimentService).getExperimentById("exp123");
         }
@@ -161,10 +167,11 @@ class ExperimentInternalControllerTest {
                     .thenThrow(new RuntimeException("服务异常"));
 
             // when
-            Boolean exists = experimentInternalController.experimentExists("exp123");
+            Result<Boolean> exists = experimentInternalController.experimentExists("exp123");
 
             // then
-            assertThat(exists).isFalse();
+            assertThat(exists.getCode()).isEqualTo(200);
+            assertThat(exists.getData()).isFalse();
 
             verify(experimentService).getExperimentById("exp123");
         }
@@ -196,14 +203,15 @@ class ExperimentInternalControllerTest {
                     .thenThrow(new RuntimeException("实验未找到"));
 
             // when
-            Map<String, Boolean> result = experimentInternalController.batchExperimentExists(experimentIds);
+            Result<Map<String, Boolean>> result = experimentInternalController.batchExperimentExists(experimentIds);
 
             // then
             assertThat(result).isNotNull();
-            assertThat(result).hasSize(3);
-            assertThat(result.get("exp123")).isTrue();
-            assertThat(result.get("exp456")).isTrue();
-            assertThat(result.get("nonexistent")).isFalse();
+            assertThat(result.getCode()).isEqualTo(200);
+            assertThat(result.getData()).hasSize(3);
+            assertThat(result.getData().get("exp123")).isTrue();
+            assertThat(result.getData().get("exp456")).isTrue();
+            assertThat(result.getData().get("nonexistent")).isFalse();
 
             verify(experimentService).getExperimentById("exp123");
             verify(experimentService).getExperimentById("exp456");
@@ -217,11 +225,12 @@ class ExperimentInternalControllerTest {
             List<String> emptyList = Arrays.asList();
 
             // when
-            Map<String, Boolean> result = experimentInternalController.batchExperimentExists(emptyList);
+            Result<Map<String, Boolean>> result = experimentInternalController.batchExperimentExists(emptyList);
 
             // then
             assertThat(result).isNotNull();
-            assertThat(result).isEmpty();
+            assertThat(result.getCode()).isEqualTo(200);
+            assertThat(result.getData()).isEmpty();
 
             verify(experimentService, never()).getExperimentById(any());
         }
@@ -238,14 +247,15 @@ class ExperimentInternalControllerTest {
             when(experimentService.getExperimentById("exp456")).thenReturn(sampleExperimentDTO);
 
             // when
-            Map<String, Boolean> result = experimentInternalController.batchExperimentExists(idsWithNull);
+            Result<Map<String, Boolean>> result = experimentInternalController.batchExperimentExists(idsWithNull);
 
             // then
             assertThat(result).isNotNull();
-            assertThat(result).hasSize(3);
-            assertThat(result.get("exp123")).isTrue();
-            assertThat(result.get(null)).isFalse();
-            assertThat(result.get("exp456")).isTrue();
+            assertThat(result.getCode()).isEqualTo(200);
+            assertThat(result.getData()).hasSize(3);
+            assertThat(result.getData().get("exp123")).isTrue();
+            assertThat(result.getData().get(null)).isFalse();
+            assertThat(result.getData().get("exp456")).isTrue();
 
             verify(experimentService).getExperimentById("exp123");
             verify(experimentService).getExperimentById(null);
@@ -264,13 +274,14 @@ class ExperimentInternalControllerTest {
                     .thenThrow(new RuntimeException("实验未找到"));
 
             // when
-            Map<String, Boolean> result = experimentInternalController.batchExperimentExists(nonexistentIds);
+            Result<Map<String, Boolean>> result = experimentInternalController.batchExperimentExists(nonexistentIds);
 
             // then
             assertThat(result).isNotNull();
-            assertThat(result).hasSize(2);
-            assertThat(result.get("nonexistent1")).isFalse();
-            assertThat(result.get("nonexistent2")).isFalse();
+            assertThat(result.getCode()).isEqualTo(200);
+            assertThat(result.getData()).hasSize(2);
+            assertThat(result.getData().get("nonexistent1")).isFalse();
+            assertThat(result.getData().get("nonexistent2")).isFalse();
 
             verify(experimentService).getExperimentById("nonexistent1");
             verify(experimentService).getExperimentById("nonexistent2");
@@ -288,13 +299,14 @@ class ExperimentInternalControllerTest {
             when(experimentService.getExperimentById("exp123")).thenReturn(sampleExperimentDTO);
 
             // when
-            ExperimentDTO response = experimentInternalController.getExperimentBasicInfo("exp123");
+            Result<ExperimentDTO> response = experimentInternalController.getExperimentBasicInfo("exp123");
 
             // then
             assertThat(response).isNotNull();
-            assertThat(response).isEqualTo(sampleExperimentDTO);
-            assertThat(response.getId()).isEqualTo("exp123");
-            assertThat(response.getName()).isEqualTo("测试实验名称");
+            assertThat(response.getCode()).isEqualTo(200);
+            assertThat(response.getData()).isEqualTo(sampleExperimentDTO);
+            assertThat(response.getData().getId()).isEqualTo("exp123");
+            assertThat(response.getData().getName()).isEqualTo("测试实验名称");
 
             verify(experimentService).getExperimentById("exp123");
         }
@@ -340,10 +352,11 @@ class ExperimentInternalControllerTest {
             when(experimentService.getExperimentById("exp123")).thenReturn(null);
 
             // when
-            ExperimentDTO response = experimentInternalController.getExperimentBasicInfo("exp123");
+            Result<ExperimentDTO> response = experimentInternalController.getExperimentBasicInfo("exp123");
 
             // then
-            assertThat(response).isNull();
+            assertThat(response.getCode()).isEqualTo(200);
+            assertThat(response.getData()).isNull();
 
             verify(experimentService).getExperimentById("exp123");
         }
