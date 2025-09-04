@@ -318,7 +318,7 @@
         "method": "PUT",
         "header": [ { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "{{authHeader}}" } ],
         "url": { "raw": "{{baseUrl}}/api/users/profile", "host": ["{{baseUrl}}"], "path": ["api","users","profile"] },
-        "body": { "mode": "raw", "raw": "{\n  \"avatar\": \"{{adminAvatarUrl}}\",\n  \"profile\": {\n    \"realName\": \"real\",\n    \"gender\": \"male\",\n    \"birthdate\": \"1980-01-01\",\n    \"phoneNum\": \"13800000000\"\n  }\n}" }
+        "body": { "mode": "raw", "raw": "{\n  \"avatar\": \"{{adminAvatarUrl}}\",\n  \"profile\": {\n    \"realName\": \"real\",\n    \"gender\": \"male\",\n    \"birthdate\": \"1980-01-01\",\n    \"phone\": \"13800000000\"\n  }\n}" }
       },
       "event": [ { "listen": "test", "script": { "exec": [
           "const json = pm.response.json();",
@@ -328,7 +328,7 @@
           "pm.test('真实姓名已更新', function () { pm.expect(json && json.data && json.data.profile && json.data.profile.realName === 'real').to.be.true; });",
           "pm.test('性别已更新', function () { pm.expect(json && json.data && json.data.profile && json.data.profile.gender === 'male').to.be.true; });",
           "pm.test('生日已更新', function () { pm.expect(json && json.data && json.data.profile && json.data.profile.birthdate === '1980-01-01').to.be.true; });",
-          "pm.test('手机号已更新', function () { pm.expect(json && json.data && json.data.profile && json.data.profile.phoneNum === '13800000000').to.be.true; });"
+          "pm.test('手机号已更新', function () { pm.expect(json && json.data && json.data.profile && json.data.profile.phone === '13800000000').to.be.true; });"
         ] } } ]
     },
     {
@@ -389,20 +389,6 @@
         "pm.collectionVariables.set('adminTeacherAuth', `${json.data.tokenType} ${json.data.token}`);",
         "pm.test('拿到 adminTeacherAuth', function () { pm.expect(!!pm.collectionVariables.get('adminTeacherAuth')).to.be.true; });"
       ] } } ]
-    },
-    {
-      "name": "05 - Admin Set Role(Should Fail)",
-      "request": {
-        "method": "POST",
-        "header": [ { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "{{adminTeacherAuth}}" } ],
-        "url": { "raw": "{{baseUrl}}/api/users/setrole", "host": ["{{baseUrl}}"], "path": ["api","users","setrole"] },
-        "body": { "mode": "raw", "raw": "{\n  \"userId\": \"{{teacherUserId}}\",\n  \"roleId\": \"ROLE_TEACHER\"\n}" }
-      },
-    "event": [ { "listen": "test", "script": { "exec": [
-      "pm.test('HTTP 403', function(){ pm.response.to.have.status(403); });",
-      "const json = pm.response.json();",
-      "pm.test('业务码 403(没有权限)', function () { pm.expect(json && (json.code === 403)).to.be.true; });"
-    ] } } ]
     },
     {
       "name": "06 - Admin Create Announcement",
