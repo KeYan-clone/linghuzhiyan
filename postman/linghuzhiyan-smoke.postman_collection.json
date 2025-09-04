@@ -84,9 +84,9 @@
         "body": { "mode": "raw", "raw": "{\n  \"username\": \"{{teacherUsername}}\",\n  \"email\": \"{{teacherEmail}}\",\n  \"password\": \"{{teacherPassword}}\"\n}" }
       },
       "event": [ { "listen": "test", "script": { "exec": [
-        "pm.test('HTTP 200 或 400(用户已注册）', function () {pm.expect([200, 400]).to.include(pm.response.code);});",
+        "pm.test('HTTP 200 或 400(用户名已注册）', function () {pm.expect([200, 400]).to.include(pm.response.code);});",
         "const json = pm.response.json(); ",
-        "pm.test('业务码 200', function () { pm.expect(json && json.code).to.equal(200); });"
+        "pm.test('业务码 200 或 409(用户名已注册)', function () {pm.expect(json && (json.code === 200 || json.code === 409)).to.be.true;});"
       ] } } ]
     },
     {
@@ -98,9 +98,9 @@
         "body": { "mode": "raw", "raw": "{\n  \"username\": \"{{studentUsername}}\",\n  \"email\": \"{{studentEmail}}\",\n  \"password\": \"{{studentPassword}}\"\n}" }
       },
       "event": [ { "listen": "test", "script": { "exec": [
-        "pm.test('HTTP 200 或 400(用户已注册）', function () {pm.expect([200, 400]).to.include(pm.response.code);});",
+        "pm.test('HTTP 200 或 400(用户名已注册）', function () {pm.expect([200, 400]).to.include(pm.response.code);});",
         "const json = pm.response.json(); ",
-        "pm.test('业务码 200 或 400(用户名已存在)', function () {pm.expect(json && (json.code === 200 || json.code === 409)).to.be.true;});"
+        "pm.test('业务码 200 或 409(用户名已注册)', function () {pm.expect(json && (json.code === 200 || json.code === 409)).to.be.true;});"
       ] } } ]
     },
     {
@@ -112,9 +112,9 @@
         "body": { "mode": "raw", "raw": "{\n  \"username\": \"{{student2Username}}\",\n  \"email\": \"{{student2Email}}\",\n  \"password\": \"{{student2Password}}\"\n}" }
       },
       "event": [ { "listen": "test", "script": { "exec": [
-        "pm.test('HTTP 200 或 400(用户已注册）', function () {pm.expect([200, 400]).to.include(pm.response.code);});",
+        "pm.test('HTTP 200 或 400(用户名已注册）', function () {pm.expect([200, 400]).to.include(pm.response.code);});",
         "const json = pm.response.json();",
-        "pm.test('业务码 200 或 400(用户名已存在)', function () {pm.expect(json && (json.code === 200 || json.code === 409)).to.be.true;});"
+        "pm.test('业务码 200 或 409(用户名已注册)', function () {pm.expect(json && (json.code === 200 || json.code === 409)).to.be.true;});"
       ] } } ]
     },
     {
@@ -126,9 +126,9 @@
         "body": { "mode": "raw", "raw": "{\n  \"username\": \"{{student3Username}}\",\n  \"email\": \"{{student3Email}}\",\n  \"password\": \"{{student3Password}}\"\n}" }
       },
       "event": [ { "listen": "test", "script": { "exec": [
-        "pm.test('HTTP 200 或 400(用户已注册）', function () {pm.expect([200, 400]).to.include(pm.response.code);});",
+        "pm.test('HTTP 200 或 400(用户名已注册）', function () {pm.expect([200, 400]).to.include(pm.response.code);});",
         "const json = pm.response.json();",
-        "pm.test('业务码 200 或 400(用户名已存在)', function () {pm.expect(json && (json.code === 200 || json.code === 409)).to.be.true;});"
+        "pm.test('业务码 200 或 409(用户名已注册)', function () {pm.expect(json && (json.code === 200 || json.code === 409)).to.be.true;});"
       ] } } ]
     },
     {
