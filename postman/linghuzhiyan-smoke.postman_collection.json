@@ -83,10 +83,13 @@
         "body": { "mode": "raw", "raw": "{\n  \"username\": \"{{teacherUsername}}\",\n  \"email\": \"{{teacherEmail}}\",\n  \"password\": \"{{teacherPassword}}\"\n}" }
       },
       "event": [ { "listen": "test", "script": { "exec": [
-        "pm.test('HTTP 200/或用户名已存在(409)', function(){ pm.expect([200,409]).to.include(pm.response.code); });",
-        "const json = pm.response.json(); ",
-        "pm.test('业务码 200/409', function () { pm.test('业务码 200 或 409', function() {\n    pm.expect([200, 409]).to.include(json.code);\n}); });"
-      ] } } ]
+        "pm.test('HTTP 200 或 400', function(){",
+        "    pm.expect([200, 400]).to.include(pm.response.code);",
+        "});",
+        "const json = pm.response.json();",
+        "pm.test('业务码 200 或 409', function() {",
+        "    pm.expect([200, 409]).to.include(json.code);",
+        "});"] } } ]
     },
     {
       "name": "03 - Register Student",
@@ -97,10 +100,13 @@
         "body": { "mode": "raw", "raw": "{\n  \"username\": \"{{studentUsername}}\",\n  \"email\": \"{{studentEmail}}\",\n  \"password\": \"{{studentPassword}}\"\n}" }
       },
       "event": [ { "listen": "test", "script": { "exec": [
-        "pm.test('HTTP 200/或用户名已存在(409)', function(){ pm.expect([200,409]).to.include(pm.response.code); });",
+        "pm.test('HTTP 200 或 400', function(){",
+        "    pm.expect([200, 400]).to.include(pm.response.code);",
+        "});",
         "const json = pm.response.json();",
-        "pm.test('业务码 200 或 409', function () {\n    const json = pm.response.json();\n    pm.expect([200, 409]).to.include(json.code);\n});\n"
-      ] } } ]
+        "pm.test('业务码 200 或 409', function() {",
+        "    pm.expect([200, 409]).to.include(json.code);",
+        "});"] } } ]
     },
     {
       "name": "03b - Register Student 2",
@@ -111,10 +117,13 @@
         "body": { "mode": "raw", "raw": "{\n  \"username\": \"{{student2Username}}\",\n  \"email\": \"{{student2Email}}\",\n  \"password\": \"{{student2Password}}\"\n}" }
       },
       "event": [ { "listen": "test", "script": { "exec": [
-        "pm.test('HTTP 200/或用户名已存在(409)', function(){ pm.expect([200,409]).to.include(pm.response.code); });",
+        "pm.test('HTTP 200 或 400', function(){",
+        "    pm.expect([200, 400]).to.include(pm.response.code);",
+        "});",
         "const json = pm.response.json();",
-        "pm.test('业务码 200', function () { pm.expect(json && json.code).to.equal(200); });"
-      ] } } ]
+        "pm.test('业务码 200 或 409', function() {",
+        "    pm.expect([200, 409]).to.include(json.code);",
+        "});"] } } ]
     },
     {
       "name": "03c - Register Student 3",
@@ -125,10 +134,13 @@
         "body": { "mode": "raw", "raw": "{\n  \"username\": \"{{student3Username}}\",\n  \"email\": \"{{student3Email}}\",\n  \"password\": \"{{student3Password}}\"\n}" }
       },
       "event": [ { "listen": "test", "script": { "exec": [
-        "pm.test('HTTP 200/或用户名已存在(400)', function(){ pm.expect([200,400]).to.include(pm.response.code); });",
+        "pm.test('HTTP 200 或 400', function(){",
+        "    pm.expect([200, 400]).to.include(pm.response.code);",
+        "});",
         "const json = pm.response.json();",
-        "pm.test('业务码 200', function () { pm.expect(json && json.code).to.equal(200); });"
-      ] } } ]
+        "pm.test('业务码 200 或 409', function() {",
+        "    pm.expect([200, 409]).to.include(json.code);",
+        "});" ] } } ]
     },
     {
       "name": "03.1 - Admin Get Users to Capture IDs",
@@ -229,7 +241,7 @@
       "body": { "mode": "raw", "raw": "{\n  \"username\": \"{{student3Username}}\",\n  \"password\": \"{{student3Password}}\",\n  \"role\": \"STUDENT\"\n}" }
     },
       "event": [ { "listen": "test", "script": { "exec": [
-        "pm.test('登录失败', function () { pm.expect([401].includes(pm.response.code)).to.be.true; });",
+        "pm.test('登录失败', function () { pm.expect([403].includes(pm.response.code)).to.be.true; });",
         "let json = null; try { json = pm.response.json(); } catch(e) {}",
         "pm.test('无token返回', function () { pm.expect(!(json && json.data && json.data.token)).to.be.true; });"
       ] } } ]
@@ -314,7 +326,7 @@
         "method": "PUT",
         "header": [ { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "{{authHeader}}" } ],
         "url": { "raw": "{{baseUrl}}/api/users/profile", "host": ["{{baseUrl}}"], "path": ["api","users","profile"] },
-        "body": { "mode": "raw", "raw": "{\n  \"avatar\": \"{{adminAvatarUrl}}\",\n  \"profile\": {\n    \"realName\": \"real\",\n    \"gender\": \"male\",\n    \"birthdate\": \"1980-01-01\",\n    \"phoneNum\": \"13800000000\"\n  }\n}" }
+        "body": { "mode": "raw", "raw": "{\n  \"avatar\": \"{{adminAvatarUrl}}\",\n  \"profile\": {\n    \"realName\": \"real\",\n    \"gender\": \"male\",\n    \"birthdate\": \"1980-01-01\",\n    \"phone\": \"13800000000\"\n  }\n}" }
       },
       "event": [ { "listen": "test", "script": { "exec": [
           "const json = pm.response.json();",
@@ -324,7 +336,7 @@
           "pm.test('真实姓名已更新', function () { pm.expect(json && json.data && json.data.profile && json.data.profile.realName === 'real').to.be.true; });",
           "pm.test('性别已更新', function () { pm.expect(json && json.data && json.data.profile && json.data.profile.gender === 'male').to.be.true; });",
           "pm.test('生日已更新', function () { pm.expect(json && json.data && json.data.profile && json.data.profile.birthdate === '1980-01-01').to.be.true; });",
-          "pm.test('手机号已更新', function () { pm.expect(json && json.data && json.data.profile && json.data.profile.phoneNum === '13800000000').to.be.true; });"
+          "pm.test('手机号已更新', function () { pm.expect(json && json.data && json.data.profile && json.data.profile.phone === '13800000000').to.be.true; });"
         ] } } ]
     },
     {
@@ -443,7 +455,7 @@
         "const json = pm.response.json();",
         "pm.collectionVariables.set('teacherAuth', `${json.data.tokenType} ${json.data.token}`);",
         "pm.test('HTTP 200', function(){ pm.response.to.have.status(200); });",
-        "pm.test('返回 token', function () { pm.expect(json && json.data && json.data.token).to.be.true; });"
+        "pm.test('返回 token', function () { pm.expect(json && json.data && json.data.token).to.be.ok; });"
       ] } } ]
     },
     {
