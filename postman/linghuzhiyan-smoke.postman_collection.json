@@ -48,7 +48,7 @@
     { "key": "q1Id", "value": "", "type": "string" },
     { "key": "q2Id", "value": "", "type": "string" },
     { "key": "q3Id", "value": "", "type": "string" },
-    {"key":"resourcePath","value":"D:\\SB\\小学期\\linghuzhiyan\\docs\\postman\\sample.txt","type":"string"},
+    {"key":"resourcePath","value":"sample.txt","type":"string"},
     { "key": "uniqueToken", "value": "UNIQ-{{runId}}-Q", "type": "string" }
   ],
   "item": [
@@ -308,7 +308,9 @@
         "const json = pm.response.json();",
         "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
         "pm.test('业务码 200', function () { pm.expect(json && json.code === 200).to.be.true; });",
-        "pm.test('返回头像URL', function () { pm.expect(json && json.data && typeof json.data.avatarUrl === 'string' && json.data.avatarUrl.length > 0).to.be.true; });",
+        "pm.test('返回对象名或URL', function () { pm.expect(json && json.data && (json.data.avatarPath || json.data.avatarUrl)).to.be.ok; });",
+        "const objectName = (json && json.data && (json.data.avatarPath || json.data.objectName || json.data.avatar)) || '';",
+        "pm.collectionVariables.set('adminAvatarObjectName', objectName);",
         "pm.collectionVariables.set('adminAvatarUrl', (json && json.data && json.data.avatarUrl) || '');"
       ] } } ]
     },
@@ -1556,7 +1558,6 @@
             "exec": [
               "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
               "let json = null; try { json = pm.response.json(); } catch (e) { json = null; }",
-              "pm.test('返回 JSON', function () { pm.expect(json).to.be.an('object'); });",
               "pm.test('业务码 200', function () { pm.expect(json && json.code).to.equal(200); });",
               "if(json && json.data && json.data.id){ pm.collectionVariables.set('resourceId', json.data.id); }",
               "pm.test('拿到 resourceId', function () { pm.expect(pm.collectionVariables.get('resourceId')).to.exist; });",
@@ -1614,7 +1615,9 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test('HTTP 403', function () {pm.response.to.have.status(403); });"
+              "pm.test('HTTP 403', function () {pm.response.to.have.status(403); });",
+              "let json = null; try { json = pm.response.json(); } catch (e) { json = null; }",
+              "pm.test('业务码 403', function () { pm.expect(json && json.code).to.equal(403); });"
             ]
           }
         }
@@ -1798,10 +1801,8 @@
           "script": {
             "exec": [
               "pm.test('HTTP 200/403', function () { pm.expect([200,403]).to.include(pm.response.code); });",
-              "if (pm.response.code === 200) {",
-              "  let json = null; try { json = pm.response.json(); } catch (e) { json = null; }",
-              "  pm.test('业务码 200', function () { pm.expect(json && json.code).to.equal(200); });",
-              "}"
+              "let json = null; try { json = pm.response.json(); } catch (e) { json = null; }",
+              "pm.test('业务码 403', function () { pm.expect(json && json.code).to.equal(403); });"
             ]
           }
         }
@@ -1910,7 +1911,9 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test('HTTP 403', function () { pm.response.to.have.status(403); });"
+              "pm.test('HTTP 403', function () { pm.response.to.have.status(403); });",
+              "const json = pm.response.json();",
+              "pm.test('业务码 403', function () { pm.expect(json && json.code).to.equal(403); });"
             ]
           }
         }
@@ -1934,12 +1937,10 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test('HTTP 200/204', function () { pm.expect([200,204]).to.include(pm.response.code); });",
+              "pm.test('HTTP 200', function () {  pm.response.to.have.status(200); });",
               "let json = null;",
-              "if (pm.response.code === 200) {",
-              "  try { json = pm.response.json(); } catch (e) { json = null; }",
-              "  pm.test('业务码 200', function () { pm.expect(json && json.code).to.equal(200); });",
-              "}",
+              "try { json = pm.response.json(); } catch (e) { json = null; }",
+              "pm.test('业务码 200', function () { pm.expect(json && json.code).to.equal(200); });",
               "pm.collectionVariables.unset('resourceId2');"
             ]
           }
