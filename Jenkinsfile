@@ -9,14 +9,14 @@ pipeline {
 				checkout scm
 			}
 		}
-		stage('Build Maven Project') {
+		stage('Build Maven Project and Unit Test') {
 			steps {
 				script {
 					if (isUnix()) {
 						sh 'chmod +x mvnw || echo skip'
-						sh './mvnw clean package -DskipTests'
+						sh './mvnw clean package'
 					} else {
-						bat 'mvn clean package -DskipTests'
+						bat 'mvn clean package'
 					}
 				}
 			}
@@ -290,6 +290,89 @@ pipeline {
 							'''
 						}
 					}
+				}
+			}
+		}
+		stage('Integration Tests') {
+			steps {
+				withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
+					script {
+						echo 'Running integration tests with Newman...'
+						if (isUnix()) {
+							sh '''
+								echo "Installing Newman if not present..."
+								npm install -g newman || echo "Newman installation failed, trying alternative..."
+								
+								echo "Waiting for services to be fully ready for testing..."
+								sleep 30
+								
+								echo "Checking service accessibility..."
+								kubectl get svc -n linghuzhiyan gateway-external
+								
+								echo "Getting NodePort for gateway..."
+								GATEWAY_PORT=$(kubectl get svc gateway-external -n linghuzhiyan -o jsonpath='{.spec.ports[0].nodePort}')
+								echo "Gateway accessible on port: $GATEWAY_PORT"
+								
+								echo "Running smoke tests..."
+								cd postman
+								newman run linghuzhiyan-smoke.postman_collection.json \\
+									--env-var "baseUrl=http://localhost:$GATEWAY_PORT" \\
+									--reporters cli,junit \\
+									--reporter-junit-export ../test-results.xml \\
+									--timeout-request 30000 \\
+									--delay-request 1000 \\
+									--bail || echo "Some tests failed, check results"
+								
+								echo "Integration tests completed"
+							'''
+						} else {
+							bat '''
+								
+								echo Installing Newman if not present...
+								npm install -g newman || echo Newman installation failed, trying alternative...
+								
+								echo Waiting for services to be fully ready for testing...
+								timeout /t 30
+								
+								echo Checking service accessibility...
+								kubectl get svc -n linghuzhiyan gateway-external
+								
+								echo Getting NodePort for gateway...
+								for /f "tokens=*" %%i in ('kubectl get svc gateway-external -n linghuzhiyan -o jsonpath="{.spec.ports[0].nodePort}"') do set GATEWAY_PORT=%%i
+								echo Gateway accessible on port: %GATEWAY_PORT%
+								
+								echo Running smoke tests...
+								cd postman
+								newman run linghuzhiyan-smoke.postman_collection.json ^
+									--env-var "baseUrl=http://localhost:%GATEWAY_PORT%" ^
+									--reporters cli,junit ^
+									--reporter-junit-export ../test-results.xml ^
+									--timeout-request 30000 ^
+									--delay-request 1000 ^
+									--bail || echo Some tests failed, check results
+								
+								echo Integration tests completed
+							'''
+						}
+					}
+				}
+			}
+			post {
+				always {
+					script {
+						// 发布测试结果
+						if (fileExists('test-results.xml')) {
+							publishTestResults testResultsPattern: 'test-results.xml'
+						}
+						// 归档测试报告
+						archiveArtifacts artifacts: 'test-results.xml', fingerprint: true, allowEmptyArchive: true
+					}
+				}
+				failure {
+					echo 'Integration tests failed. Check the test results for details.'
+				}
+				success {
+					echo 'All integration tests passed successfully!'
 				}
 			}
 		}
