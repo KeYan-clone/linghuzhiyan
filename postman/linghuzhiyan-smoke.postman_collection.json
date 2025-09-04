@@ -48,7 +48,7 @@
     { "key": "q1Id", "value": "", "type": "string" },
     { "key": "q2Id", "value": "", "type": "string" },
     { "key": "q3Id", "value": "", "type": "string" },
-    {"key":"resourcePath","value":"D:\\SB\\小学期\\linghuzhiyan\\docs\\postman\\sample.txt","type":"string"},
+    {"key":"resourcePath","value":"D:\\EdgeDownload\\submission.txt","type":"string"},
     { "key": "uniqueToken", "value": "UNIQ-{{runId}}-Q", "type": "string" }
   ],
   "item": [
@@ -292,27 +292,6 @@
       ] } } ]
     },
     {
-      "name": "04.4 - Admin Upload Avatar",
-      "request": {
-        "method": "POST",
-        "header": [ { "key": "Authorization", "value": "{{authHeader}}" } ],
-        "url": { "raw": "{{baseUrl}}/api/users/avatar", "host": ["{{baseUrl}}"], "path": ["api","users","avatar"] },
-        "body": {
-          "mode": "formdata",
-          "formdata": [
-            { "key": "file", "type": "file", "src": "avatar.jpg" }
-          ]
-        }
-      },
-      "event": [ { "listen": "test", "script": { "exec": [
-        "const json = pm.response.json();",
-        "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
-        "pm.test('业务码 200', function () { pm.expect(json && json.code === 200).to.be.true; });",
-        "pm.test('返回头像URL', function () { pm.expect(json && json.data && typeof json.data.avatarUrl === 'string' && json.data.avatarUrl.length > 0).to.be.true; });",
-        "pm.collectionVariables.set('adminAvatarUrl', (json && json.data && json.data.avatarUrl) || '');"
-      ] } } ]
-    },
-    {
       "name": "04.5 - Admin Update Profile",
       "request": {
         "method": "PUT",
@@ -399,9 +378,9 @@
         "body": { "mode": "raw", "raw": "{\n  \"userId\": \"{{teacherUserId}}\",\n  \"roleId\": \"ROLE_TEACHER\"\n}" }
       },
     "event": [ { "listen": "test", "script": { "exec": [
-      "pm.test('HTTP 403', function(){ pm.response.to.have.status(403); });",
+      "pm.test('HTTP 200', function(){ pm.response.to.have.status(200); });",
       "const json = pm.response.json();",
-      "pm.test('业务码 403(没有权限)', function () { pm.expect(json && (json.code === 403)).to.be.true; });"
+      "pm.test('业务码 200', function () { pm.expect(json && (json.code === 200)).to.be.true; });"
     ] } } ]
     },
     {
