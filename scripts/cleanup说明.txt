@@ -1,0 +1,5 @@
+# 1) 复制 SQL 到容器                                                                                       
+docker cp .\scripts\cleanup-keep-user1.sql mysql:/tmp/cleanup-keep-user1.sql
+
+# 2) 在容器内用 mysql 客户端执行（默认 root 密码为 password；如果你改了 DB_PASSWORD，请替换）
+docker exec mysql sh -lc 'mysql -uroot -p"password" < /tmp/cleanup-keep-user1.sql'
