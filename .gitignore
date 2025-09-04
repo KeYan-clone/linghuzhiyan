@@ -87,3 +87,12 @@ coverage/
 # 数据库备份文件
 #*.sql
 *.backup
+
+# K8s部署脚本（本地使用）
+scripts/deploy-k8s.ps1
+scripts/cleanup-k8s.ps1
+scripts/status-k8s.ps1
+
+# PowerShell执行策略和模块缓存
+*.ps1.cache
+$PROFILE*

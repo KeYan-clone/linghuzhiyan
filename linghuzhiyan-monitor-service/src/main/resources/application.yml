@@ -2,4 +2,4 @@ spring:
   application:
     name: linghuzhiyan-monitor
   config:
-    import: optional:configserver:http://config:config123@localhost:8888
+    import: optional:configserver:http://config:config123@config-server:8888

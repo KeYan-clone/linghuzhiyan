@@ -20,8 +20,10 @@ spring:
       max-lifetime: 1800000
     
   # Redis 配置
-  redis:
-    database: 3
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:redis}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
     
   # 文件上传配置
   servlet:

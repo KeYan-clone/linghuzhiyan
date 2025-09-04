@@ -3,4 +3,16 @@
 .logs/
 *.log
 *.pid
+
+# Existing generated scripts
 register-via-gateway.ps1
+
+# K8s deployment scripts (auto-generated)
+deploy-k8s.ps1
+cleanup-k8s.ps1
+status-k8s.ps1
+quick-deploy-k8s.ps1
+
+# PowerShell execution artifacts
+*.ps1.cache
+$PROFILE*

@@ -19,8 +19,10 @@ spring:
       connection-timeout: 20000
     
   # Redis 配置
-  redis:
-    database: 6
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:redis}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
 
 # Feign配置
 feign:
